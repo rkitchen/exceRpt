@@ -4,7 +4,7 @@
 ##                                                                                   ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                        ##
 ##                                                                                   ##
-## Version 1.3.1 (2014-12-09)                                                        ##
+## Version 1.3.2 (2014-12-10)                                                        ##
 ##                                                                                   ##
 #######################################################################################
 
@@ -121,37 +121,41 @@ BOWTIE_OVERRIDE := \#2\#9\#v\#100
 
 ifeq ($(MAIN_ORGANISM),hsa)  ## FOR HUMAN
 	
+	## Override the genome for adapter identification (saves having bt2 indexes for both hg19 and hg38)
+	GENOME_ID_FOR_ADAPTER := hg38
+
 	ifeq ($(MAIN_ORGANISM_GENOME_ID),hg19) ## hg19
 
-		BOWTIE_INDEX_RRNA := $(SRNABENCH_LIBS)/customIndices/hg19_rRNA
-		GENCODE_LIBS 	  := libs=hg19_gencode18$(BOWTIE_OVERRIDE)
-		TRNA_LIBS    	  := hg19_gencode18_tRNAs$(BOWTIE_OVERRIDE)
-	
+		INDEX_GENCODE 		:= hg19_gencode18
+		INDEX_TRNA			:= hg19_gencode18_tRNAs
+		INDEX_PIRNA	 		:= hg19_piRNAs
+		BOWTIE_INDEX_RRNA	:= $(SRNABENCH_LIBS)/customIndices/hg19_rRNA
+		
 	else ifeq ($(MAIN_ORGANISM_GENOME_ID),hg38) ## hg38
-	
-		BOWTIE_INDEX_RRNA := $(SRNABENCH_LIBS)/customIndices/hg38_rRNA
-		GENCODE_LIBS 	  := libs=hg38_gencode21$(BOWTIE_OVERRIDE)
-		TRNA_LIBS    	  := hg38_gencode21_tRNAs$(BOWTIE_OVERRIDE)
-	
+		
+		INDEX_GENCODE 		:= hg38_gencode21
+		INDEX_TRNA			:= hg38_gencode21_tRNAs
+		INDEX_PIRNA	 		:= hg19_piRNAs
+		BOWTIE_INDEX_RRNA	:= $(SRNABENCH_LIBS)/customIndices/hg38_rRNA
+		
 	endif
 
-	PIRNA_LIBS   := libs=hg19_piRNAs$(BOWTIE_OVERRIDE)
+	GENCODE_LIBS := libs=$(INDEX_GENCODE)$(BOWTIE_OVERRIDE)
+	TRNA_LIBS	 := libs=$(INDEX_TRNA)$(BOWTIE_OVERRIDE)
+	PIRNA_LIBS   := libs=$(INDEX_PIRNA)$(BOWTIE_OVERRIDE)
 
-	#TRNA_LIBS    := libs=hg19-tRNAs.fa$(BOWTIE_OVERRIDE)
-	#SNORNA_LIBS  := libs=snorna.fa$(BOWTIE_OVERRIDE)
-	#PIRNA_LIBS   := libs=pirna.fa$(BOWTIE_OVERRIDE)
-	#RFAM_LIBS    := libs=Rfam.fa$(BOWTIE_OVERRIDE)
-	
 else ifeq ($(MAIN_ORGANISM),mmu)  ## FOR MOUSE
 	
-	BOWTIE_INDEX_RRNA := $(SRNABENCH_LIBS)/customIndices/mm10_rRNA
-	GENCODE_LIBS := libs=mm10_gencodeM4$(BOWTIE_OVERRIDE)
-	TRNA_LIBS    := libs=mm10_gencodeM4_tRNAs$(BOWTIE_OVERRIDE)
-	PIRNA_LIBS   := libs=mm10_piRNAs$(BOWTIE_OVERRIDE)
+	GENOME_ID_FOR_ADAPTER := mm10
 
-	#SNORNA_LIBS  := libs=snorna.fa$(BOWTIE_OVERRIDE)
-	#PIRNA_LIBS   := libs=pirna.fa$(BOWTIE_OVERRIDE)
-	#RFAM_LIBS    := libs=Rfam.fa$(BOWTIE_OVERRIDE)
+	INDEX_GENCODE 		:= mm10_gencodeM4
+	INDEX_TRNA			:= mm10_gencodeM4_tRNAs
+	INDEX_PIRNA	 		:= mm10_piRNAs
+	BOWTIE_INDEX_RRNA	:= $(SRNABENCH_LIBS)/customIndices/mm10_rRNA
+
+	GENCODE_LIBS := libs=$(INDEX_GENCODE)$(BOWTIE_OVERRIDE)
+	TRNA_LIBS	 := libs=$(INDEX_TRNA)$(BOWTIE_OVERRIDE)
+	PIRNA_LIBS   := libs=$(INDEX_PIRNA)$(BOWTIE_OVERRIDE)
 	
 endif
 
@@ -186,7 +190,8 @@ endif
 
 
 ## Path to genome bowtie2 index
-BOWTIE_INDEX_GENOME := $(SRNABENCH_LIBS)/index/$(MAIN_ORGANISM_GENOME_ID)
+BOWTIE_INDEX_GENOME := $(SRNABENCH_LIBS)/index/$(GENOME_ID_FOR_ADAPTER)
+
 
 ## Path to the UniVec contaminants DB
 BOWTIE_INDEX_UNIVEC := $(SRNABENCH_LIBS)/customIndices/UniVec_Core.contaminants
@@ -496,37 +501,26 @@ processSample: $(OUTPUT_DIR)/$(SAMPLE_ID)/$(PROCESS_SAMPLE_REQFILE)
 	grep "out of" $(OUTPUT_DIR)/$(SAMPLE_ID)/summary.txt | awk '{print "genome\t"$$2}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 
 	## Assigned non-redundantly to annotated miRNAs
-	#cat $(OUTPUT_DIR)/$(SAMPLE_ID)/mature_sense_nonRed.grouped | awk '{sum+=$$3} END {print "miRNA_sense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	#cat $(OUTPUT_DIR)/$(SAMPLE_ID)/mature_antisense_nonRed.grouped | awk '{sum+=$$3} END {print "miRNA_antisense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/mature_sense.grouped | awk '{sum+=$$4} END {print "miRNA_sense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/mature_antisense.grouped | awk '{sum+=$$4} END {print "miRNA_antisense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 
 	## Assigned non-redundantly to annotated tRNAs
-	#cat $(OUTPUT_DIR)/$(SAMPLE_ID)/Homo_sapiens_trna_sense_nonRed.grouped | awk '{sum+=$$3} END {print "tRNA_sense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	#cat $(OUTPUT_DIR)/$(SAMPLE_ID)/Homo_sapiens_trna_antisense_nonRed.grouped | awk '{sum+=$$3} END {print "tRNA_antisense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/Homo_sapiens_trna_sense.grouped | awk '{sum+=$$4} END {print "tRNA_sense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/Homo_sapiens_trna_antisense.grouped | awk '{sum+=$$4} END {print "tRNA_antisense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_TRNA)_sense.grouped | awk '{sum+=$$4} END {print "tRNA_sense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_TRNA)_antisense.grouped | awk '{sum+=$$4} END {print "tRNA_antisense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 
 	## Assigned non-redundantly to annotated piRNAs
-	#cat $(OUTPUT_DIR)/$(SAMPLE_ID)/pirna_sense_nonRed.grouped | awk '{sum+=$$3} END {print "piRNA_sense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	#cat $(OUTPUT_DIR)/$(SAMPLE_ID)/pirna_antisense_nonRed.grouped | awk '{sum+=$$3} END {print "piRNA_antisense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/pirna_sense.grouped | awk '{sum+=$$4} END {print "piRNA_sense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/pirna_antisense.grouped | awk '{sum+=$$4} END {print "piRNA_antisense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_PIRNA)_sense.grouped | awk '{sum+=$$4} END {print "piRNA_sense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_PIRNA)_antisense.grouped | awk '{sum+=$$4} END {print "piRNA_antisense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 
 	## Assigned non-redundantly to annotated snoRNAs
-	#cat $(OUTPUT_DIR)/$(SAMPLE_ID)/snorna_sense_nonRed.grouped | awk '{sum+=$$3} END {print "snoRNA_sense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	#cat $(OUTPUT_DIR)/$(SAMPLE_ID)/snorna_antisense_nonRed.grouped | awk '{sum+=$$3} END {print "snoRNA_antisense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/snorna_sense.grouped | awk '{sum+=$$4} END {print "snoRNA_sense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/snorna_antisense.grouped | awk '{sum+=$$4} END {print "snoRNA_antisense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	#cat $(OUTPUT_DIR)/$(SAMPLE_ID)/snorna_sense.grouped | awk '{sum+=$$4} END {print "snoRNA_sense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	#cat $(OUTPUT_DIR)/$(SAMPLE_ID)/snorna_antisense.grouped | awk '{sum+=$$4} END {print "snoRNA_antisense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 
-	## Assigned non-redundantly to annotated Rfam
-	#cat $(OUTPUT_DIR)/$(SAMPLE_ID)/Rfam_sense_nonRed.grouped | awk '{sum+=$$3} END {print "Rfam_sense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	#cat $(OUTPUT_DIR)/$(SAMPLE_ID)/Rfam_antisense_nonRed.grouped | awk '{sum+=$$3} END {print "Rfam_antisense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/Rfam_sense.grouped | awk '{sum+=$$4} END {print "Rfam_sense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/Rfam_antisense.grouped | awk '{sum+=$$4} END {print "Rfam_antisense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	## Assigned non-redundantly to annotated transcripts in Gencode
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_GENCODE)_sense.grouped | awk '{sum+=$$4} END {print "Rfam_sense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_GENCODE)_antisense.grouped | awk '{sum+=$$4} END {print "Rfam_antisense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 
 	## Assigned non-redundantly to annotated plant/viral miRNAs
-	#cat $(OUTPUT_DIR)/$(SAMPLE_ID)/PlantAndVirus/mature_sense_nonRed.grouped | awk '{sum+=$$3} END {print "miRNA_plantVirus_sense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/PlantAndVirus/mature_sense.grouped | awk '{sum+=$$4} END {print "miRNA_plantVirus_sense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 
 	## Copy Output descriptions file
