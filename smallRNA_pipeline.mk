@@ -501,27 +501,27 @@ processSample: $(OUTPUT_DIR)/$(SAMPLE_ID)/$(PROCESS_SAMPLE_REQFILE)
 	grep "out of" $(OUTPUT_DIR)/$(SAMPLE_ID)/summary.txt | awk '{print "genome\t"$$2}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 
 	## Assigned non-redundantly to annotated miRNAs
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/mature_sense.grouped | awk '{sum+=$$4} END {print "miRNA_sense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/mature_antisense.grouped | awk '{sum+=$$4} END {print "miRNA_antisense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/mature_sense.grouped | awk '{sum+=$$4} END {printf "miRNA_sense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/mature_antisense.grouped | awk '{sum+=$$4} END {printf "miRNA_antisense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 
 	## Assigned non-redundantly to annotated tRNAs
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_TRNA)_sense.grouped | awk '{sum+=$$4} END {print "tRNA_sense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_TRNA)_antisense.grouped | awk '{sum+=$$4} END {print "tRNA_antisense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_TRNA)_sense.grouped | awk '{sum+=$$4} END {printf "tRNA_sense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_TRNA)_antisense.grouped | awk '{sum+=$$4} END {printf "tRNA_antisense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 
 	## Assigned non-redundantly to annotated piRNAs
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_PIRNA)_sense.grouped | awk '{sum+=$$4} END {print "piRNA_sense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_PIRNA)_antisense.grouped | awk '{sum+=$$4} END {print "piRNA_antisense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_PIRNA)_sense.grouped | awk '{sum+=$$4} END {printf "piRNA_sense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_PIRNA)_antisense.grouped | awk '{sum+=$$4} END {printf "piRNA_antisense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 
 	## Assigned non-redundantly to annotated snoRNAs
-	#cat $(OUTPUT_DIR)/$(SAMPLE_ID)/snorna_sense.grouped | awk '{sum+=$$4} END {print "snoRNA_sense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	#cat $(OUTPUT_DIR)/$(SAMPLE_ID)/snorna_antisense.grouped | awk '{sum+=$$4} END {print "snoRNA_antisense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	#cat $(OUTPUT_DIR)/$(SAMPLE_ID)/snorna_sense.grouped | awk '{sum+=$$4} END {printf "snoRNA_sense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	#cat $(OUTPUT_DIR)/$(SAMPLE_ID)/snorna_antisense.grouped | awk '{sum+=$$4} END {printf "snoRNA_antisense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 
 	## Assigned non-redundantly to annotated transcripts in Gencode
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_GENCODE)_sense.grouped | awk '{sum+=$$4} END {print "Rfam_sense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_GENCODE)_antisense.grouped | awk '{sum+=$$4} END {print "Rfam_antisense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_GENCODE)_sense.grouped | awk '{sum+=$$4} END {printf "Gencode_sense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_GENCODE)_antisense.grouped | awk '{sum+=$$4} END {printf "Gencode_antisense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 
 	## Assigned non-redundantly to annotated plant/viral miRNAs
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/PlantAndVirus/mature_sense.grouped | awk '{sum+=$$4} END {print "miRNA_plantVirus_sense\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/PlantAndVirus/mature_sense.grouped | awk '{sum+=$$4} END {printf "miRNA_plantVirus_sense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 
 	## Copy Output descriptions file
 	cp $(SRNABENCH_LIBS)/sRNAbenchOutputDescription.txt $(OUTPUT_DIR)/$(SAMPLE_ID)/sRNAbenchOutputDescription.txt 
