@@ -123,7 +123,7 @@ BOWTIE_OVERRIDE := \#2\#9\#v\#100
 ifeq ($(MAIN_ORGANISM),hsa)  ## FOR HUMAN
 	
 	## Override the genome for adapter identification (saves having bt2 indexes for both hg19 and hg38)
-	GENOME_ID_FOR_ADAPTER := hg38
+	GENOME_ID_FOR_ADAPTER := hg19
 
 	ifeq ($(MAIN_ORGANISM_GENOME_ID),hg19) ## hg19
 
