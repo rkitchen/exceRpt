@@ -4,7 +4,7 @@
 ##                                                                                   ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                        ##
 ##                                                                                   ##
-## Version 1.3.2 (2014-12-10)                                                        ##
+## Version 1.3.3 (2014-12-18)                                                        ##
 ##                                                                                   ##
 #######################################################################################
 
@@ -57,9 +57,7 @@ ifeq ($(LOCAL_EXECUTION),true)
 	##
 	ADAPTER_SEQ             := NULL
 	TRNA_MAPPING            := on
-	SNORNA_MAPPING          := on
 	PIRNA_MAPPING           := on
-	RFAM_MAPPING            := on
 	GENCODE_MAPPING         := on
 	MAP_PLANTS_VIRUSES      := on
 	
@@ -67,7 +65,8 @@ ifeq ($(LOCAL_EXECUTION),true)
 	## 6) Check that the paths to the required 3rd party executables work!
 	##
 	JAVA_EXE       := /usr/bin/java
-	FASTX_EXE      := $(EXE_DIR)/fastx_0.0.13/fastx_clipper_33
+	#FASTX_EXE      := $(EXE_DIR)/fastx_0.0.13/fastx_clipper_33
+	FASTX_EXE      := $(EXE_DIR)/fastx_0.0.14/bin/fastx_clipper
 	#BOWTIE1_PATH  := $(EXE_DIR)/bowtie-1.1.1
 	#VIENNA_PATH   := $(EXE_DIR)/ViennaRNA_2.1.5/bin
 	BOWTIE_EXE     := $(EXE_DIR)/bowtie2-2.1.0/bowtie2
@@ -167,14 +166,8 @@ endif
 ifneq ($(TRNA_MAPPING),on)
 	TRNA_LIBS :=
 endif
-ifneq ($(SNORNA_MAPPING),on)
-	SNORNA_LIBS :=
-endif
 ifneq ($(PIRNA_MAPPING),on)
 	PIRNA_LIBS :=
-endif
-ifneq ($(RFAM_MAPPING),on)
-	RFAM_LIBS :=
 endif
 ifneq ($(GENCODE_MAPPING),on)
 	GENCODE_LIBS :=
@@ -199,7 +192,7 @@ BOWTIE_INDEX_UNIVEC := $(SRNABENCH_LIBS)/customIndices/UniVec_Core.contaminants
 
 
 ## SmallRNA sequence libraries to map against AFTER mapping to the known miRNAs for the target organism (see below)
-OTHER_LIBRARIES := $(TRNA_LIBS) $(SNORNA_LIBS) $(PIRNA_LIBS) $(RFAM_LIBS) $(GENCODE_LIBS)
+OTHER_LIBRARIES := $(TRNA_LIBS) $(PIRNA_LIBS) $(GENCODE_LIBS)
 
 ## Map reads to plant and virus miRNAs
 ifeq ($(MAP_PLANTS_VIRUSES),on)
