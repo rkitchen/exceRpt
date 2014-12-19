@@ -117,7 +117,9 @@ ts := `/bin/date "+%Y-%m-%d--%H:%M:%S"`
 ## Initialise organism specific smallRNA library parameters
 ##
 ## override format: #<N_mismatches>#<seed_length>#<alignMode [v|n]>#<N_multimaps>
-BOWTIE_OVERRIDE := \#2\#9\#v\#100
+MISMATCH_N_MIRNA := 1
+MISMATCH_N_OTHER := 2
+BOWTIE_OVERRIDE := \#$(MISMATCH_N_OTHER)\#9\#v\#100
 
 ifeq ($(MAIN_ORGANISM),hsa)  ## FOR HUMAN
 	
@@ -172,7 +174,15 @@ endif
 ifneq ($(GENCODE_MAPPING),on)
 	GENCODE_LIBS :=
 endif
-	
+
+
+
+USEAGE := 
+ifeq ($(INPUT_FILE_ID),NULL)
+  USEAGE := "make -f smallRNA_pipeline INPUT_FILE_PATH=[required: absolute/path/to/input/.fa|.fq|.sra] N_THREADS=[required: number of threads] OUTPUT_DIR=<required: absolute/path/to/output> INPUT_FILE_ID=[required: samplename] ADAPTER_SEQ=[optional: will guess sequence if not provided here; none, if already clipped input] MAIN_ORGANISM=[optional: defaults to 'hsa'] MAIN_ORGANISM_GENOME_ID=[optional: defaults to 'hg38'] CALIBRATOR_LIBRARY=[optional: path/to/bowtie/index/containing/calibrator/sequences] TRNA_MAPPING=[optional: TRUE|FALSE, default is TRUE] GENCODE_MAPPING=[optional: TRUE|FALSE, default is TRUE] PIRNA_MAPPING=[optional: TRUE|FALSE, default is TRUE] MAP_PLANTS_VIRUSES=[optional: TRUE|FALSE, default is TRUE]"
+endif
+
+
 
 ##
 ## Try to export the Bowtie1 and ViennaRNA executable directories to the PATH
@@ -216,10 +226,7 @@ BOWTIE2_MAPPING_PARAMS_RRNA := -D 15 -R 2 -N 1 -L 19 -i S,1,0
 
 #################################################
 
-USEAGE := 
-ifeq ($(INPUT_FILE_ID),NULL)
-  USEAGE := "make -f smallRNA_pipeline INPUT_FILE_PATH=[required: absolute/path/to/input/.fa|.fq|.sra] N_THREADS=[required: number of threads] OUTPUT_DIR=<required: absolute/path/to/output> INPUT_FILE_ID=[required: samplename] ADAPTER_SEQ=[optional: will guess sequence if not provided here; none, if already clipped input] MAIN_ORGANISM=[optional: defaults to 'hsa'] MAIN_ORGANISM_GENOME_ID=[optional: defaults to 'hg19'] CALIBRATOR_LIBRARY=[optional: path/to/bowtie/index/containing/calibrator/sequences] TRNA_MAPPING=[optional: TRUE|FALSE, default is TRUE] SNORNA_MAPPING=[optional: TRUE|FALSE, default is TRUE] PIRNA_MAPPING=[optional: TRUE|FALSE, default is TRUE] MAP_RFAM=[optional: TRUE|FALSE, default is TRUE] MAP_PLANTS_VIRUSES=[optional: TRUE|FALSE, default is TRUE]"
-endif
+
 
 
 
@@ -320,10 +327,10 @@ rm tmp.sam
 
 
 ## Parameters for the endogenous-exRNA mapping
-FIXED_PARAMS_MAIN := -Xmx10G -jar $(SRNABENCH_EXE) dbPath=$(SRNABENCH_LIBS) p=$(N_THREADS) chunkmbs=2000 microRNA=$(MAIN_ORGANISM) species=$(MAIN_ORGANISM_GENOME_ID) plotMiR=true plotLibs=true predict=false $(OTHER_LIBRARIES) writeGenomeDist=true noMM=1 maxReadLength=75
+FIXED_PARAMS_MAIN := -Xmx10G -jar $(SRNABENCH_EXE) dbPath=$(SRNABENCH_LIBS) p=$(N_THREADS) chunkmbs=2000 microRNA=$(MAIN_ORGANISM) species=$(MAIN_ORGANISM_GENOME_ID) plotMiR=true plotLibs=true predict=false $(OTHER_LIBRARIES) writeGenomeDist=true noMM=$(MISMATCH_N_MIRNA) maxReadLength=75
 
 ## Parameters for the exogenous-exRNA mapping
-FIXED_PARAMS_PLANT_VIRUS := -Xmx10G -jar $(SRNABENCH_EXE) dbPath=$(SRNABENCH_LIBS) p=$(N_THREADS) chunkmbs=2000 microRNA=$(PLANT_LIST):$(VIRUS_LIST) plotMiR=true predict=false noMM=1
+FIXED_PARAMS_PLANT_VIRUS := -Xmx10G -jar $(SRNABENCH_EXE) dbPath=$(SRNABENCH_LIBS) p=$(N_THREADS) chunkmbs=2000 microRNA=$(PLANT_LIST):$(VIRUS_LIST) plotMiR=true predict=false noMM=$(MISMATCH_N_MIRNA)
 
 
 
