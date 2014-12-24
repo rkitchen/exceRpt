@@ -4,7 +4,7 @@
 ##                                                                                   ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                        ##
 ##                                                                                   ##
-## Version 1.3.3 (2014-12-18)                                                        ##
+## Version 1.3.4 (2014-12-24)                                                        ##
 ##                                                                                   ##
 #######################################################################################
 
@@ -39,27 +39,28 @@ LOCAL_EXECUTION := true
 
 
 ##
+## 4) Choose optional analysis-specific options (or specify these at the command line)
+##
+ADAPTER_SEQ             := NULL
+TRNA_MAPPING            := on
+PIRNA_MAPPING           := on
+GENCODE_MAPPING         := on
+MAP_PLANTS_VIRUSES      := on
+
+
+##
 ### If this is a local installation of the pipeline, be sure to also modify the parameters in steps 4, 5, and 6 below...
 ##
 ifeq ($(LOCAL_EXECUTION),true)
 
 	##
-	## 4) Modify installation-specific variables
+	## 5) Modify installation-specific variables
 	##
 	N_THREADS := 4
 	MAX_RAM   := 12000000000
 	## NB: The 'EXE_DIR' MUST be an ABSOLUTE PATH or sRNABench will fail!
 	EXE_DIR   := /home/fas/gerstein/rrk24/scratch/bin/smallRNAPipeline
 	
-	
-	##
-	## 5) Choose optional analysis-specific options (or specify these at the command line)
-	##
-	ADAPTER_SEQ             := NULL
-	TRNA_MAPPING            := on
-	PIRNA_MAPPING           := on
-	GENCODE_MAPPING         := on
-	MAP_PLANTS_VIRUSES      := on
 	
 	##
 	## 6) Check that the paths to the required 3rd party executables work!
