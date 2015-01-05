@@ -369,11 +369,16 @@ all: processSample
 ##
 
 
+##
 ## BEGIN PIPELINE
 ##
-## Make results directory
+
+
+
 ##
-$(OUTPUT_DIR)/$(SAMPLE_ID): 
+## Make results directory & Write adapter sequence
+##
+$(OUTPUT_DIR)/$(SAMPLE_ID)/Progress_1_FoundAdapter.dat: 
 	#$(EXPORT_CMD)
 	@echo -e "$(USEAGE)"
 	mkdir -p $(OUTPUT_DIR)/$(SAMPLE_ID)
@@ -382,13 +387,6 @@ $(OUTPUT_DIR)/$(SAMPLE_ID):
 	@echo -e "#STATS from smallRNA-seq Pipeline for sample $(SAMPLE_ID)" > $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	@echo -e "$(ts) SMRNAPIPELINE: Created results dir: $(OUTPUT_DIR)/$(SAMPLE_ID)\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
-
-
-##
-## Write adapter sequence
-##
-#$(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).adapterSeq: $(OUTPUT_DIR)/$(SAMPLE_ID)
-$(OUTPUT_DIR)/$(SAMPLE_ID)/Progress_1_FoundAdapter.dat: $(OUTPUT_DIR)/$(SAMPLE_ID)
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) SMRNAPIPELINE: Processing adapter sequence:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 
 	@echo -e "$(ts) SMRNAPIPELINE: $(COMMAND_WRITE_ADAPTER_SEQ)\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
