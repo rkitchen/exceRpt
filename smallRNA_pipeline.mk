@@ -328,7 +328,7 @@ rm tmp.sam
 
 
 ## Parameters for the endogenous-exRNA mapping
-FIXED_PARAMS_MAIN := -Xmx10G -jar $(SRNABENCH_EXE) dbPath=$(SRNABENCH_LIBS) p=$(N_THREADS) chunkmbs=2000 microRNA=$(MAIN_ORGANISM) species=$(MAIN_ORGANISM_GENOME_ID) plotMiR=true plotLibs=true predict=false $(OTHER_LIBRARIES) writeGenomeDist=true noMM=$(MISMATCH_N_MIRNA) maxReadLength=75
+FIXED_PARAMS_MAIN := -Xmx10G -jar $(SRNABENCH_EXE) dbPath=$(SRNABENCH_LIBS) p=$(N_THREADS) chunkmbs=2000 microRNA=$(MAIN_ORGANISM) species=$(MAIN_ORGANISM_GENOME_ID) plotMiR=true plotLibs=false predict=false $(OTHER_LIBRARIES) writeGenomeDist=true noMM=$(MISMATCH_N_MIRNA) maxReadLength=75
 
 ## Parameters for the exogenous-exRNA mapping
 FIXED_PARAMS_PLANT_VIRUS := -Xmx10G -jar $(SRNABENCH_EXE) dbPath=$(SRNABENCH_LIBS) p=$(N_THREADS) chunkmbs=2000 microRNA=$(PLANT_LIST):$(VIRUS_LIST) plotMiR=true predict=false noMM=$(MISMATCH_N_MIRNA)
