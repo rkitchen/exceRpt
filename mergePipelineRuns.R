@@ -4,7 +4,7 @@
 ##                                                                                   ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                        ##
 ##                                                                                   ##
-## Version 1.2.0 (2014-11-28)                                                        ##
+## Version 2.0.1 (2015-01-18)                                                        ##
 ##                                                                                   ##
 #######################################################################################
 
@@ -30,6 +30,7 @@ if(is.na(data.dir)){
   #output.dir = "/Users/robk/Box Sync/Work/miRNA/DataSets"
   #data.dir = "/Users/robk/WORK/YALE_offline/exRNA/Galas_testData"
   #data.dir = "/Users/robk/WORK/YALE_offline/exRNA/newPipelineTest"	
+  #data.dir = "/Users/robk/WORK/YALE_offline/exRNA/AlCharest/results"	
 }
 
 ## if not output.dir, default back to data.dir
@@ -124,7 +125,7 @@ stopifnot(NumberOfCompatibleSamples > 0)
 ##
 readData = function(path,file,countColumnIndex=4){
   if(file %in% dir(path)){
-    tmp = read.table(paste(path,file,sep="/"), header=T, sep="\t", comment.char="", stringsAsFactors=F, fill=T)
+    tmp = read.table(paste(path,file,sep="/"), header=T, sep="\t", comment.char="", stringsAsFactors=F, fill=T, colClasses=c("character","numeric","numeric","numeric","numeric","numeric"))
     return(ddply(tmp,"name",function(block){ coords=""; if(ncol(block)==7){ coords=paste(block[,7],collapse="_") }; return(c(sum(block[,countColumnIndex]), coords)) }))
   }else{
     return(NULL)
@@ -139,10 +140,9 @@ sample.data = vector(mode="list",length=length(samplePathList))
 allIDs.miRNA = NULL
 allIDs.tRNA = NULL
 allIDs.piRNA = NULL
-allIDs.snoRNA = NULL
-allIDs.Rfam = NULL
-allIDs.miRNA.plantVirus = NULL
-mapping.stats = matrix(0,nrow=length(samplePathList),ncol=17, dimnames=list(1:length(samplePathList), c("input","clipped","calibrator","rRNA","not_rRNA","genome","miRNA_sense","miRNA_antisense","tRNA_sense","tRNA_antisense","piRNA_sense","piRNA_antisense","snoRNA_sense","snoRNA_antisense","Rfam_sense","Rfam_antisense","miRNA_plantVirus_sense")))
+allIDs.gencode = NULL
+allIDs.exogenous_miRNA = NULL
+mapping.stats = matrix(0,nrow=length(samplePathList),ncol=16, dimnames=list(1:length(samplePathList), c("input","clipped","calibrator","UniVec_contaminants","rRNA","not_rRNA","genome","miRNA_sense","miRNA_antisense","tRNA_sense","tRNA_antisense","piRNA_sense","piRNA_antisense","Gencode_sense","Gencode_antisense","miRNA_exogenous_sense")))
 read.lengths = matrix(0,nrow=length(samplePathList),ncol=76,dimnames=list(1:length(samplePathList), 0:75))
 
 
@@ -155,18 +155,7 @@ for(i in 1:length(samplePathList)){
   thisSampleID = tmp[length(tmp)]
   
   ## Read sample mapping stats
-  tmp.stats = read.table(paste(samplePathList[i],".stats",sep=""), stringsAsFactors=F, fill=T, header=T, sep="\t",skip=2)
-  
-  ## tidy up old Genboree formatting if applicable
-  if(length(grep("END OF STATS",tmp.stats[,1])) > 0){
-    ## tidy up Genboree formatting if applicable
-    #tmp.stats = read.table(paste(samplePathList[i],".stats",sep=""), stringsAsFactors=F, fill=T, header=T, sep="\t",skip=2)
-    tmp.stats = tmp.stats[-grep("END OF STATS",tmp.stats[,1]), ]
-    tmp.stats = tmp.stats[-grep("adapter sequence",tmp.stats[,1]), ]
-  }else{
-    tmp.stats = read.table(paste(samplePathList[i],".stats",sep=""), stringsAsFactors=F, fill=T, header=T, sep="\t")
-  }
-  
+  tmp.stats = read.table(paste(samplePathList[i],".stats",sep=""), stringsAsFactors=F, fill=T, header=T, sep="\t",skip=0)
   mapping.stats[i, match(tmp.stats[,1], colnames(mapping.stats))] = as.numeric(tmp.stats[,2])
   rownames(mapping.stats)[i] = thisSampleID
   
@@ -180,7 +169,7 @@ for(i in 1:length(samplePathList)){
   }
   ## TODO:  Read the read-lengths input to sRNAbench in /stat?
   if("readLengthAnalysis.txt" %in% dir(paste(samplePathList[i],"/stat",sep=""))){
-    read.table(paste(samplePathList[i],"/stat/readLengthAnalysis.txt",sep=""), sep="\t", header=T)
+    #read.table(paste(samplePathList[i],"/stat/readLengthAnalysis.txt",sep=""), sep="\t", header=T)
   }
   
   
@@ -195,22 +184,13 @@ for(i in 1:length(samplePathList)){
   ##
   ## Read sample data
   ##
-  if("mature_sense_nonRed.grouped" %in% dir(samplePathList[i])){
-    ## For the OLD version of sRNABench:
-    countColumnIndex=3
-    miRNA = readData(samplePathList[i],"mature_sense_nonRed.grouped", countColumnIndex)
-    tRNA = readData(samplePathList[i],"Homo_sapiens_trna_sense_nonRed.grouped", countColumnIndex)
-    piRNA = readData(samplePathList[i],"pirna_sense_nonRed.grouped", countColumnIndex)
-    snoRNA = readData(samplePathList[i],"snorna_sense_nonRed.grouped", countColumnIndex)
-    Rfam = readData(samplePathList[i],"Rfam_sense_nonRed.grouped", countColumnIndex)
-  }else if("mature_sense_singleA.grouped" %in% dir(samplePathList[i])){
+  if("mature_sense_singleA.grouped" %in% dir(samplePathList[i])){
     ## For the NEW version of sRNABench:
     countColumnIndex=4
     miRNA = readData(samplePathList[i],"mature_sense.grouped", countColumnIndex)
-    tRNA = readData(samplePathList[i],"Homo_sapiens_trna_sense.grouped", countColumnIndex)
-    piRNA = readData(samplePathList[i],"pirna_sense.grouped", countColumnIndex)
-    snoRNA = readData(samplePathList[i],"snorna_sense.grouped", countColumnIndex)
-    Rfam = readData(samplePathList[i],"Rfam_sense.grouped", countColumnIndex)
+    tRNA = readData(samplePathList[i],"mm10_gencodeM4_tRNAs_sense.grouped", countColumnIndex)
+    piRNA = readData(samplePathList[i],"mm10_piRNAs_sense.grouped", countColumnIndex)
+    gencode = readData(samplePathList[i],"mm10_gencodeM4_sense.grouped", countColumnIndex)
   }else{
     ## Not valid pipeline output!
   }
@@ -219,26 +199,21 @@ for(i in 1:length(samplePathList)){
   allIDs.miRNA = unique(c(allIDs.miRNA, as.character(miRNA[,1])))
   allIDs.tRNA = unique(c(allIDs.tRNA, as.character(tRNA[,1])))
   allIDs.piRNA = unique(c(allIDs.piRNA, as.character(piRNA[,1])))
-  allIDs.snoRNA = unique(c(allIDs.snoRNA, as.character(snoRNA[,1])))
-  allIDs.Rfam = unique(c(allIDs.Rfam, as.character(Rfam[,1])))
+  allIDs.gencode = unique(c(allIDs.gencode, as.character(gencode[,1])))
   
-  sample.data[[i]] = list("miRNA"=miRNA, "tRNA"=tRNA, "piRNA"=piRNA, "snoRNA"=snoRNA, "Rfam"=Rfam, adapterSeq=adapterSeq)
+  sample.data[[i]] = list("miRNA"=miRNA, "tRNA"=tRNA, "piRNA"=piRNA, "gencode"=gencode, adapterSeq=adapterSeq)
   names(sample.data)[i] = thisSampleID
   
   
   ##
   ## Read plant/virus alignments (if applicable)
   ##
-  if("PlantAndVirus" %in% dir(samplePathList[i])){
-    tmp.dir = paste(samplePathList[i],"PlantAndVirus",sep="/")
-    if("mature_sense_nonRed.grouped" %in% dir(tmp.dir)){
-      ## For the OLD version of sRNABench:
-      sample.data[[i]]$plantVirus = readData(tmp.dir,"mature_sense_nonRed.grouped", 3)
-      allIDs.miRNA.plantVirus = unique(c(allIDs.miRNA.plantVirus, as.character(sample.data[[i]]$plantVirus[,1])))
-    }else if("mature_sense_singleA.grouped" %in% dir(tmp.dir)){
+  if("EXOGENOUS_miRNA" %in% dir(samplePathList[i])){
+    tmp.dir = paste(samplePathList[i],"EXOGENOUS_miRNA",sep="/")
+	if("mature_sense_singleA.grouped" %in% dir(tmp.dir)){
       ## For the NEW version of sRNABench:
-      sample.data[[i]]$plantVirus = readData(tmp.dir,"mature_sense.grouped", 4)
-allIDs.miRNA.plantVirus = unique(c(allIDs.miRNA.plantVirus, as.character(sample.data[[i]]$plantVirus[,1])))
+      sample.data[[i]]$exogenous_miRNA = readData(tmp.dir,"mature_sense.grouped", 4)
+	  allIDs.exogenous_miRNA = unique(c(allIDs.exogenous_miRNA, as.character(sample.data[[i]]$exogenous_miRNA[,1])))
     }
   }
 }
@@ -247,7 +222,7 @@ allIDs.miRNA.plantVirus = unique(c(allIDs.miRNA.plantVirus, as.character(sample.
 ##
 ## Save result
 ##
-allIDs = list("miRNA"=allIDs.miRNA, "tRNA"=allIDs.tRNA, "piRNA"=allIDs.piRNA, "snoRNA"=allIDs.snoRNA, "Rfam"=allIDs.Rfam, "PlantAndVirus"=allIDs.miRNA.plantVirus)
+allIDs = list("miRNA"=allIDs.miRNA, "tRNA"=allIDs.tRNA, "piRNA"=allIDs.piRNA, "gencode"=allIDs.gencode, "exogenous_miRNA"=allIDs.exogenous_miRNA)
 #save(sample.data, mapping.stats, allIDs, file=paste(output.dir,"RawFileData.RData",sep="/"))
 
 
@@ -257,16 +232,14 @@ allIDs = list("miRNA"=allIDs.miRNA, "tRNA"=allIDs.tRNA, "piRNA"=allIDs.piRNA, "s
 exprs.miRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$miRNA), dimnames=list(allIDs$miRNA, names(sample.data)))
 exprs.tRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$tRNA), dimnames=list(allIDs$tRNA, names(sample.data)))
 exprs.piRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$piRNA), dimnames=list(allIDs$piRNA, names(sample.data)))
-exprs.snoRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$snoRNA), dimnames=list(allIDs$snoRNA, names(sample.data)))
-exprs.Rfam = matrix(0,ncol=length(sample.data),nrow=length(allIDs$Rfam), dimnames=list(allIDs$Rfam, names(sample.data)))
-exprs.plantVirus = matrix(0,ncol=length(sample.data),nrow=length(allIDs$PlantAndVirus), dimnames=list(allIDs$PlantAndVirus, names(sample.data)))
+exprs.gencode = matrix(0,ncol=length(sample.data),nrow=length(allIDs$gencode), dimnames=list(allIDs$gencode, names(sample.data)))
+exprs.exogenous_miRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$exogenous_miRNA), dimnames=list(allIDs$exogenous_miRNA, names(sample.data)))
 for(i in 1:length(sample.data)){
   exprs.miRNA[match(sample.data[[i]]$miRNA[,1], rownames(exprs.miRNA)),i] = as.numeric(sample.data[[i]]$miRNA[,2])
   exprs.tRNA[match(sample.data[[i]]$tRNA[,1], rownames(exprs.tRNA)),i] = as.numeric(sample.data[[i]]$tRNA[,2])
   exprs.piRNA[match(sample.data[[i]]$piRNA[,1], rownames(exprs.piRNA)),i] = as.numeric(sample.data[[i]]$piRNA[,2])
-  exprs.snoRNA[match(sample.data[[i]]$snoRNA[,1], rownames(exprs.snoRNA)),i] = as.numeric(sample.data[[i]]$snoRNA[,2])
-  exprs.Rfam[match(sample.data[[i]]$Rfam[,1], rownames(exprs.Rfam)),i] = as.numeric(sample.data[[i]]$Rfam[,2])
-  exprs.plantVirus[match(sample.data[[i]]$plantVirus[,1], rownames(exprs.plantVirus)),i] = as.numeric(sample.data[[i]]$plantVirus[,2])
+  exprs.gencode[match(sample.data[[i]]$gencode[,1], rownames(exprs.gencode)),i] = as.numeric(sample.data[[i]]$gencode[,2])
+  exprs.exogenous_miRNA[match(sample.data[[i]]$exogenous_miRNA[,1], rownames(exprs.exogenous_miRNA)),i] = as.numeric(sample.data[[i]]$exogenous_miRNA[,2])
 }
 
 
@@ -287,9 +260,8 @@ for(i in 1:length(sample.data)){
 dim(exprs.miRNA)
 dim(exprs.tRNA)
 dim(exprs.piRNA)
-dim(exprs.snoRNA)
-dim(exprs.Rfam)
-dim(exprs.plantVirus)
+dim(exprs.gencode)
+dim(exprs.exogenous_miRNA)
 
 
 ##
@@ -298,8 +270,8 @@ dim(exprs.plantVirus)
 mapping.stats[is.na(mapping.stats)] = 0
 mapping.stats = as.data.frame(mapping.stats)
 libSizes = list()
-#libSizes$all = rowSums(mapping.stats[,colnames(mapping.stats) %in% c("rRNA","genome")])+colSums(exprs.plantVirus)
-libSizes$all = rowSums(mapping.stats[,colnames(mapping.stats) %in% c("rRNA","genome","miRNA_plantVirus_sense")])
+libSizes$clipped = rowSums(mapping.stats[,colnames(mapping.stats) %in% c("clipped")])
+libSizes$all = rowSums(mapping.stats[,colnames(mapping.stats) %in% c("rRNA","genome","miRNA_exogenous_sense")])
 libSizes$endogenous = rowSums(mapping.stats[,colnames(mapping.stats) %in% c("rRNA","genome")])
 libSizes$genome = mapping.stats[,colnames(mapping.stats) %in% "genome"]
 libSizes$smRNA = mapping.stats[,grep("sense",colnames(mapping.stats))]
@@ -309,7 +281,7 @@ libSizes$miRNA = colSums(exprs.miRNA)
 ##
 ## Save the raw count data
 ##
-save(exprs.miRNA, exprs.tRNA, exprs.piRNA, exprs.snoRNA, exprs.Rfam, exprs.plantVirus, mapping.stats, libSizes, read.lengths, file=paste(output.dir, "smallRNAQuants_ReadCounts.RData", sep="/"))
+save(exprs.miRNA, exprs.tRNA, exprs.piRNA, exprs.gencode, exprs.exogenous_miRNA, mapping.stats, libSizes, read.lengths, file=paste(output.dir, "smallRNAQuants_ReadCounts.RData", sep="/"))
 write.table(exprs.miRNA, file=paste(output.dir, "miRNA_Quantifications_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
 write.table(read.lengths, file=paste(output.dir, "ReadLengths.txt", sep="/"), sep="\t", col.names=NA, quote=F)
 
@@ -334,6 +306,9 @@ if("calibrator" %in% colnames(mapping.stats)){
   if( ! is.na(as.numeric(mapping.stats[,colnames(mapping.stats) %in% "calibrator"])[1])){
     fractions$calibrator = 100*as.numeric(mapping.stats[,grep("calibrator",colnames(mapping.stats))]) / inputReads
   }
+}
+if("UniVec_contaminants" %in% colnames(mapping.stats)){
+  fractions$UniVec_contaminants = 100*as.numeric(mapping.stats[,colnames(mapping.stats) %in% "UniVec_contaminants"]) / inputReads
 }
 if("rRNA" %in% colnames(mapping.stats)){
   fractions$rRNA = 100*as.numeric(mapping.stats[,colnames(mapping.stats) %in% "rRNA"]) / inputReads
@@ -376,6 +351,17 @@ if("calibrator" %in% names(fractions)){
   i.warn = which(fractions$calibrator >= 10  &  fractions$calibrator < 50)
   i.bad = which(fractions$calibrator >= 50)
   tmp.row=rownames(quals) %in% "calibrator"
+  quals[tmp.row,i.good] = 100; quals[tmp.row,i.warn] = 50; quals[tmp.row,i.bad] = 0; 
+}
+
+## For the UniVec contamination
+if("UniVec_contaminants" %in% names(fractions)){
+  #pass=10; fail=50;
+  pass=25; fail=75;
+  i.good = which(fractions$UniVec_contaminants < pass)
+  i.warn = which(fractions$UniVec_contaminants >= pass  &  fractions$UniVec_contaminants < fail)
+  i.bad = which(fractions$UniVec_contaminants >= fail)
+  tmp.row=rownames(quals) %in% "UniVec_contaminants"
   quals[tmp.row,i.good] = 100; quals[tmp.row,i.warn] = 50; quals[tmp.row,i.bad] = 0; 
 }
 
@@ -441,7 +427,7 @@ pdf(paste(output.dir,"DiagnosticPlots.pdf",sep="/"), height=10, width=20)
 ##
 tmp = melt(read.lengths); colnames(tmp) = c("sample","length","count")
 tmp = tmp[1:max(which(tmp$count > 0)), ]
-ggplot(tmp, aes(x=length, y=count, colour=sample)) +geom_line() +xlab("read length (nt)") +ylab("# reads")  +ggtitle("read-length distributions")
+ggplot(tmp, aes(x=length, y=count, colour=sample)) +geom_line(alpha=0.75) +xlab("read length (nt)") +ylab("# reads")  +ggtitle("read-length distributions")
 #ggplot(tmp, aes(x=as.factor(length), y=count)) +geom_violin()
 #ggplot(tmp, aes(x=as.factor(length), y=count)) +geom_boxplot()
 
@@ -456,7 +442,8 @@ hist(tmp, breaks=seq(0,ceiling(max(tmp)), by=0.1), col="grey", border="white", x
 ##
 ## Plot the rRNA contamination
 ##
-par(mfrow=c(1,1))
+par(mfrow=c(1,2))
+hist((mapping.stats$UniVec_contaminants / libSizes$all), breaks=seq(0,1,by=0.05), col="grey", border="white", xlim=c(0,1), main="UniVec contaminant signal",xlab="fraction contaminant reads",ylab="# samples")
 hist((mapping.stats$rRNA / libSizes$all), breaks=seq(0,1,by=0.05), col="grey", border="white", xlim=c(0,1), main="rRNA signal",xlab="fraction rRNA reads",ylab="# samples")
 
 
@@ -468,9 +455,8 @@ libSize.use = libSizes$miRNA
 exprs.miRNA.rpm = t(10^6 * t(exprs.miRNA) / libSize.use)
 exprs.tRNA.rpm = t(10^6 * t(exprs.tRNA) / libSize.use)
 exprs.piRNA.rpm = t(10^6 * t(exprs.piRNA) / libSize.use)
-exprs.snoRNA.rpm = t(10^6 * t(exprs.snoRNA) / libSize.use)
-exprs.Rfam.rpm = t(10^6 * t(exprs.Rfam) / libSize.use)
-exprs.plantVirus.rpm = t(10^6 * t(exprs.plantVirus) / libSize.use)
+exprs.gencode.rpm = t(10^6 * t(exprs.gencode) / libSize.use)
+exprs.exogenous_miRNA.rpm = t(10^6 * t(exprs.exogenous_miRNA) / libSize.use)
 
 par(mfrow=c(1,2), oma=c(15,0,0,0))
 boxplot(log10(exprs.miRNA+1E-1), las=2, ylab="log10(miRNA counts)", main="miRNA read count")
@@ -490,6 +476,6 @@ dev.off()
 ##
 ## Save the RPM normalised data
 ##
-save(exprs.miRNA.rpm, exprs.tRNA.rpm, exprs.piRNA.rpm, exprs.snoRNA.rpm, exprs.Rfam.rpm, exprs.plantVirus.rpm, file=paste(output.dir, "smallRNAQuants_ReadsPerMillion.RData", sep="/"))
+save(exprs.miRNA.rpm, exprs.tRNA.rpm, exprs.piRNA.rpm, exprs.gencode.rpm, exprs.exogenous_miRNA.rpm, file=paste(output.dir, "smallRNAQuants_ReadsPerMillion.RData", sep="/"))
 write.table(exprs.miRNA.rpm, file=paste(output.dir, "miRNA_Quantifications_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
 
