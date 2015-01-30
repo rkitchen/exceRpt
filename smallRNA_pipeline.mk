@@ -78,8 +78,8 @@ ifeq ($(LOCAL_EXECUTION),true)
 	## 5) Modify installation-specific variables
 	##
 	N_THREADS := 4
-	JAVA_RAM  := 12G
-	MAX_RAM   := 12000000000
+	JAVA_RAM  := 64G
+	MAX_RAM   := 64000000000
 	## NB: The 'EXE_DIR' MUST be an ABSOLUTE PATH or sRNABench will fail!
 	EXE_DIR   := /gpfs/scratch/fas/gerstein/rrk24/bin/smallRNAPipeline
 	
@@ -115,8 +115,8 @@ else
 	##
 	EXE_DIR := $(SCRATCH_DIR)
 	N_THREADS := $(N_THREADS)
-	JAVA_RAM := 12G
-	MAX_RAM := 12000000000
+	JAVA_RAM := 64G
+	MAX_RAM  := 64000000000
 
 	#FASTX_ARTFCT_EXE := fastx_artifacts_filter
 	FASTX_CLIP_EXE := fastx_clipper
