@@ -4,7 +4,7 @@
 ##                                                                                   ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                        ##
 ##                                                                                   ##
-## Version 2.0.1 (2015-01-18)                                                        ##
+## Version 2.0.2 (2015-01-30)                                                        ##
 ##                                                                                   ##
 #######################################################################################
 
@@ -30,7 +30,8 @@ if(is.na(data.dir)){
   #output.dir = "/Users/robk/Box Sync/Work/miRNA/DataSets"
   #data.dir = "/Users/robk/WORK/YALE_offline/exRNA/Galas_testData"
   #data.dir = "/Users/robk/WORK/YALE_offline/exRNA/newPipelineTest"	
-  #data.dir = "/Users/robk/WORK/YALE_offline/exRNA/AlCharest/results"	
+  #data.dir = "/Users/robk/WORK/YALE_offline/exRNA/AlCharest"	
+  #data.dir = "/Users/robk/WORK/YALE_offline/exRNA/LouiseLaurent"
 }
 
 ## if not output.dir, default back to data.dir
@@ -74,6 +75,7 @@ SearchForSampleData = function(base.dir, directory=""){
   if(length(subdirs) > 0){
     i.stats = grep(".stats$", subdirs, perl=T)
     i.zip = grep(".zip$", subdirs, perl=T)
+    i.tar = grep(".tgz$|.tar.gz$", subdirs, perl=T)
     
     ## handle decompressed pipeline output
     if(length(i.stats) > 0){
@@ -88,6 +90,18 @@ SearchForSampleData = function(base.dir, directory=""){
         if(length(grep(".stats$", tmp.contents, perl=T)) > 0){
           try(unzip(paste(dir.use,subdirs[x],sep="/"), exdir=gsub(".zip","",paste(dir.use,subdirs[x],sep="/")), overwrite=FALSE), silent=T)
           to.return = c(to.return, paste(dir.use,gsub(".zip$","",subdirs[x]),sep="/",gsub(".stats$","",tmp.contents[grep(".stats$", tmp.contents)])))
+        }
+      }
+    }
+    
+    ## handle [tar] gzipped pipeline output
+    if(length(i.tar) > 0){
+      for(x in i.tar){
+        tmp.dir = paste(dir.use,subdirs[x],sep="/")
+        tmp.contents = untar(tmp.dir, list=T)
+        if(length(grep(".stats$", tmp.contents, perl=T)) > 0){
+          try(untar(tmp.dir, exdir=gsub(".tgz$|.tar.gz$","",tmp.dir)), silent=T)
+          to.return = c(to.return, paste(dir.use,gsub(".tgz$|.tar.gz$","",subdirs[x]),sep="/",gsub(".stats$","",tmp.contents[grep(".stats$", tmp.contents)])))
         }
       }
     }
