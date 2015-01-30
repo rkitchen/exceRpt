@@ -381,6 +381,21 @@ ifeq ($(REMOVE_LARGE_INTERMEDIATE_FILES),true)
 endif
 
 
+##
+## Compress only the most vital output!
+##
+COMPRESS_COMMAND := ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID) | awk '{print $$9}' | grep "sense.grouped\|.readLengths.txt\|_fastqc.zip\|stat\|.counts" | awk '{print "$(SAMPLE_ID)/"$$1}' > $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt; \
+ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome | awk '{print $$9}' | grep "sense.grouped\|stat" | awk '{print "$(SAMPLE_ID)/noGenome/"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt; \
+echo $(SAMPLE_ID).log >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt; \
+echo $(SAMPLE_ID).stats >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt
+ifneq ($(wildcard $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/.),)
+	COMPRESS_COMMAND := $(COMPRESS_COMMAND); ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA | awk '{print $$9}' | grep "sense.grouped" | awk '{print "$(SAMPLE_ID)/EXOGENOUS_miRNA/"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt
+endif
+ifneq ($(wildcard $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/.),)
+	COMPRESS_COMMAND := $(COMPRESS_COMMAND); ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes | awk '{print $$9}' | grep "ExogenousGenomicAlignments.sorted.txt" | awk '{print "$(SAMPLE_ID)/EXOGENOUS_genomes/"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt
+endif
+
+
 
 
 ###########################################################
@@ -392,9 +407,18 @@ endif
 ##
 .PHONY: all
 .DEFAULT: all
-
 all: processSample
 
+
+##
+## Target to selectively compress only the most useful results for downstream processing
+##
+## - this will typically reduce the volume of data needing to be transferred by 100x
+##
+compressCoreReults:
+	$(COMPRESS_COMMAND)
+	tar -cvz -C $(OUTPUT_DIR) -T $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt -f $(OUTPUT_DIR)/$(SAMPLE_ID)_results.tgz
+	rm $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt
 
 
 ##
