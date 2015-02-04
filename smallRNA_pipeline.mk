@@ -12,7 +12,7 @@
 ##                                                                                   ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                        ##
 ##                                                                                   ##
-## Version 2.0.8 (2015-02-04)                                                        ##
+## Version 2.1.0 (2015-02-04)                                                        ##
 ##                                                                                   ##
 #######################################################################################
 
@@ -156,6 +156,8 @@ ifeq ($(MAIN_ORGANISM),hsa)  ## FOR HUMAN
 	## Override the genome for adapter identification (saves having bt2 indexes for both hg19 and hg38)
 	GENOME_ID_FOR_ADAPTER := hg19
 	INDEX_TRNA			  := hg19_tRNAs
+	INDEX_CIRCULARRNA	  := hg19_CircularRNAs
+	
 
 	ifeq ($(MAIN_ORGANISM_GENOME_ID),hg19) ## hg19
 
@@ -181,6 +183,7 @@ else ifeq ($(MAIN_ORGANISM),mmu)  ## FOR MOUSE
 	INDEX_TRNA			:= mm10_tRNAs
 	INDEX_PIRNA	 		:= mm10_piRNAs
 	INDEX_REP           := mm10_RepetitiveElements
+	INDEX_CIRCULARRNA	:= mm10_CircularRNAs
 	BOWTIE_INDEX_RRNA	:= $(SRNABENCH_LIBS)/customIndices/mm10_rRNA
 	
 endif
@@ -189,6 +192,7 @@ GENCODE_LIBS := libs=$(INDEX_GENCODE)$(BOWTIE_OVERRIDE)
 TRNA_LIBS    := libs=$(INDEX_TRNA)$(BOWTIE_OVERRIDE)
 PIRNA_LIBS   := libs=$(INDEX_PIRNA)$(BOWTIE_OVERRIDE)
 REP_LIBS     := libs=$(INDEX_REP)$(BOWTIE_OVERRIDE)
+CIRC_LIBS    := libs=$(INDEX_CIRCULARRNA)$(BOWTIE_OVERRIDE)
 
 
 ##
@@ -206,6 +210,9 @@ ifneq ($(GENCODE_MAPPING),on)
 endif
 ifneq ($(REPETITIVE_ELEMENT_MAPPING),on)
 	REP_LIBS     :=
+endif
+ifneq ($(CIRCULAR_RNA_MAPPING),on)
+	CIRC_LIBS    :=
 endif
 
 
@@ -236,7 +243,7 @@ BOWTIE_INDEX_UNIVEC := $(SRNABENCH_LIBS)/customIndices/UniVec_Core.contaminants
 
 
 ## SmallRNA sequence libraries to map against AFTER mapping to the known miRNAs for the target organism (see below)
-OTHER_LIBRARIES := $(TRNA_LIBS) $(PIRNA_LIBS) $(GENCODE_LIBS) $(REP_LIBS)
+OTHER_LIBRARIES := $(TRNA_LIBS) $(PIRNA_LIBS) $(GENCODE_LIBS) $(REP_LIBS) $(CIRC_LIBS)
 
 
 ## Map reads to plant and virus miRNAs
@@ -608,6 +615,10 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/reads.fa: $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPL
 	## Assigned non-redundantly to annotated repetitive elements
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/*/$(INDEX_REP)_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {printf "repetitiveElement_sense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/*/$(INDEX_REP)_antisense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {printf "repetitiveElement_antisense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	## Assigned non-redundantly to annotated circularRNAs
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/*/$(INDEX_CIRCULARRNA)_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {printf "circularRNA_sense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/*/$(INDEX_CIRCULARRNA)_antisense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {printf "circularRNA_antisense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+
 
 
 ##
