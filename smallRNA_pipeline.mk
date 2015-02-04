@@ -12,7 +12,7 @@
 ##                                                                                   ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                        ##
 ##                                                                                   ##
-## Version 2.0.6 (2015-01-27)                                                        ##
+## Version 2.0.8 (2015-02-04)                                                        ##
 ##                                                                                   ##
 #######################################################################################
 
@@ -243,7 +243,7 @@ OTHER_LIBRARIES := $(TRNA_LIBS) $(PIRNA_LIBS) $(GENCODE_LIBS) $(REP_LIBS)
 ifeq ($(MAP_EXOGENOUS),miRNA)		## ALIGNMENT TO ONLY EXOGENOUS MIRNA
 	PROCESS_SAMPLE_REQFILE := EXOGENOUS_miRNA/reads.fa
 else ifeq ($(MAP_EXOGENOUS),on)	## COMPLETE EXOGENOUS GENOME ALIGNMENT
-	PROCESS_SAMPLE_REQFILE := EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.txt
+	PROCESS_SAMPLE_REQFILE := EXOGENOUS_genomes/ExogenousGenomicAlignments.result.txt
 else
 	PROCESS_SAMPLE_REQFILE := reads.fa
 endif
@@ -289,7 +289,8 @@ endif
 ## Guess quality encoding
 ##
 #$(COMMAND_CONVERT_SRA) | head -n 4000 | awk '{if(NR%4==0) printf("%s",$$0);}' | od -A n -t u1 | awk 'BEGIN{min=100;max=0;}{for(i=1;i<=NF;i++) {if($$i>max) max=$$i; if($$i<min) min=$$i;}}END{if(max<=74 && min<59) print "Phred_33"; else if(max>73 && min>=64) print "Phred_64"; else if(min>=59 && min<64 && max>73) print "Solexa_64"; else print "Unknown";}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).qualityEncoding
-COMMAND_FILTER_BY_QUALITY ?= gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz | $(FASTX_FILTER_EXE) -vz -Q$(shell cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).qualityEncoding) -p $(QFILTER_MIN_READ_FRAC) -q $(QFILTER_MIN_QUAL) > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.fastq.gz 2>>$(OUTPUT_DIR)/$(SAMPLE_ID).log
+#COMMAND_FILTER_BY_QUALITY ?= gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz | $(FASTX_FILTER_EXE) -vz -Q$(shell cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).qualityEncoding) -p $(QFILTER_MIN_READ_FRAC) -q $(QFILTER_MIN_QUAL) > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.fastq.gz 2>>$(OUTPUT_DIR)/$(SAMPLE_ID).log
+COMMAND_FILTER_BY_QUALITY ?= gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz | $(FASTX_FILTER_EXE) -v -Q$(shell cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).qualityEncoding) -p $(QFILTER_MIN_READ_FRAC) -q $(QFILTER_MIN_QUAL) > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.tmp 2>>$(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 
 ##
@@ -384,7 +385,7 @@ endif
 ##
 ## Compress only the most vital output!
 ##
-COMPRESS_COMMAND := ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID) | awk '{print $$9}' | grep "sense.grouped\|.readLengths.txt\|_fastqc.zip\|stat\|.counts" | awk '{print "$(SAMPLE_ID)/"$$1}' > $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt; \
+COMPRESS_COMMAND := ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID) | awk '{print $$9}' | grep "sense.grouped\|.readLengths.txt\|_fastqc.zip\|stat\|.counts\|.adapterSeq\|.qualityEncoding" | awk '{print "$(SAMPLE_ID)/"$$1}' > $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt; \
 ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome | awk '{print $$9}' | grep "sense.grouped\|stat" | awk '{print "$(SAMPLE_ID)/noGenome/"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt; \
 echo $(SAMPLE_ID).log >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt; \
 echo $(SAMPLE_ID).stats >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt
@@ -392,7 +393,7 @@ ifneq ($(wildcard $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/.),)
 	COMPRESS_COMMAND := $(COMPRESS_COMMAND); ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA | awk '{print $$9}' | grep "sense.grouped" | awk '{print "$(SAMPLE_ID)/EXOGENOUS_miRNA/"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt
 endif
 ifneq ($(wildcard $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/.),)
-	COMPRESS_COMMAND := $(COMPRESS_COMMAND); ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes | awk '{print $$9}' | grep "ExogenousGenomicAlignments.sorted.txt" | awk '{print "$(SAMPLE_ID)/EXOGENOUS_genomes/"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt
+	COMPRESS_COMMAND := $(COMPRESS_COMMAND); ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes | awk '{print $$9}' | grep "ExogenousGenomicAlignments.sorted.txt\|ExogenousGenomicAlignments.result.txt" | awk '{print "$(SAMPLE_ID)/EXOGENOUS_genomes/"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt
 endif
 
 
@@ -415,7 +416,7 @@ all: processSample
 ##
 ## - this will typically reduce the volume of data needing to be transferred by 100x
 ##
-compressCoreReults:
+compressCoreResults:
 	$(COMPRESS_COMMAND)
 	tar -cvz -C $(OUTPUT_DIR) -T $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt -f $(OUTPUT_DIR)/$(SAMPLE_ID)_results.tgz
 	rm $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt
@@ -477,7 +478,7 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz: $(OUTPUT_DIR)/$(SAMPLE
 
 
 ##
-## Quess Fastq quality encoding
+## Guess Fastq quality encoding
 ##
 $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).qualityEncoding: $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
@@ -488,7 +489,7 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).qualityEncoding: $(OUTPUT_DIR)/$(SAMPLE_
 
 
 ##
-## FILTER clipped reads that have poor overall base quality
+## FILTER clipped reads that have poor overall base quality  &  Remove homopolymer repeats
 ##
 $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.fastq.gz: $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).qualityEncoding
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
@@ -498,6 +499,17 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.fastq.gz: $(OUTPUT_DIR)
 	@echo -e "$(ts) SMRNAPIPELINE: Finished filtering reads by base quality\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Count reads that failed the quality filter
 	grep "low-quality reads" $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{print "failed_quality_filter\t"$$2}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	#
+	# Filter homopolymer reads (those that have too many single nt repeats)
+	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) SMRNAPIPELINE: Filtering homopolymer repeat reads:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) SMRNAPIPELINE: $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) RemoveHomopolymerRepeats -m 0.66 -i $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.tmp -o $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.fastq\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
+	$(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) RemoveHomopolymerRepeats --verbose -m 0.66 -i $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.tmp -o $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.fastq >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.REMOVEDRepeatReads.fastq
+	gzip $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.fastq
+	@echo -e "$(ts) SMRNAPIPELINE: Finished filtering homopolymer repeat reads\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	## Count homopolymer repeat reads that failed the quality filter
+	grep "Done.  Sequences removed" $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk -F "=" '{print "failed_homopolymer_filter\t"$$2}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+
 
 ##
 ## Assess Read-lengths after clipping
@@ -582,20 +594,20 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/reads.fa: $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPL
 	## Count reads mapped to the genome
 	grep "out of" $(OUTPUT_DIR)/$(SAMPLE_ID)/summary.txt | awk '{print "genome\t"$$2}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	## Assigned non-redundantly to annotated miRNAs
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/mature_sense.grouped | awk '{sum+=$$4} END {printf "miRNA_sense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/mature_antisense.grouped | awk '{sum+=$$4} END {printf "miRNA_antisense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/*/mature_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {printf "miRNA_sense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/*/mature_antisense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {printf "miRNA_antisense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	## Assigned non-redundantly to annotated tRNAs
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_TRNA)_sense.grouped | awk '{sum+=$$4} END {printf "tRNA_sense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_TRNA)_antisense.grouped | awk '{sum+=$$4} END {printf "tRNA_antisense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/*/$(INDEX_TRNA)_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {printf "tRNA_sense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/*/$(INDEX_TRNA)_antisense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {printf "tRNA_antisense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	## Assigned non-redundantly to annotated piRNAs
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_PIRNA)_sense.grouped | awk '{sum+=$$4} END {printf "piRNA_sense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_PIRNA)_antisense.grouped | awk '{sum+=$$4} END {printf "piRNA_antisense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/*/$(INDEX_PIRNA)_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {printf "piRNA_sense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/*/$(INDEX_PIRNA)_antisense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {printf "piRNA_antisense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	## Assigned non-redundantly to annotated transcripts in Gencode
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_GENCODE)_sense.grouped | awk '{sum+=$$4} END {printf "Gencode_sense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_GENCODE)_antisense.grouped | awk '{sum+=$$4} END {printf "Gencode_antisense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/*/$(INDEX_GENCODE)_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {printf "Gencode_sense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/*/$(INDEX_GENCODE)_antisense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {printf "Gencode_antisense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	## Assigned non-redundantly to annotated repetitive elements
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_REP)_sense.grouped | awk '{sum+=$$4} END {printf "repetitiveElement_sense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_REP)_antisense.grouped | awk '{sum+=$$4} END {printf "repetitiveElement_antisense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/*/$(INDEX_REP)_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {printf "repetitiveElement_sense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/*/$(INDEX_REP)_antisense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {printf "repetitiveElement_antisense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 
 
 ##
@@ -682,6 +694,32 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.t
 	#
 	## Count reads mapped to exogenous genomes:
 	cat $@ | awk '{print $$1}' | uniq | awk -F "#" '{SUM += $$2} END {print "exogenous_genomes\t"SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+
+
+
+##
+## Create exogenous alignment result matrix:
+##
+$(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.result.txt: $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.txt
+	# remove duplicate reads that correspond to multimaps within a single species
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.txt | awk '{print $$1"\t"$$2"\t"$$3}' | uniq > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.unique.txt
+	# get the IDs of reads aligning uniquely to one kingdom
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.unique.txt | awk '{print $$1"\t"$$2}' | uniq | awk '{print $$1}' | uniq -c | awk '{if($$1==1) print $$2}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/tmp.kingdomUniqueReads
+	# get the IDs of reads aligning uniquely to one species
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.unique.txt | awk '{print $$1}' | uniq -c | awk '{if($$1==1) print $$2}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/tmp.speciesUniqueReads
+	#
+	## count all reads aligning to each species, regardless of multimapping
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.unique.txt | sed 's/#/\t/' | awk '{arr[$$3"\t"$$4]+=$$2} END {for (x in arr) print x"\t"arr[x]}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/tmp.counts
+	## count only reads aligning to each species that only multi map to the same kingdom
+	awk 'NR==FNR {h[$$1]="YES_YES_YES"; next} {print $$1,$$2,$$3,h[$$1]}' $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/tmp.kingdomUniqueReads $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.unique.txt | grep "YES_YES_YES" | awk '{print $$1"\t"$$2"\t"$$3}' | sed 's/#/\t/' | awk '{arr[$$3"\t"$$4]+=$$2} END {for (x in arr) print x"\t"arr[x]}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/tmp.kingdom.counts
+	awk 'NR==FNR {h[$$1]="YES_YES_YES"; next} {print $$1,$$2,$$3,h[$$1]}' $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/tmp.speciesUniqueReads $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.unique.txt | grep "YES_YES_YES" | awk '{print $$1"\t"$$2"\t"$$3}' | sed 's/#/\t/' | awk '{arr[$$3"\t"$$4]+=$$2} END {for (x in arr) print x"\t"arr[x]}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/tmp.species.counts
+	## combine all counts and kingdom level counts:
+	awk 'NR==FNR {h[$$2]=$$3; next} {if($$2 in h) print $$0"\t"h[$$2]; else print $$0"\t0"}' $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/tmp.kingdom.counts $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/tmp.counts > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/tmp
+	awk 'NR==FNR {h[$$2]=$$3; next} {if($$2 in h) print $$0"\t"h[$$2]; else print $$0"\t0"}' $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/tmp.species.counts $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/tmp | sort -nrk 5 > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.result.txt
+	# tidy up
+	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/tmp*
+
+
 
 
 ##
