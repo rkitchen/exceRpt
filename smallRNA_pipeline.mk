@@ -12,7 +12,7 @@
 ##                                                                                   ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                        ##
 ##                                                                                   ##
-## Version 2.1.0 (2015-02-04)                                                        ##
+## Version 2.1.1 (2015-02-04)                                                        ##
 ##                                                                                   ##
 #######################################################################################
 
@@ -53,6 +53,7 @@ TRNA_MAPPING                    := on
 PIRNA_MAPPING                   := on
 GENCODE_MAPPING                 := on
 REPETITIVE_ELEMENT_MAPPING      := on
+CIRCULAR_RNA_MAPPING            := on
 REMOVE_LARGE_INTERMEDIATE_FILES := false
 
 QFILTER_MIN_READ_FRAC           := 80
@@ -594,65 +595,65 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/reads.fa: $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPL
 	@echo -e "$(ts) SMRNAPIPELINE: $(JAVA_EXE) $(FIXED_PARAMS_MAIN) input=$< output=$(OUTPUT_DIR)/$(SAMPLE_ID) >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 
 	$(JAVA_EXE) $(FIXED_PARAMS_MAIN) input=$< output=$(OUTPUT_DIR)/$(SAMPLE_ID) >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
 	@echo -e "$(ts) SMRNAPIPELINE: Finished mapping to the small-RNAs of the primary organism\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: grep "chrUn_gl000220" $(OUTPUT_DIR)/$(SAMPLE_ID)/genome.txt | awk '{print $$1}' | sed 's/#/ /g' | awk '{ sum += $$2 } END { print "Number of reads mapped to chrUn_gl000220 = "sum }' >> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	grep "chrUn_gl000220" $(OUTPUT_DIR)/$(SAMPLE_ID)/genome.txt | awk '{print $$1}' | sed 's/#/ /g' | awk '{ sum += $$2 } END { print "Number of reads mapped to chrUn_gl000220 = "sum }' >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	#@echo -e "$(ts) SMRNAPIPELINE: grep "chrUn_gl000220" $(OUTPUT_DIR)/$(SAMPLE_ID)/genome.txt | awk '{print $$1}' | sed 's/#/ /g' | awk '{ sum += $$2 } END { print "Number of reads mapped to chrUn_gl000220 = "sum }' >> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	#grep "chrUn_gl000220" $(OUTPUT_DIR)/$(SAMPLE_ID)/genome.txt | awk '{print $$1}' | sed 's/#/ /g' | awk '{ sum += $$2 } END { print "Number of reads mapped to chrUn_gl000220 = "sum }' >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Count reads not mapped to rRNA
 	grep "No. raw input reads:" $(OUTPUT_DIR)/$(SAMPLE_ID).log | head -n 1 | awk -F ':' '{print "reads_used_for_alignment\t"$$2}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	## Count reads mapped to the genome
 	grep "out of" $(OUTPUT_DIR)/$(SAMPLE_ID)/summary.txt | awk '{print "genome\t"$$2}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	#
 	## Assigned non-redundantly to annotated miRNAs (sense)
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/mature_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$4} END {print sum}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/mature_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$4} END {print sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/mature_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/mature_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount | awk '{sum+=$$1} END {printf "miRNA_sense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	## Assigned non-redundantly to annotated miRNAs (antisense)
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/mature_antisense.grouped | grep -v "RPM (total)" | awk '{sum+=$4} END {print sum}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/mature_antisense.grouped | grep -v "RPM (total)" | awk '{sum+=$4} END {print sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/mature_antisense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/mature_antisense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount | awk '{sum+=$$1} END {printf "miRNA_antisense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	#
 	## Assigned non-redundantly to annotated tRNAs (sense)
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_TRNA)_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$4} END {print sum}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/$(INDEX_TRNA)_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$4} END {print sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_TRNA)_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/$(INDEX_TRNA)_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount | awk '{sum+=$$1} END {printf "tRNA_sense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	## Assigned non-redundantly to annotated tRNAs (antisense)
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_TRNA)_antisense.grouped | grep -v "RPM (total)" | awk '{sum+=$4} END {print sum}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/$(INDEX_TRNA)_antisense.grouped | grep -v "RPM (total)" | awk '{sum+=$4} END {print sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_TRNA)_antisense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/$(INDEX_TRNA)_antisense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount | awk '{sum+=$$1} END {printf "tRNA_antisense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	#
 	## Assigned non-redundantly to annotated piRNAs (sense)
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_PIRNA)_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$4} END {print sum}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/$(INDEX_PIRNA)_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$4} END {print sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_PIRNA)_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/$(INDEX_PIRNA)_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount | awk '{sum+=$$1} END {printf "piRNA_sense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	## Assigned non-redundantly to annotated piRNAs (antisense)
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_PIRNA)_antisense.grouped | grep -v "RPM (total)" | awk '{sum+=$4} END {print sum}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/$(INDEX_PIRNA)_antisense.grouped | grep -v "RPM (total)" | awk '{sum+=$4} END {print sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_PIRNA)_antisense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/$(INDEX_PIRNA)_antisense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount | awk '{sum+=$$1} END {printf "piRNA_antisense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	#
 	## Assigned non-redundantly to annotated transcripts in Gencode (sense)
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_GENCODE)_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$4} END {print sum}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/$(INDEX_GENCODE)_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$4} END {print sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_GENCODE)_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/$(INDEX_GENCODE)_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount | awk '{sum+=$$1} END {printf "gencode_sense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	## Assigned non-redundantly to annotated transcripts in Gencode (antisense)
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_GENCODE)_antisense.grouped | grep -v "RPM (total)" | awk '{sum+=$4} END {print sum}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/$(INDEX_GENCODE)_antisense.grouped | grep -v "RPM (total)" | awk '{sum+=$4} END {print sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_GENCODE)_antisense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/$(INDEX_GENCODE)_antisense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount | awk '{sum+=$$1} END {printf "gencode_antisense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	#
 	## Assigned non-redundantly to annotated repetitive elements (sense)
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_REP)_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$4} END {print sum}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/$(INDEX_REP)_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$4} END {print sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_REP)_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/$(INDEX_REP)_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount | awk '{sum+=$$1} END {printf "repetitiveElement_sense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	## Assigned non-redundantly to annotated repetitive elements (antisense)
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_REP)_antisense.grouped | grep -v "RPM (total)" | awk '{sum+=$4} END {print sum}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/$(INDEX_REP)_antisense.grouped | grep -v "RPM (total)" | awk '{sum+=$4} END {print sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_REP)_antisense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/$(INDEX_REP)_antisense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount | awk '{sum+=$$1} END {printf "repetitiveElement_antisense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	#
 	## Assigned non-redundantly to annotated circular RNAs (sense)
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_CIRCULARRNA)_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$4} END {print sum}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/$(INDEX_CIRCULARRNA)_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$4} END {print sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_CIRCULARRNA)_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/$(INDEX_CIRCULARRNA)_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount | awk '{sum+=$$1} END {printf "circularRNA_sense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	## Assigned non-redundantly to annotated circular RNAs (antisense)
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_CIRCULARRNA)_antisense.grouped | grep -v "RPM (total)" | awk '{sum+=$4} END {print sum}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/$(INDEX_CIRCULARRNA)_antisense.grouped | grep -v "RPM (total)" | awk '{sum+=$4} END {print sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_CIRCULARRNA)_antisense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/$(INDEX_CIRCULARRNA)_antisense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount | awk '{sum+=$$1} END {printf "circularRNA_antisense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
 
@@ -666,6 +667,8 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/reads.fa: $(OUTPUT_DIR)/$(SAMPLE_ID)/
 	@echo -e "$(ts) SMRNAPIPELINE: $(JAVA_EXE) $(FIXED_PARAMS_EXOGENOUS) input=$(OUTPUT_DIR)/$(SAMPLE_ID)/readsNotDetected.fa output=$(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	$(JAVA_EXE) $(FIXED_PARAMS_EXOGENOUS) input=$(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/reads.fa output=$(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
 	@echo -e "$(ts) SMRNAPIPELINE: Finished mapping to plant and virus small-RNAs\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	## Input to exogenous miRNA alignment
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/reads.fa | grep ">" | awk -F "#" '{sum+=$$2} END {print "input_to_miRNA_exogenous\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	## Assigned non-redundantly to annotated exogenous miRNAs
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/mature_sense.grouped | awk '{sum+=$$4} END {printf "miRNA_exogenous_sense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 
@@ -739,6 +742,8 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.t
 	#
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.txt | sort -k 1 > $@
 	#
+	## Input to exogenous miRNA alignment
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/reads.fa | grep ">" | awk -F "#" '{sum+=$$2} END {print "input_to_exogenous_genomes\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	## Count reads mapped to exogenous genomes:
 	cat $@ | awk '{print $$1}' | uniq | awk -F "#" '{SUM += $$2} END {print "exogenous_genomes\t"SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 
