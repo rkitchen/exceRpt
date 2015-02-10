@@ -185,9 +185,10 @@ allIDs.tRNA = NULL
 allIDs.piRNA = NULL
 allIDs.gencode = NULL
 allIDs.repElements = NULL
+allIDs.circularRNA = NULL
 allIDs.exogenous_miRNA = NULL
 allIDs.exogenous_genomes = NULL
-mapping.stats = matrix(0,nrow=length(samplePathList),ncol=20, dimnames=list(1:length(samplePathList), c("input","clipped","failed_quality_filter","calibrator","UniVec_contaminants","rRNA","not_rRNA","genome","miRNA_sense","miRNA_antisense","tRNA_sense","tRNA_antisense","piRNA_sense","piRNA_antisense","Gencode_sense","Gencode_antisense","repetitiveElement_sense","repetitiveElement_antisense","miRNA_exogenous_sense","exogenous_genomes")))
+mapping.stats = matrix(0,nrow=length(samplePathList),ncol=25, dimnames=list(1:length(samplePathList), c("input","clipped","failed_quality_filter","failed_homopolymer_filter","calibrator","UniVec_contaminants","rRNA","reads_used_for_alignment","genome","miRNA_sense","miRNA_antisense","tRNA_sense","tRNA_antisense","piRNA_sense","piRNA_antisense","gencode_sense","gencode_antisense","repetitiveElement_sense","repetitiveElement_antisense","circularRNA_sense","circularRNA_antisense","input_to_miRNA_exogenous","miRNA_exogenous_sense","input_to_exogenous_genomes","exogenous_genomes")))
 read.lengths = matrix(0,nrow=length(samplePathList),ncol=76,dimnames=list(1:length(samplePathList), 0:75))
 
 
@@ -308,27 +309,6 @@ for(i in 1:length(sample.data)){
 
 
 ##
-## Remove samples with no miRNA counts
-##
-#failedSamples = which(colSums(exprs.miRNA) == 0)
-#if(length(failedSamples) > 0){
-#  #sample.decode[failedSamples, ]
-#  #sample.decode = sample.decode[-failedSamples, ]
-#  exprs.miRNA = exprs.miRNA[, -failedSamples]
-#  exprs.tRNA = exprs.tRNA[, -failedSamples]
-#  exprs.piRNA = exprs.piRNA[, -failedSamples]
-#  exprs.snoRNA = exprs.snoRNA[, -failedSamples]
-#  exprs.Rfam = exprs.Rfam[, -failedSamples]
-#  exprs.plantVirus = exprs.plantVirus[, -failedSamples]
-#}
-#dim(exprs.miRNA)
-#dim(exprs.tRNA)
-#dim(exprs.piRNA)
-#dim(exprs.gencode)
-#dim(exprs.exogenous_miRNA)
-
-
-##
 ## Calculate the total number of mapped reads to the rRNA, genome, and exogenous sequences
 ##
 mapping.stats[is.na(mapping.stats)] = 0
@@ -345,8 +325,8 @@ libSizes$miRNA = colSums(exprs.miRNA)
 ##
 ## Save the raw count data
 ##
-save(exprs.miRNA, exprs.tRNA, exprs.piRNA, exprs.gencode, exprs.repElements, exprs.exogenous_miRNA, exprs.exogenous_genomes, mapping.stats, libSizes, read.lengths, file=paste(output.dir, "exceRpt_Quants_ReadCounts.RData", sep="/"))
-write.table(exprs.miRNA, file=paste(output.dir, "exceRpt_miRNA_Quantifications_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+save(exprs.miRNA, exprs.tRNA, exprs.piRNA, exprs.gencode, exprs.repElements, exprs.exogenous_miRNA, exprs.exogenous_genomes, mapping.stats, libSizes, read.lengths, file=paste(output.dir, "exceRpt_smallRNAQuants_ReadCounts.RData", sep="/"))
+write.table(exprs.miRNA, file=paste(output.dir, "exceRpt_miRNAQuants_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
 write.table(read.lengths, file=paste(output.dir, "exceRpt_ReadLengths.txt", sep="/"), sep="\t", col.names=NA, quote=F)
 
 
@@ -355,13 +335,28 @@ write.table(read.lengths, file=paste(output.dir, "exceRpt_ReadLengths.txt", sep=
 ##
 write.table(mapping.stats, file=paste(output.dir,"exceRpt_readMappingSummary.txt",sep="/"), sep="\t", col.names=NA, quote=F)
 
+
+
+##
+##
+##
+width = nrow(mapping.stats)
+height = 10
+if(width <= 2){ width = 2 }
+pdf(paste(output.dir,"exceRpt_SampleQC_Heatmap_2.pdf",sep="/"), height=10, width=20)
+toplot = melt(as.matrix(mapping.stats / mapping.stats[,1])); colnames(toplot) = c("Sample","Stage","ReadFraction")
+ggplot(toplot, aes(x=Sample, y=Stage, group=Sample, fill=ReadFraction, label=sprintf("%1.1f%%",ReadFraction*100))) +geom_tile() +scale_fill_gradient2(low="white",high="yellow",mid="steelblue", midpoint=0.5) +geom_text(size=3)
+dev.off()
+
+
+
 fractions = NULL
 quals = t(mapping.stats)
 
 if("input" %in% colnames(mapping.stats)){
   inputReads = mapping.stats[,colnames(mapping.stats) %in% c("input")]
 }else{
-  inputReads = rowSums(mapping.stats[,colnames(mapping.stats) %in% c("rRNA","genome")])
+  inputReads = rowSums(mapping.stats[,colnames(mapping.stats) %in% c("rRNA","UniVec_contaminants","genome")])
 }
 if("clipped" %in% colnames(mapping.stats)){
   fractions$clipped = 100*as.numeric(mapping.stats[,colnames(mapping.stats) %in% "clipped"]) / inputReads
@@ -470,7 +465,7 @@ if(ncol(exprs.miRNA) > 1){
   width = ncol(quals)
   height = 10
   if(width <= 5){ width = 5 }
-  pdf(paste(output.dir,"/SampleQC_Heatmap.pdf",sep=""), width=width,height=height)
+  pdf(paste(output.dir,"/exceRpt_SampleQC_Heatmap.pdf",sep=""), width=width,height=height)
   par(oma=c(25,0,1,5))
   try(heatmap.2(quals, trace="n", Rowv=F, dendrogram="column", colsep=1:ncol(quals), rowsep=1:nrow(quals), sepwidth=c(sepwidth,sepwidth), col=c("red","orange","lightgreen"), cellnote=round(fracs,0), notecol="white", notecex=2, cexRow=2, cexCol=2, breaks=seq(0,100,by=33.3), key=F, keysize=0.5), silent=T)
   dev.off()
@@ -543,5 +538,5 @@ dev.off()
 ## Save the RPM normalised data
 ##
 save(exprs.miRNA.rpm, exprs.tRNA.rpm, exprs.piRNA.rpm, exprs.gencode.rpm, exprs.repElements.rpm, exprs.exogenous_miRNA.rpm, exprs.exogenous_genomes.rpm, file=paste(output.dir, "exceRpt_smallRNAQuants_ReadsPerMillion.RData", sep="/"))
-write.table(exprs.miRNA.rpm, file=paste(output.dir, "exceRpt_miRNA_Quantifications_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+write.table(exprs.miRNA.rpm, file=paste(output.dir, "exceRpt_miRNAQuants_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
 
