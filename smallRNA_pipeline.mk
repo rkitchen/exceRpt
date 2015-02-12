@@ -12,7 +12,7 @@
 ##                                                                                   ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                        ##
 ##                                                                                   ##
-## Version 2.1.1 (2015-02-04)                                                        ##
+## Version 2.1.2 (2015-02-12)                                                        ##
 ##                                                                                   ##
 #######################################################################################
 
@@ -253,7 +253,7 @@ ifeq ($(MAP_EXOGENOUS),miRNA)		## ALIGNMENT TO ONLY EXOGENOUS MIRNA
 else ifeq ($(MAP_EXOGENOUS),on)	## COMPLETE EXOGENOUS GENOME ALIGNMENT
 	PROCESS_SAMPLE_REQFILE := EXOGENOUS_genomes/ExogenousGenomicAlignments.result.txt
 else
-	PROCESS_SAMPLE_REQFILE := reads.fa
+	PROCESS_SAMPLE_REQFILE := noGenome/reads.fa
 endif
 
 
