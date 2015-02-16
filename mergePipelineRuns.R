@@ -106,9 +106,9 @@ SearchForSampleData = function(base.dir, directory=""){
     if(length(i.tar) > 0){
       for(x in i.tar){
         tmp.dir = paste(dir.use,subdirs[x],sep="/")
-        tmp.contents = untar(tmp.dir, list=T)
+        tmp.contents = untar(tmp.dir, list=T, tar="tar")
         if(length(grep(".stats$", tmp.contents, perl=T)) > 0){
-          try(untar(tmp.dir, exdir=gsub(".tgz$|.tar.gz$","",tmp.dir)), silent=T)
+          try(untar(tmp.dir, exdir=gsub(".tgz$|.tar.gz$","",tmp.dir), tar="tar"), silent=T)
           to.return = c(to.return, paste(dir.use,gsub(".tgz$|.tar.gz$","",subdirs[x]),sep="/",gsub(".stats$","",tmp.contents[grep(".stats$", tmp.contents)])))
         }
       }

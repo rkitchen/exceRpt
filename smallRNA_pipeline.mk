@@ -89,7 +89,6 @@ ifeq ($(LOCAL_EXECUTION),true)
 	## 6) Check that the paths to the required 3rd party executables work!
 	##
 	JAVA_EXE         := /usr/bin/java
-	#FASTX_ARTFCT_EXE := $(EXE_DIR)/fastx_0.0.14/bin/fastx_artifacts_filter
 	FASTX_CLIP_EXE   := $(EXE_DIR)/fastx_0.0.14/bin/fastx_clipper
 	FASTX_FILTER_EXE := $(EXE_DIR)/fastx_0.0.14/bin/fastq_quality_filter
 	#BOWTIE1_PATH    := $(EXE_DIR)/bowtie-1.1.1
@@ -119,7 +118,6 @@ else
 	JAVA_RAM := 64G
 	MAX_RAM  := 64000000000
 
-	#FASTX_ARTFCT_EXE := fastx_artifacts_filter
 	FASTX_CLIP_EXE := fastx_clipper
 	FASTX_FILTER_EXE := fastq_quality_filter
 	BOWTIE1_PATH := NULL
