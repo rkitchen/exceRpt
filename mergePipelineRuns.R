@@ -4,7 +4,7 @@
 ##                                                                                   ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                        ##
 ##                                                                                   ##
-## Version 2.0.3 (2015-02-03)                                                        ##
+## Version 2.0.4 (2015-02-16)                                                        ##
 ##                                                                                   ##
 #######################################################################################
 
@@ -180,6 +180,7 @@ readData = function(path,file,countColumnIndex=4){
 ## Create objects to contain the data
 ##
 sample.data = vector(mode="list",length=length(samplePathList))
+adapters = NULL;
 allIDs.miRNA = NULL
 allIDs.tRNA = NULL
 allIDs.piRNA = NULL
@@ -224,7 +225,13 @@ for(i in 1:length(samplePathList)){
   ## Read the adapter sequence
   ##
   if(paste(thisSampleID,".adapterSeq",sep="") %in% dir(samplePathList[i])){
-    adapterSeq = as.character(read.table(paste(samplePathList[i],"/",thisSampleID,".adapterSeq",sep=""))[1,1])
+  	tmp.seq = try(read.table(paste(samplePathList[i],"/",thisSampleID,".adapterSeq",sep="")), silent=T)
+  	if(class(tmp.seq) == "try-error"){
+  		adapters[i] = NA
+  	}else{
+  		adapters[i] = as.character(tmp.seq[1,1])
+  	}
+  	names(adapters)[i] = thisSampleID
   }
   
   
@@ -325,7 +332,7 @@ libSizes$miRNA = colSums(exprs.miRNA)
 ##
 ## Save the raw count data
 ##
-save(exprs.miRNA, exprs.tRNA, exprs.piRNA, exprs.gencode, exprs.repElements, exprs.exogenous_miRNA, exprs.exogenous_genomes, mapping.stats, libSizes, read.lengths, file=paste(output.dir, "exceRpt_smallRNAQuants_ReadCounts.RData", sep="/"))
+save(adapters, exprs.miRNA, exprs.tRNA, exprs.piRNA, exprs.gencode, exprs.repElements, exprs.exogenous_miRNA, exprs.exogenous_genomes, mapping.stats, libSizes, read.lengths, file=paste(output.dir, "exceRpt_smallRNAQuants_ReadCounts.RData", sep="/"))
 write.table(exprs.miRNA, file=paste(output.dir, "exceRpt_miRNAQuants_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
 write.table(read.lengths, file=paste(output.dir, "exceRpt_ReadLengths.txt", sep="/"), sep="\t", col.names=NA, quote=F)
 
@@ -334,20 +341,6 @@ write.table(read.lengths, file=paste(output.dir, "exceRpt_ReadLengths.txt", sep=
 ## Calculate the fractions of reads mapping at each stage
 ##
 write.table(mapping.stats, file=paste(output.dir,"exceRpt_readMappingSummary.txt",sep="/"), sep="\t", col.names=NA, quote=F)
-
-
-
-##
-##
-##
-width = nrow(mapping.stats)
-height = 10
-if(width <= 2){ width = 2 }
-pdf(paste(output.dir,"exceRpt_SampleQC_Heatmap_2.pdf",sep="/"), height=10, width=20)
-toplot = melt(as.matrix(mapping.stats / mapping.stats[,1])); colnames(toplot) = c("Sample","Stage","ReadFraction")
-ggplot(toplot, aes(x=Sample, y=Stage, group=Sample, fill=ReadFraction, label=sprintf("%1.1f%%",ReadFraction*100))) +geom_tile() +scale_fill_gradient2(low="white",high="yellow",mid="steelblue", midpoint=0.5) +geom_text(size=3)
-dev.off()
-
 
 
 fractions = NULL
@@ -474,6 +467,9 @@ if(ncol(exprs.miRNA) > 1){
 
 
 
+
+
+
 ##
 ## Open PDF for diagnostic plots
 ##
@@ -501,9 +497,23 @@ hist(tmp, breaks=seq(0,ceiling(max(tmp)), by=0.1), col="grey", border="white", x
 ##
 ## Plot the rRNA contamination
 ##
-par(mfrow=c(1,2))
-hist((mapping.stats$UniVec_contaminants / libSizes$all), breaks=seq(0,1,by=0.05), col="grey", border="white", xlim=c(0,1), main="UniVec contaminant signal",xlab="fraction contaminant reads",ylab="# samples")
-hist((mapping.stats$rRNA / libSizes$all), breaks=seq(0,1,by=0.05), col="grey", border="white", xlim=c(0,1), main="rRNA signal",xlab="fraction rRNA reads",ylab="# samples")
+#par(mfrow=c(1,2))
+#hist((mapping.stats$UniVec_contaminants / libSizes$all), breaks=seq(0,1,by=0.05), col="grey", border="white", xlim=c(0,1), main="UniVec contaminant signal",xlab="fraction contaminant reads",ylab="# samples")
+#hist((mapping.stats$rRNA / libSizes$all), breaks=seq(0,1,by=0.05), col="grey", border="white", xlim=c(0,1), main="rRNA signal",xlab="fraction rRNA reads",ylab="# samples")
+
+
+##
+## Plot heatmap of mapping percentages through the pipeline
+##
+#width = nrow(mapping.stats)
+#height = 10
+#if(width <= 2){ width = 2 }
+#pdf(paste(output.dir,"exceRpt_SampleQC_Heatmap_2.pdf",sep="/"), height=10, width=20)
+toplot = melt(as.matrix(mapping.stats / mapping.stats[,1])); colnames(toplot) = c("Sample","Stage","ReadFraction")
+toplot$Stage = with(toplot, factor(Stage, levels = rev(levels(Stage))))
+ggplot(toplot, aes(x=Sample, y=Stage, group=Sample, fill=ReadFraction, label=sprintf("%1.1f%%",ReadFraction*100))) +geom_tile() +scale_fill_gradient2(low="white",high="yellow",mid="steelblue", midpoint=0.5) +geom_text(size=3)
+#dev.off()
+
 
 
 ##
