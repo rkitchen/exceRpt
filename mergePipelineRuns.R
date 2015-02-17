@@ -4,7 +4,7 @@
 ##                                                                                   ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                        ##
 ##                                                                                   ##
-## Version 2.0.4 (2015-02-16)                                                        ##
+## Version 2.0.5 (2015-02-16)                                                        ##
 ##                                                                                   ##
 #######################################################################################
 
@@ -43,6 +43,7 @@ if(length(args) >= 1){
   #data.dir = "/Users/robk/WORK/YALE_offline/exRNA/TomTuschl"
   #data.dir = "/Users/robk/WORK/YALE_offline/exRNA/AlCharest"	
   #data.dir = "/Users/robk/WORK/YALE_offline/exRNA/LouiseLaurent"
+  #data.dir = "/Users/robk/WORK/YALE_offline/exRNA/YanAssman"
   
   output.dir = data.dir
 }
@@ -180,7 +181,6 @@ readData = function(path,file,countColumnIndex=4){
 ## Create objects to contain the data
 ##
 sample.data = vector(mode="list",length=length(samplePathList))
-adapters = NULL;
 allIDs.miRNA = NULL
 allIDs.tRNA = NULL
 allIDs.piRNA = NULL
@@ -190,7 +190,8 @@ allIDs.circularRNA = NULL
 allIDs.exogenous_miRNA = NULL
 allIDs.exogenous_genomes = NULL
 mapping.stats = matrix(0,nrow=length(samplePathList),ncol=25, dimnames=list(1:length(samplePathList), c("input","clipped","failed_quality_filter","failed_homopolymer_filter","calibrator","UniVec_contaminants","rRNA","reads_used_for_alignment","genome","miRNA_sense","miRNA_antisense","tRNA_sense","tRNA_antisense","piRNA_sense","piRNA_antisense","gencode_sense","gencode_antisense","repetitiveElement_sense","repetitiveElement_antisense","circularRNA_sense","circularRNA_antisense","input_to_miRNA_exogenous","miRNA_exogenous_sense","input_to_exogenous_genomes","exogenous_genomes")))
-read.lengths = matrix(0,nrow=length(samplePathList),ncol=76,dimnames=list(1:length(samplePathList), 0:75))
+maxReadLength = 1000
+read.lengths = matrix(0,nrow=length(samplePathList),ncol=maxReadLength+1,dimnames=list(1:length(samplePathList), 0:maxReadLength))
 
 
 ##
@@ -227,11 +228,10 @@ for(i in 1:length(samplePathList)){
   if(paste(thisSampleID,".adapterSeq",sep="") %in% dir(samplePathList[i])){
   	tmp.seq = try(read.table(paste(samplePathList[i],"/",thisSampleID,".adapterSeq",sep="")), silent=T)
   	if(class(tmp.seq) == "try-error"){
-  		adapters[i] = NA
+  		adapterSeq = NA
   	}else{
-  		adapters[i] = as.character(tmp.seq[1,1])
+		adapterSeq = as.character(tmp.seq[1,1])
   	}
-  	names(adapters)[i] = thisSampleID
   }
   
   
@@ -288,6 +288,12 @@ for(i in 1:length(samplePathList)){
 
 
 ##
+## Trim read-length matrix
+##
+read.lengths = read.lengths[,0:(max(as.numeric(colnames(read.lengths[, colSums(read.lengths) > 0])))+1)]
+
+
+##
 ## Save result
 ##
 allIDs = list("miRNA"=allIDs.miRNA, "tRNA"=allIDs.tRNA, "piRNA"=allIDs.piRNA, "gencode"=allIDs.gencode, "repElements"=allIDs.repElements, "exogenous_miRNA"=allIDs.exogenous_miRNA, "exogenous_genomes"=allIDs.exogenous_genomes)
@@ -332,7 +338,7 @@ libSizes$miRNA = colSums(exprs.miRNA)
 ##
 ## Save the raw count data
 ##
-save(adapters, exprs.miRNA, exprs.tRNA, exprs.piRNA, exprs.gencode, exprs.repElements, exprs.exogenous_miRNA, exprs.exogenous_genomes, mapping.stats, libSizes, read.lengths, file=paste(output.dir, "exceRpt_smallRNAQuants_ReadCounts.RData", sep="/"))
+save(exprs.miRNA, exprs.tRNA, exprs.piRNA, exprs.gencode, exprs.repElements, exprs.exogenous_miRNA, exprs.exogenous_genomes, mapping.stats, libSizes, read.lengths, file=paste(output.dir, "exceRpt_smallRNAQuants_ReadCounts.RData", sep="/"))
 write.table(exprs.miRNA, file=paste(output.dir, "exceRpt_miRNAQuants_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
 write.table(read.lengths, file=paste(output.dir, "exceRpt_ReadLengths.txt", sep="/"), sep="\t", col.names=NA, quote=F)
 
