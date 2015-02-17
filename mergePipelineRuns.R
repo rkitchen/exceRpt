@@ -291,7 +291,7 @@ for(i in 1:length(samplePathList)){
 ## Trim read-length matrix
 ##
 #read.lengths = read.lengths[,0:(max(as.numeric(colnames(read.lengths[, colSums(read.lengths) > 0])))+1)]
-read.lengths = read.lengths[,colSums(read.lengths) > 0]
+read.lengths = read.lengths[,colSums(read.lengths) > 0, drop=F]
 
 
 ##
