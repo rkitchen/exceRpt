@@ -290,7 +290,8 @@ for(i in 1:length(samplePathList)){
 ##
 ## Trim read-length matrix
 ##
-read.lengths = read.lengths[,0:(max(as.numeric(colnames(read.lengths[, colSums(read.lengths) > 0])))+1)]
+#read.lengths = read.lengths[,0:(max(as.numeric(colnames(read.lengths[, colSums(read.lengths) > 0])))+1)]
+read.lengths = read.lengths[,colSums(read.lengths) > 0]
 
 
 ##
@@ -488,7 +489,7 @@ pdf(paste(output.dir,"exceRpt_DiagnosticPlots.pdf",sep="/"), height=10, width=20
 ##
 tmp = melt(read.lengths); colnames(tmp) = c("sample","length","count")
 tmp = tmp[1:max(which(tmp$count > 0)), ]
-ggplot(tmp, aes(x=length, y=count, colour=sample)) +geom_line(alpha=0.75) +xlab("read length (nt)") +ylab("# reads")  +ggtitle("read-length distributions")
+ggplot(tmp, aes(x=length, y=count, colour=sample)) +geom_line(alpha=0.75) +xlab("read length (nt)") +ylab("# reads")  +ggtitle("read-length distributions") +xlim(0,max(tmp$length))
 #ggplot(tmp, aes(x=as.factor(length), y=count)) +geom_violin()
 #ggplot(tmp, aes(x=as.factor(length), y=count)) +geom_boxplot()
 
