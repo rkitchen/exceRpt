@@ -4,7 +4,7 @@
 ##                                                                                   ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                        ##
 ##                                                                                   ##
-## Version 2.0.5 (2015-02-16)                                                        ##
+## Version 2.0.6 (2015-02-23)                                                        ##
 ##                                                                                   ##
 #######################################################################################
 
@@ -44,6 +44,8 @@ if(length(args) >= 1){
   #data.dir = "/Users/robk/WORK/YALE_offline/exRNA/AlCharest"	
   #data.dir = "/Users/robk/WORK/YALE_offline/exRNA/LouiseLaurent"
   #data.dir = "/Users/robk/WORK/YALE_offline/exRNA/YanAssman"
+  #data.dir = "/Users/robk/WORK/YALE_offline/exRNA/exceRptLibraryAnalysis"
+  #data.dir = "/Users/robk/WORK/YALE_offline/exRNA/exceRptCombinatorialAnalysis"
   
   output.dir = data.dir
 }
@@ -189,7 +191,7 @@ allIDs.repElements = NULL
 allIDs.circularRNA = NULL
 allIDs.exogenous_miRNA = NULL
 allIDs.exogenous_genomes = NULL
-mapping.stats = matrix(0,nrow=length(samplePathList),ncol=25, dimnames=list(1:length(samplePathList), c("input","clipped","failed_quality_filter","failed_homopolymer_filter","calibrator","UniVec_contaminants","rRNA","reads_used_for_alignment","genome","miRNA_sense","miRNA_antisense","tRNA_sense","tRNA_antisense","piRNA_sense","piRNA_antisense","gencode_sense","gencode_antisense","repetitiveElement_sense","repetitiveElement_antisense","circularRNA_sense","circularRNA_antisense","input_to_miRNA_exogenous","miRNA_exogenous_sense","input_to_exogenous_genomes","exogenous_genomes")))
+mapping.stats = matrix(0,nrow=length(samplePathList),ncol=25, dimnames=list(1:length(samplePathList), c("input","successfully_clipped","failed_quality_filter","failed_homopolymer_filter","calibrator","UniVec_contaminants","rRNA","reads_used_for_alignment","genome","miRNA_sense","miRNA_antisense","tRNA_sense","tRNA_antisense","piRNA_sense","piRNA_antisense","gencode_sense","gencode_antisense","repetitiveElement_sense","repetitiveElement_antisense","circularRNA_sense","circularRNA_antisense","input_to_miRNA_exogenous","miRNA_exogenous_sense","input_to_exogenous_genomes","exogenous_genomes")))
 maxReadLength = 1000
 read.lengths = matrix(0,nrow=length(samplePathList),ncol=maxReadLength+1,dimnames=list(1:length(samplePathList), 0:maxReadLength))
 
@@ -204,6 +206,7 @@ for(i in 1:length(samplePathList)){
   
   ## Read sample mapping stats
   tmp.stats = read.table(paste(samplePathList[i],".stats",sep=""), stringsAsFactors=F, fill=T, header=T, sep="\t",skip=0)
+  tmp.stats[tmp.stats[,1] %in% "clipped", 1] = "successfully_clipped"
   #mapping.stats[i, match(tmp.stats[,1], colnames(mapping.stats))] = as.numeric(tmp.stats[,2])
   mapping.stats[i, match(tmp.stats[,1], colnames(mapping.stats))] = as.numeric(tmp.stats[,2])
   rownames(mapping.stats)[i] = thisSampleID
@@ -518,7 +521,7 @@ hist(tmp, breaks=seq(0,ceiling(max(tmp)), by=0.1), col="grey", border="white", x
 #pdf(paste(output.dir,"exceRpt_SampleQC_Heatmap_2.pdf",sep="/"), height=10, width=20)
 toplot = melt(as.matrix(mapping.stats / mapping.stats[,1])); colnames(toplot) = c("Sample","Stage","ReadFraction")
 toplot$Stage = with(toplot, factor(Stage, levels = rev(levels(Stage))))
-ggplot(toplot, aes(x=Sample, y=Stage, group=Sample, fill=ReadFraction, label=sprintf("%1.1f%%",ReadFraction*100))) +geom_tile() +scale_fill_gradient2(low="white",high="yellow",mid="steelblue", midpoint=0.5) +geom_text(size=3)
+ggplot(toplot, aes(x=Sample, y=Stage, group=Sample, fill=ReadFraction, label=sprintf("%1.1f%%",ReadFraction*100))) +geom_tile() +scale_fill_gradient2(low="white",high="yellow",mid="steelblue", midpoint=0.5) +geom_text(size=3) +theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5))
 #dev.off()
 
 

@@ -12,7 +12,7 @@
 ##                                                                                   ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                        ##
 ##                                                                                   ##
-## Version 2.2.0 (2015-02-15)                                                        ##
+## Version 2.2.1 (2015-02-23)                                                        ##
 ##                                                                                   ##
 #######################################################################################
 
@@ -189,7 +189,7 @@ else ifeq ($(MAIN_ORGANISM),mmu)  ## FOR MOUSE
 endif
 
 GENCODE_LIBS := libs=$(INDEX_GENCODE)$(BOWTIE_OVERRIDE)
-TRNA_LIBS    := libs=$(INDEX_TRNA)$(BOWTIE_OVERRIDE)
+TRNA_LIBS    := libs=$(INDEX_TRNA)$(BOWTIE_OVERRIDE) tRNA=$(INDEX_TRNA) 
 PIRNA_LIBS   := libs=$(INDEX_PIRNA)$(BOWTIE_OVERRIDE)
 REP_LIBS     := libs=$(INDEX_REP)$(BOWTIE_OVERRIDE)
 CIRC_LIBS    := libs=$(INDEX_CIRCULARRNA)$(BOWTIE_OVERRIDE)
@@ -214,6 +214,9 @@ endif
 ifneq ($(CIRCULAR_RNA_MAPPING),on)
 	CIRC_LIBS    :=
 endif
+
+## SmallRNA sequence libraries to map against AFTER mapping to the known miRNAs for the target organism (see below)
+OTHER_LIBRARIES := $(PIRNA_LIBS) $(GENCODE_LIBS) $(REP_LIBS) $(CIRC_LIBS) $(TRNA_LIBS) 
 
 
 
@@ -241,9 +244,6 @@ BOWTIE_INDEX_GENOME := $(SRNABENCH_LIBS)/index/$(GENOME_ID_FOR_ADAPTER)
 ## Path to the UniVec contaminants DB
 BOWTIE_INDEX_UNIVEC := $(SRNABENCH_LIBS)/customIndices/UniVec_Core.contaminants
 
-
-## SmallRNA sequence libraries to map against AFTER mapping to the known miRNAs for the target organism (see below)
-OTHER_LIBRARIES := $(TRNA_LIBS) $(PIRNA_LIBS) $(GENCODE_LIBS) $(REP_LIBS) $(CIRC_LIBS)
 
 
 ##
@@ -375,7 +375,7 @@ rm $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.rRNAmapped.sam
 
 
 ## Parameters for the endogenous-exRNA mapping
-FIXED_PARAMS_MAIN      := -Xmx$(JAVA_RAM) -jar $(SRNABENCH_EXE) dbPath=$(SRNABENCH_LIBS) p=$(N_THREADS) chunkmbs=2000 microRNA=$(MAIN_ORGANISM) species=$(MAIN_ORGANISM_GENOME_ID) plotMiR=true plotLibs=false predict=false $(OTHER_LIBRARIES) writeGenomeDist=true noMM=$(MISMATCH_N_MIRNA) maxReadLength=75 noGenome=true tRNA=$(INDEX_TRNA) mBowtie=$(MULTIMAP_MAX)
+FIXED_PARAMS_MAIN      := -Xmx$(JAVA_RAM) -jar $(SRNABENCH_EXE) dbPath=$(SRNABENCH_LIBS) p=$(N_THREADS) chunkmbs=2000 microRNA=$(MAIN_ORGANISM) species=$(MAIN_ORGANISM_GENOME_ID) plotMiR=true plotLibs=false predict=false $(OTHER_LIBRARIES) writeGenomeDist=true noMM=$(MISMATCH_N_MIRNA) maxReadLength=75 noGenome=true mBowtie=$(MULTIMAP_MAX)
 ## Parameters for the exogenous-exRNA mapping
 FIXED_PARAMS_EXOGENOUS := -Xmx$(JAVA_RAM) -jar $(SRNABENCH_EXE) dbPath=$(SRNABENCH_LIBS) p=$(N_THREADS) chunkmbs=2000 microRNA=$(EXOGENOUS_MIRNA_SPECIES) plotMiR=true predict=false noMM=$(MISMATCH_N_MIRNA)
 
@@ -481,7 +481,7 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz: $(OUTPUT_DIR)/$(SAMPLE
 	## Count reads input to adapter clipping
 	grep "Input: " $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{print "input\t"$$2}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	## Count reads output following adapter clipping
-	grep "Output: " $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{print "clipped\t"$$2}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	grep "Output: " $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{print "successfully_clipped\t"$$2}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 
 
 ##
@@ -545,9 +545,9 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered_fastqc.zip: $(OUTPUT_DI
 
 
 ##
-## MAP to external bowtie (calibrator?) library and to the rRNA sequences
+## MAP to external bowtie (calibrator?) library and to UniVec sequences
 ##
-$(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.noRiboRNA.fastq.gz: $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.fastq.gz $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.readLengths.txt $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered_fastqc.zip
+$(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.noUniVecContaminants.fastq.gz: $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.fastq.gz $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.readLengths.txt $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered_fastqc.zip
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) SMRNAPIPELINE: $(LOGENTRY_MAP_CALIBRATOR_1)" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) SMRNAPIPELINE: $(COMMAND_MAP_CALIBRATOR)" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
@@ -563,7 +563,12 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.noRiboRNA.fastq.gz: $(O
 	@echo -e "$(ts) SMRNAPIPELINE: Finished mapping to the UniVec contaminant DB\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Count UniVec contaminant reads
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.uniVecContaminants.readCount | awk '{print "UniVec_contaminants\t"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	#
+	
+
+##
+## MAP to rRNA sequences
+##
+$(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.noRiboRNA.fastq.gz: $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.noUniVecContaminants.fastq.gz
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) SMRNAPIPELINE: Mapping reads to ribosomal RNA sequences using Bowtie2:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) SMRNAPIPELINE: $(COMMAND_MAP_RRNAS)\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
