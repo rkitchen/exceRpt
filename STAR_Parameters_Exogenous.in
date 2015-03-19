@@ -1,0 +1,15 @@
+## STAR Exogenous alignment parameters
+runMode  alignReads
+outSAMattributes  All
+limitBAMsortRAM  62000000000
+outFilterMismatchNmax  999
+outFilterMismatchNoverLmax  0.0
+#outFilterMismatchNoverLmax  0.05
+#outFilterMismatchNoverReadLmax  0.1
+outSAMunmapped  None
+outReadsUnmapped  None
+outFilterMultimapNmax  10000
+alignEndsType  EndToEnd
+# disable splicing
+alignIntronMax  1
+alignIntronMin  2

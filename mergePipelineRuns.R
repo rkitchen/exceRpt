@@ -385,7 +385,7 @@ if("miRNA_sense" %in% colnames(mapping.stats)){
   }
   fractions$miRNA = 100 * miRNA.counts / mapping.stats[,colnames(mapping.stats) %in% "genome"]
   
-  mapping.stats = cbind(mapping.stats, miRNA=miRNA.counts)
+  #mapping.stats = cbind(mapping.stats, miRNA=miRNA.counts)
 }
 
 ## Finally, convert the computed alignment fractions to a data.frame
@@ -476,8 +476,11 @@ if(ncol(exprs.miRNA) > 1){
 
 
 
-
-
+##
+## Order samples based on similarity of mapping statistics
+##
+h = hclust(dist(1-cor(t(mapping.stats))))
+sampleOrder = h$order
 
 
 ##
@@ -521,6 +524,8 @@ hist(tmp, breaks=seq(0,ceiling(max(tmp)), by=0.1), col="grey", border="white", x
 #pdf(paste(output.dir,"exceRpt_SampleQC_Heatmap_2.pdf",sep="/"), height=10, width=20)
 toplot = melt(as.matrix(mapping.stats / mapping.stats[,1])); colnames(toplot) = c("Sample","Stage","ReadFraction")
 toplot$Stage = with(toplot, factor(Stage, levels = rev(levels(Stage))))
+toplot$Sample = factor(as.character(toplot$Sample), levels=rownames(mapping.stats)[sampleOrder])
+
 ggplot(toplot, aes(x=Sample, y=Stage, group=Sample, fill=ReadFraction, label=sprintf("%1.1f%%",ReadFraction*100))) +geom_tile() +scale_fill_gradient2(low="white",high="yellow",mid="steelblue", midpoint=0.5) +geom_text(size=3) +theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5))
 #dev.off()
 
@@ -540,8 +545,8 @@ exprs.exogenous_miRNA.rpm = t(10^6 * t(exprs.exogenous_miRNA) / libSize.use)
 exprs.exogenous_genomes.rpm = t(10^6 * t(exprs.exogenous_genomes) / libSize.use)
 
 par(mfrow=c(1,2), oma=c(15,0,0,0))
-boxplot(log10(exprs.miRNA+1E-1), las=2, ylab="log10(miRNA counts)", main="miRNA read count")
-boxplot(log10(exprs.miRNA.rpm+1E-1), las=2, ylab="log10(miRNA RPM)", main="miRNA RPM")
+boxplot(log10(exprs.miRNA[, sampleOrder]+1E-1), las=2, ylab="log10(miRNA counts)", main="miRNA read count")
+boxplot(log10(exprs.miRNA.rpm[, sampleOrder]+1E-1), las=2, ylab="log10(miRNA RPM)", main="miRNA RPM")
 
 
 ## Plot miRNA expression distributions
