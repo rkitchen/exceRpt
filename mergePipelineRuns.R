@@ -4,7 +4,7 @@
 ##                                                                                   ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                        ##
 ##                                                                                   ##
-## Version 2.0.6 (2015-02-23)                                                        ##
+## Version 2.0.7 (2015-03-20)                                                        ##
 ##                                                                                   ##
 #######################################################################################
 
@@ -36,8 +36,7 @@ if(length(args) >= 1){
   cat("Usage: R CMD BATCH mergePipelineRuns_PRODUCTION.R <data path> [output path]\n\n")
   #data.dir = "~/Box Sync/Work for other people/FraminghamSmallRNA/Data"
   #output.dir = "~/Box Sync/Work for other people/FraminghamSmallRNA"
-  #data.dir = "/Users/robk/WORK/YALE_offline/miRNA/DataSets"
-  #output.dir = "/Users/robk/Box Sync/Work/miRNA/DataSets"
+  #data.dir = "/Users/robk/WORK/YALE_offline/miRNA/PipelineOutput"
   #data.dir = "/Users/robk/WORK/YALE_offline/exRNA/newPipelineTest"  
   #data.dir = "/Users/robk/WORK/YALE_offline/exRNA/DavidGalas"
   #data.dir = "/Users/robk/WORK/YALE_offline/exRNA/TomTuschl"
@@ -343,7 +342,10 @@ libSizes$miRNA = colSums(exprs.miRNA)
 ## Save the raw count data
 ##
 save(exprs.miRNA, exprs.tRNA, exprs.piRNA, exprs.gencode, exprs.repElements, exprs.exogenous_miRNA, exprs.exogenous_genomes, mapping.stats, libSizes, read.lengths, file=paste(output.dir, "exceRpt_smallRNAQuants_ReadCounts.RData", sep="/"))
-write.table(exprs.miRNA, file=paste(output.dir, "exceRpt_miRNAQuants_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+write.table(exprs.miRNA, file=paste(output.dir, "exceRpt_miRNA_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+write.table(exprs.tRNA, file=paste(output.dir, "exceRpt_tRNA_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+write.table(exprs.piRNA, file=paste(output.dir, "exceRpt_piRNA_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+write.table(exprs.gencode, file=paste(output.dir, "exceRpt_gencode_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
 write.table(read.lengths, file=paste(output.dir, "exceRpt_ReadLengths.txt", sep="/"), sep="\t", col.names=NA, quote=F)
 
 
@@ -526,9 +528,9 @@ toplot = melt(as.matrix(mapping.stats / mapping.stats[,1])); colnames(toplot) = 
 toplot$Stage = with(toplot, factor(Stage, levels = rev(levels(Stage))))
 toplot$Sample = factor(as.character(toplot$Sample), levels=rownames(mapping.stats)[sampleOrder])
 
-ggplot(toplot, aes(x=Sample, y=Stage, group=Sample, fill=ReadFraction, label=sprintf("%1.1f%%",ReadFraction*100))) +geom_tile() +scale_fill_gradient2(low="white",high="yellow",mid="steelblue", midpoint=0.5) +geom_text(size=3) +theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5))
-#dev.off()
-
+p = ggplot(toplot, aes(x=Sample, y=Stage, group=Sample, fill=ReadFraction, label=sprintf("%1.1f%%",ReadFraction*100))) +geom_tile() +scale_fill_gradient2(low="white",high="yellow",mid="steelblue", midpoint=0.5) +theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5))
+if(nrow(mapping.stats) < 50){ p = p +geom_text(size=3) }
+p
 
 
 ##
@@ -563,5 +565,8 @@ dev.off()
 ## Save the RPM normalised data
 ##
 save(exprs.miRNA.rpm, exprs.tRNA.rpm, exprs.piRNA.rpm, exprs.gencode.rpm, exprs.repElements.rpm, exprs.exogenous_miRNA.rpm, exprs.exogenous_genomes.rpm, file=paste(output.dir, "exceRpt_smallRNAQuants_ReadsPerMillion.RData", sep="/"))
-write.table(exprs.miRNA.rpm, file=paste(output.dir, "exceRpt_miRNAQuants_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+write.table(exprs.miRNA.rpm, file=paste(output.dir, "exceRpt_miRNA_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+write.table(exprs.tRNA.rpm, file=paste(output.dir, "exceRpt_tRNA_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+write.table(exprs.piRNA.rpm, file=paste(output.dir, "exceRpt_piRNA_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+write.table(exprs.gencode.rpm, file=paste(output.dir, "exceRpt_gencode_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
 
