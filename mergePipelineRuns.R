@@ -4,7 +4,7 @@
 ##                                                                                   ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                        ##
 ##                                                                                   ##
-## Version 2.0.7 (2015-03-20)                                                        ##
+## Version 2.0.8 (2015-03-21)                                                        ##
 ##                                                                                   ##
 #######################################################################################
 
@@ -300,7 +300,6 @@ read.lengths = read.lengths[,colSums(read.lengths) > 0, drop=F]
 ## Save result
 ##
 allIDs = list("miRNA"=allIDs.miRNA, "tRNA"=allIDs.tRNA, "piRNA"=allIDs.piRNA, "gencode"=allIDs.gencode, "repElements"=allIDs.repElements, "exogenous_miRNA"=allIDs.exogenous_miRNA, "exogenous_genomes"=allIDs.exogenous_genomes)
-#save(sample.data, mapping.stats, allIDs, file=paste(output.dir,"RawFileData.RData",sep="/"))
 
 
 ##
@@ -497,7 +496,9 @@ pdf(paste(output.dir,"exceRpt_DiagnosticPlots.pdf",sep="/"), height=10, width=20
 ##
 tmp = melt(read.lengths); colnames(tmp) = c("sample","length","count")
 tmp = tmp[1:max(which(tmp$count > 0)), ]
-ggplot(tmp, aes(x=length, y=count, colour=sample)) +geom_line(alpha=0.75) +xlab("read length (nt)") +ylab("# reads")  +ggtitle("read-length distributions") +xlim(0,max(tmp$length))
+p = ggplot(tmp, aes(x=length, y=count, colour=sample)) +geom_line(alpha=0.75) +xlab("read length (nt)") +ylab("# reads")  +ggtitle("read-length distributions") +xlim(14,min(c(75,max(tmp$length))))
+if(nrow(read.lengths) > 30){ p = p +guides(colour=FALSE) }
+p
 #ggplot(tmp, aes(x=as.factor(length), y=count)) +geom_violin()
 #ggplot(tmp, aes(x=as.factor(length), y=count)) +geom_boxplot()
 
@@ -520,14 +521,9 @@ hist(tmp, breaks=seq(0,ceiling(max(tmp)), by=0.1), col="grey", border="white", x
 ##
 ## Plot heatmap of mapping percentages through the pipeline
 ##
-#width = nrow(mapping.stats)
-#height = 10
-#if(width <= 2){ width = 2 }
-#pdf(paste(output.dir,"exceRpt_SampleQC_Heatmap_2.pdf",sep="/"), height=10, width=20)
 toplot = melt(as.matrix(mapping.stats / mapping.stats[,1])); colnames(toplot) = c("Sample","Stage","ReadFraction")
 toplot$Stage = with(toplot, factor(Stage, levels = rev(levels(Stage))))
 toplot$Sample = factor(as.character(toplot$Sample), levels=rownames(mapping.stats)[sampleOrder])
-
 p = ggplot(toplot, aes(x=Sample, y=Stage, group=Sample, fill=ReadFraction, label=sprintf("%1.1f%%",ReadFraction*100))) +geom_tile() +scale_fill_gradient2(low="white",high="yellow",mid="steelblue", midpoint=0.5) +theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5))
 if(nrow(mapping.stats) < 50){ p = p +geom_text(size=3) }
 p
@@ -537,7 +533,8 @@ p
 ## Calculate reads per million (RPM)
 ##
 #libSize.use = libSizes$all
-libSize.use = libSizes$miRNA
+#libSize.use = libSizes$miRNA
+libSize.use = libSizes$genome
 exprs.miRNA.rpm = t(10^6 * t(exprs.miRNA) / libSize.use)
 exprs.tRNA.rpm = t(10^6 * t(exprs.tRNA) / libSize.use)
 exprs.piRNA.rpm = t(10^6 * t(exprs.piRNA) / libSize.use)
@@ -546,18 +543,32 @@ exprs.repElements.rpm = t(10^6 * t(exprs.repElements) / libSize.use)
 exprs.exogenous_miRNA.rpm = t(10^6 * t(exprs.exogenous_miRNA) / libSize.use)
 exprs.exogenous_genomes.rpm = t(10^6 * t(exprs.exogenous_genomes) / libSize.use)
 
-par(mfrow=c(1,2), oma=c(15,0,0,0))
-boxplot(log10(exprs.miRNA[, sampleOrder]+1E-1), las=2, ylab="log10(miRNA counts)", main="miRNA read count")
-boxplot(log10(exprs.miRNA.rpm[, sampleOrder]+1E-1), las=2, ylab="log10(miRNA RPM)", main="miRNA RPM")
+#par(mfrow=c(1,2), oma=c(15,0,0,0))
+#boxplot(log10(exprs.miRNA[, sampleOrder]+1E-1), las=2, ylab="log10(miRNA counts)", main="miRNA read count")
+#boxplot(log10(exprs.miRNA.rpm[, sampleOrder]+1E-1), las=2, ylab="log10(miRNA RPM)", main="miRNA RPM")
 
 
 ## Plot miRNA expression distributions
-tmp = melt(log10(exprs.miRNA.rpm+1E-1))
+tmp = melt(exprs.miRNA)
 colnames(tmp) = c("miRNA","sample","abundance")
-ggplot(tmp, aes(y=abundance, x=sample, colour=sample)) +geom_violin() +geom_boxplot(alpha=0.2) +ylab("log10(RPM+1E-1)") +ggtitle("miRNA abundance distributions (RPM)") +theme(axis.ticks = element_blank(), axis.text.x = element_blank())
-ggplot(tmp, aes(x=abundance, colour=sample)) +geom_density() +xlab("log10(RPM)") +ggtitle("miRNA abundance distributions (RPM)")
-#ggplot(tmp, aes(y=abundance, x=sample, colour=sample)) +geom_boxplot() +ylab("log10(RPM+1E-1)") +ggtitle("miRNA abundance distributions")
-#ggplot(tmp, aes(y=abundance, x=sample, colour=sample)) +geom_violin() +ylab("log10(RPM+1E-1)") +ggtitle("miRNA abundance distributions")
+p = ggplot(tmp, aes(y=abundance, x=sample, colour=sample)) +geom_violin() +geom_boxplot(alpha=0.2) +ylab("Read count") +ggtitle("miRNA abundance distributions (raw counts)") +theme(axis.ticks = element_blank(), axis.text.x = element_blank()) +scale_y_log10()
+if(ncol(exprs.miRNA.rpm) > 30){ p = p +guides(colour=FALSE) }
+p
+
+p = ggplot(tmp, aes(x=abundance, colour=sample)) +geom_density() +xlab("Read count") +ggtitle("miRNA abundance distributions (raw counts)") +scale_x_log10()
+if(ncol(exprs.miRNA.rpm) > 30){ p = p +guides(colour=FALSE) }
+p
+
+tmp = melt(exprs.miRNA.rpm)
+colnames(tmp) = c("miRNA","sample","abundance")
+p = ggplot(tmp, aes(y=abundance, x=sample, colour=sample)) +geom_violin() +geom_boxplot(alpha=0.2) +ylab("Reads per million (RPM)") +ggtitle("miRNA abundance distributions (RPM)") +theme(axis.ticks = element_blank(), axis.text.x = element_blank()) +scale_y_log10()
+if(ncol(exprs.miRNA.rpm) > 30){ p = p +guides(colour=FALSE) }
+p
+
+p = ggplot(tmp, aes(x=abundance, colour=sample)) +geom_density() +xlab("Reads per million (RPM)") +ggtitle("miRNA abundance distributions (RPM)") +scale_x_log10()
+if(ncol(exprs.miRNA.rpm) > 30){ p = p +guides(colour=FALSE) }
+p
+
 dev.off()
 
 
