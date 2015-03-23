@@ -4,7 +4,7 @@
 ##                                                                                   ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                        ##
 ##                                                                                   ##
-## Version 2.0.8 (2015-03-21)                                                        ##
+## Version 2.0.9 (2015-03-22)                                                        ##
 ##                                                                                   ##
 #######################################################################################
 
@@ -246,6 +246,7 @@ for(i in 1:length(samplePathList)){
     tRNA = readData(samplePathList[i],"_tRNAs_sense.grouped", countColumnIndex)
     piRNA = readData(samplePathList[i],"_piRNAs_sense.grouped", countColumnIndex)
     gencode = readData(samplePathList[i],"_gencode_sense.grouped", countColumnIndex)
+    circRNA = readData(samplePathList[i],"_CircularRNAs_sense.grouped", countColumnIndex)
     repElements = readData(samplePathList[i],"_RepetitiveElements_sense.grouped", countColumnIndex)
   }else{
     ## Not valid pipeline output!
@@ -256,9 +257,10 @@ for(i in 1:length(samplePathList)){
   allIDs.tRNA = unique(c(allIDs.tRNA, as.character(tRNA[,1])))
   allIDs.piRNA = unique(c(allIDs.piRNA, as.character(piRNA[,1])))
   allIDs.gencode = unique(c(allIDs.gencode, as.character(gencode[,1])))
+  allIDs.circularRNA = unique(c(allIDs.circularRNA, as.character(circRNA[,1])))
   allIDs.repElements = unique(c(allIDs.repElements, as.character(repElements[,1])))
   
-  sample.data[[i]] = list("miRNA"=miRNA, "tRNA"=tRNA, "piRNA"=piRNA, "gencode"=gencode, "repElements"=repElements, "adapterSeq"=adapterSeq)
+  sample.data[[i]] = list("miRNA"=miRNA, "tRNA"=tRNA, "piRNA"=piRNA, "gencode"=gencode, "circRNA"=circRNA, "repElements"=repElements, "adapterSeq"=adapterSeq)
   names(sample.data)[i] = thisSampleID
   
   
@@ -299,7 +301,7 @@ read.lengths = read.lengths[,colSums(read.lengths) > 0, drop=F]
 ##
 ## Save result
 ##
-allIDs = list("miRNA"=allIDs.miRNA, "tRNA"=allIDs.tRNA, "piRNA"=allIDs.piRNA, "gencode"=allIDs.gencode, "repElements"=allIDs.repElements, "exogenous_miRNA"=allIDs.exogenous_miRNA, "exogenous_genomes"=allIDs.exogenous_genomes)
+allIDs = list("miRNA"=allIDs.miRNA, "tRNA"=allIDs.tRNA, "piRNA"=allIDs.piRNA, "gencode"=allIDs.gencode, "circRNA"=allIDs.circularRNA, "repElements"=allIDs.repElements, "exogenous_miRNA"=allIDs.exogenous_miRNA, "exogenous_genomes"=allIDs.exogenous_genomes)
 
 
 ##
@@ -309,6 +311,7 @@ exprs.miRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$miRNA), dimna
 exprs.tRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$tRNA), dimnames=list(allIDs$tRNA, names(sample.data)))
 exprs.piRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$piRNA), dimnames=list(allIDs$piRNA, names(sample.data)))
 exprs.gencode = matrix(0,ncol=length(sample.data),nrow=length(allIDs$gencode), dimnames=list(allIDs$gencode, names(sample.data)))
+exprs.circRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$circRNA), dimnames=list(allIDs$circRNA, names(sample.data)))
 exprs.repElements = matrix(0,ncol=length(sample.data),nrow=length(allIDs$repElements), dimnames=list(allIDs$repElements, names(sample.data)))
 exprs.exogenous_miRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$exogenous_miRNA), dimnames=list(allIDs$exogenous_miRNA, names(sample.data)))
 exprs.exogenous_genomes = matrix(0,ncol=length(sample.data),nrow=length(allIDs$exogenous_genomes), dimnames=list(allIDs$exogenous_genomes, names(sample.data)))
@@ -317,6 +320,7 @@ for(i in 1:length(sample.data)){
   exprs.tRNA[match(sample.data[[i]]$tRNA[,1], rownames(exprs.tRNA)),i] = as.numeric(sample.data[[i]]$tRNA[,2])
   exprs.piRNA[match(sample.data[[i]]$piRNA[,1], rownames(exprs.piRNA)),i] = as.numeric(sample.data[[i]]$piRNA[,2])
   exprs.gencode[match(sample.data[[i]]$gencode[,1], rownames(exprs.gencode)),i] = as.numeric(sample.data[[i]]$gencode[,2])
+  exprs.circRNA[match(sample.data[[i]]$circRNA[,1], rownames(exprs.circRNA)),i] = as.numeric(sample.data[[i]]$circRNA[,2])
   exprs.repElements[match(sample.data[[i]]$repElements[,1], rownames(exprs.repElements)),i] = as.numeric(sample.data[[i]]$repElements[,2])
   exprs.exogenous_miRNA[match(sample.data[[i]]$exogenous_miRNA[,1], rownames(exprs.exogenous_miRNA)),i] = as.numeric(sample.data[[i]]$exogenous_miRNA[,2])
   exprs.exogenous_genomes[match(rownames(sample.data[[i]]$exogenous_genomes), rownames(exprs.exogenous_genomes)),i] = as.numeric(sample.data[[i]]$exogenous_genomes$ReadCount_speciesSpecific)
@@ -340,11 +344,12 @@ libSizes$miRNA = colSums(exprs.miRNA)
 ##
 ## Save the raw count data
 ##
-save(exprs.miRNA, exprs.tRNA, exprs.piRNA, exprs.gencode, exprs.repElements, exprs.exogenous_miRNA, exprs.exogenous_genomes, mapping.stats, libSizes, read.lengths, file=paste(output.dir, "exceRpt_smallRNAQuants_ReadCounts.RData", sep="/"))
+save(exprs.miRNA, exprs.tRNA, exprs.piRNA, exprs.gencode, exprs.circRNA, exprs.repElements, exprs.exogenous_miRNA, exprs.exogenous_genomes, mapping.stats, libSizes, read.lengths, file=paste(output.dir, "exceRpt_smallRNAQuants_ReadCounts.RData", sep="/"))
 write.table(exprs.miRNA, file=paste(output.dir, "exceRpt_miRNA_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
 write.table(exprs.tRNA, file=paste(output.dir, "exceRpt_tRNA_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
 write.table(exprs.piRNA, file=paste(output.dir, "exceRpt_piRNA_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
 write.table(exprs.gencode, file=paste(output.dir, "exceRpt_gencode_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+write.table(exprs.circRNA, file=paste(output.dir, "exceRpt_circularRNA_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
 write.table(read.lengths, file=paste(output.dir, "exceRpt_ReadLengths.txt", sep="/"), sep="\t", col.names=NA, quote=F)
 
 
@@ -527,6 +532,39 @@ toplot$Sample = factor(as.character(toplot$Sample), levels=rownames(mapping.stat
 p = ggplot(toplot, aes(x=Sample, y=Stage, group=Sample, fill=ReadFraction, label=sprintf("%1.1f%%",ReadFraction*100))) +geom_tile() +scale_fill_gradient2(low="white",high="yellow",mid="steelblue", midpoint=0.5) +theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5))
 if(nrow(mapping.stats) < 50){ p = p +geom_text(size=3) }
 p
+
+
+##
+## Plot breakdown of counts in each biotype 
+##
+require(plyr)
+sampleTotals = colSums(exprs.miRNA)
+sampleTotals = rbind(sampleTotals, colSums(exprs.tRNA))
+sampleTotals = rbind(sampleTotals, colSums(exprs.piRNA))
+tmp = data.frame(biotype=sapply(rownames(exprs.gencode), function(id){ unlist(strsplit(id,":"))[2] }), exprs.gencode)
+tmp = ddply(tmp, "biotype", function(mat){ colSums(mat[,-1]) })
+rownames(tmp) = tmp[,1]; tmp = tmp[,-1]
+sampleTotals = rbind(sampleTotals, tmp)
+sampleTotals = rbind(sampleTotals, colSums(exprs.circRNA))
+sampleTotals = rbind(sampleTotals, colSums(exprs.repElements))
+sampleTotals = rbind(sampleTotals, colSums(exprs.exogenous_miRNA))
+sampleTotals = rbind(sampleTotals, colSums(exprs.exogenous_genomes))
+if("miRNA" %in% rownames(sampleTotals)){
+  i = which(rownames(sampleTotals) %in% "miRNA")
+  sampleTotals[i,] = colSums(sampleTotals[c(1,i),])
+  sampleTotals = sampleTotals[-1,]
+  rownames(sampleTotals)[1:2] = c("tRNA","piRNA")
+}else{
+  rownames(sampleTotals)[1:3] = c("miRNA","tRNA","piRNA")
+}
+rownames(sampleTotals)[(nrow(sampleTotals)-3):nrow(sampleTotals)] = c("circularRNA","RE","exogenous_miRNA","exogenous_genomes")
+sampleTotals = sampleTotals[order(apply(sampleTotals, 1, median, na.rm=T), decreasing=F), ]
+tmp = melt(as.matrix(sampleTotals))
+colnames(tmp) = c("biotype","sampleID","readCount")
+require(ggplot2)
+ggplot(tmp, aes(y=readCount,x=biotype, colour=biotype)) +geom_hline(y=1,linetype="dashed") +geom_boxplot() +scale_y_log10(breaks=c(0.01,0.1,1,10,100,1000,10000,100000,1000000,10000000,100000000)) +guides(colour=FALSE) +coord_flip()
+
+
 
 
 ##
