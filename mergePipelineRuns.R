@@ -25,7 +25,8 @@ if(length(args) >= 1){
     if(length(args) == 3){
       classifier.path = args[3]
     }else{
-      classifier.path = "/Users/robk/Box Sync/Work/miRNA/DataSets"
+      #classifier.path = "/Users/robk/Box Sync/Work/miRNA/DataSets"
+      classifier.path = "/Users/robk/Box Sync/Work/exRNA/Pipeline/smallRNA_postprocessing_code/tissueClassifier.RData"      
     }
   }else{
     output.dir = data.dir
@@ -619,3 +620,43 @@ write.table(exprs.tRNA.rpm, file=paste(output.dir, "exceRpt_tRNA_ReadsPerMillion
 write.table(exprs.piRNA.rpm, file=paste(output.dir, "exceRpt_piRNA_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
 write.table(exprs.gencode.rpm, file=paste(output.dir, "exceRpt_gencode_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
 
+
+
+
+##
+## Tissue classification
+##
+#load(classifier.path)
+#
+#require(randomForest)
+#
+#
+#tmp = exprs.miRNA.rpm
+#rownames(tmp) = gsub("-","_",rownames(tmp))
+#unobservedIDs = rownames(clf$importance)[!rownames(clf$importance) %in% rownames(tmp)]
+#tmp = rbind(tmp, matrix(0.0,nrow=length(unobservedIDs),ncol=ncol(tmp),dimnames=list(unobservedIDs,colnames(tmp))))
+#tmp = log10(tmp+0.0001)
+#
+#predict(clf, t(tmp))
+#
+#
+#hist(clf$importance, breaks=seq(0,22,by=0.5))
+#clf$importance[clf$importance > 1,1, drop=F]
+#
+#require(gplots)
+#par(oma=c(2,0,0,5))
+#heatmap.2(tmp[rownames(tmp) %in% rownames(clf$importance[clf$importance > 0.5,1, drop=F]), ], trace="none")
+#
+#
+#
+#tmp2 = trainingData
+#colnames(tmp2) = miRNA_annotations.all$tissue
+#tmp = exprs.miRNA.rpm
+#keepIDs = intersect(rownames(tmp), rownames(tmp2))
+#tmp = tmp[match(keepIDs, rownames(tmp)), ]
+#tmp2 = tmp2[match(keepIDs, rownames(tmp2)), ]
+#
+#res = apply(tmp, 2, cor, tmp2); rownames(res) = colnames(tmp2)
+#breaks=seq(-0.1,0.7, by=0.01)
+#heatmap.2(res, trace="none",breaks=breaks,col=colorRampPalette(c("white","steelblue"))(length(breaks)-1), symbreaks=F)
+#
