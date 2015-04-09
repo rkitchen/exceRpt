@@ -132,6 +132,9 @@ else
 	
 	## Path to sRNABench libraries
 	SRNABENCH_LIBS := $(SRNABENCH_LIBS)
+
+	STAR_EXE := STAR
+	STAR_GENOMES_DIR := $(STAR_GENOMES_DIR)
 	
 	INPUT_FILE_NAME := $(notdir $(INPUT_FILE_PATH))
     INPUT_FILE_ID := $(INPUT_FILE_ID)
