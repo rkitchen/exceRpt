@@ -486,8 +486,11 @@ if(ncol(exprs.miRNA) > 1){
 ##
 ## Order samples based on similarity of mapping statistics
 ##
-h = hclust(dist(1-cor(t(mapping.stats))))
-sampleOrder = h$order
+sampleOrder = 1
+if(nrow(mapping.stats) > 1){
+  h = hclust(dist(1-cor(t(mapping.stats))))
+  sampleOrder = h$order
+}
 
 
 ##
