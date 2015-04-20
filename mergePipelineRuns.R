@@ -4,7 +4,7 @@
 ##                                                                                   ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                        ##
 ##                                                                                   ##
-## Version 2.0.9 (2015-03-22)                                                        ##
+## Version 2.0.10 (2015-04-20)                                                        ##
 ##                                                                                   ##
 #######################################################################################
 
@@ -41,6 +41,7 @@ if(length(args) >= 1){
   #data.dir = "/Users/robk/WORK/YALE_offline/exRNA/newPipelineTest"  
   #data.dir = "/Users/robk/WORK/YALE_offline/exRNA/DavidGalas"
   #data.dir = "/Users/robk/WORK/YALE_offline/exRNA/TomTuschl"
+  #data.dir = "/Users/robk/WORK/YALE_offline/exRNA/TomTuschl_singleSample"
   #data.dir = "/Users/robk/WORK/YALE_offline/exRNA/AlCharest"	
   #data.dir = "/Users/robk/WORK/YALE_offline/exRNA/LouiseLaurent"
   #data.dir = "/Users/robk/WORK/YALE_offline/exRNA/YanAssman"
@@ -546,8 +547,8 @@ sampleTotals = colSums(exprs.miRNA)
 sampleTotals = rbind(sampleTotals, colSums(exprs.tRNA))
 sampleTotals = rbind(sampleTotals, colSums(exprs.piRNA))
 tmp = data.frame(biotype=sapply(rownames(exprs.gencode), function(id){ unlist(strsplit(id,":"))[2] }), exprs.gencode)
-tmp = ddply(tmp, "biotype", function(mat){ colSums(mat[,-1]) })
-rownames(tmp) = tmp[,1]; tmp = tmp[,-1]
+tmp = ddply(tmp, "biotype", function(mat){ colSums(mat[,-1,drop=F]) })
+rownames(tmp) = tmp[,1]; tmp = tmp[,-1,drop=F]
 sampleTotals = rbind(sampleTotals, tmp)
 sampleTotals = rbind(sampleTotals, colSums(exprs.circRNA))
 sampleTotals = rbind(sampleTotals, colSums(exprs.repElements))
@@ -555,14 +556,14 @@ sampleTotals = rbind(sampleTotals, colSums(exprs.exogenous_miRNA))
 sampleTotals = rbind(sampleTotals, colSums(exprs.exogenous_genomes))
 if("miRNA" %in% rownames(sampleTotals)){
   i = which(rownames(sampleTotals) %in% "miRNA")
-  sampleTotals[i,] = colSums(sampleTotals[c(1,i),])
-  sampleTotals = sampleTotals[-1,]
+  sampleTotals[i,] = colSums(sampleTotals[c(1,i),,drop=F])
+  sampleTotals = sampleTotals[-1,,drop=F]
   rownames(sampleTotals)[1:2] = c("tRNA","piRNA")
 }else{
   rownames(sampleTotals)[1:3] = c("miRNA","tRNA","piRNA")
 }
 rownames(sampleTotals)[(nrow(sampleTotals)-3):nrow(sampleTotals)] = c("circularRNA","RE","exogenous_miRNA","exogenous_genomes")
-sampleTotals = sampleTotals[order(apply(sampleTotals, 1, median, na.rm=T), decreasing=F), ]
+sampleTotals = sampleTotals[order(apply(sampleTotals, 1, median, na.rm=T), decreasing=F), ,drop=F]
 tmp = melt(as.matrix(sampleTotals))
 colnames(tmp) = c("biotype","sampleID","readCount")
 require(ggplot2)
