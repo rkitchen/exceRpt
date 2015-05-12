@@ -4,7 +4,7 @@
 ##                                                                                   ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                        ##
 ##                                                                                   ##
-## Version 2.0.10 (2015-04-20)                                                        ##
+## Version 2.0.11 (2015-05-12)                                                        ##
 ##                                                                                   ##
 #######################################################################################
 
@@ -549,6 +549,7 @@ sampleTotals = rbind(sampleTotals, colSums(exprs.piRNA))
 tmp = data.frame(biotype=sapply(rownames(exprs.gencode), function(id){ unlist(strsplit(id,":"))[2] }), exprs.gencode)
 tmp = ddply(tmp, "biotype", function(mat){ colSums(mat[,-1,drop=F]) })
 rownames(tmp) = tmp[,1]; tmp = tmp[,-1,drop=F]
+colnames(tmp) = colnames(sampleTotals)
 sampleTotals = rbind(sampleTotals, tmp)
 sampleTotals = rbind(sampleTotals, colSums(exprs.circRNA))
 sampleTotals = rbind(sampleTotals, colSums(exprs.repElements))
