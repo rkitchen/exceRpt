@@ -12,7 +12,7 @@
 ##                                                                                   ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                        ##
 ##                                                                                   ##
-## Version 2.2.2 (2015-04-22)                                                        ##
+## Version 2.2.3 (2015-05-12)                                                        ##
 ##                                                                                   ##
 #######################################################################################
 
@@ -400,7 +400,7 @@ ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome | awk '{print $$9}' | grep "sense.gro
 echo $(SAMPLE_ID).log >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt; \
 echo $(SAMPLE_ID).stats >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt
 ifneq ($(CALIBRATOR_LIBRARY),NULL)
-	echo $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.calibratormapped.counts >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt
+	COMPRESS_COMMAND := $(COMPRESS_COMMAND); echo $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.calibratormapped.counts >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt
 endif
 ifneq ($(wildcard $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/.),)
 	COMPRESS_COMMAND := $(COMPRESS_COMMAND); ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA | awk '{print $$9}' | grep "sense.grouped" | awk '{print "$(SAMPLE_ID)/EXOGENOUS_miRNA/"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt
