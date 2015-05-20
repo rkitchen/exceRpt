@@ -52,7 +52,7 @@ ADAPTER_SEQ                     := NULL
 TRNA_MAPPING                    := on
 PIRNA_MAPPING                   := on
 GENCODE_MAPPING                 := on
-REPETITIVE_ELEMENT_MAPPING      := on
+#REPETITIVE_ELEMENT_MAPPING      := on
 CIRCULAR_RNA_MAPPING            := on
 REMOVE_LARGE_INTERMEDIATE_FILES := false
 
