@@ -12,7 +12,7 @@
 ##                                                                                   ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                        ##
 ##                                                                                   ##
-## Version 2.2.3 (2015-05-12)                                                        ##
+## Version 2.2.4 (2015-05-20)                                                        ##
 ##                                                                                   ##
 #######################################################################################
 
@@ -211,15 +211,15 @@ endif
 ifneq ($(GENCODE_MAPPING),on)
 	GENCODE_LIBS :=
 endif
-ifneq ($(REPETITIVE_ELEMENT_MAPPING),on)
-	REP_LIBS     :=
-endif
+#ifneq ($(REPETITIVE_ELEMENT_MAPPING),on)
+#	REP_LIBS     :=
+#endif
 ifneq ($(CIRCULAR_RNA_MAPPING),on)
 	CIRC_LIBS    :=
 endif
 
 ## SmallRNA sequence libraries to map against AFTER mapping to the known miRNAs for the target organism (see below)
-OTHER_LIBRARIES := $(PIRNA_LIBS) $(GENCODE_LIBS) $(REP_LIBS) $(CIRC_LIBS) $(TRNA_LIBS) 
+OTHER_LIBRARIES := $(PIRNA_LIBS) $(GENCODE_LIBS) $(CIRC_LIBS) $(TRNA_LIBS) 
 
 
 
@@ -652,13 +652,13 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/reads.fa: $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPL
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount | awk '{sum+=$$1} END {printf "gencode_antisense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	#
 	## Assigned non-redundantly to annotated repetitive elements (sense)
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_REP)_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/$(INDEX_REP)_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount | awk '{sum+=$$1} END {printf "repetitiveElement_sense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	#cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_REP)_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
+	#cat $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/$(INDEX_REP)_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
+	#cat $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount | awk '{sum+=$$1} END {printf "repetitiveElement_sense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	## Assigned non-redundantly to annotated repetitive elements (antisense)
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_REP)_antisense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/$(INDEX_REP)_antisense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount | awk '{sum+=$$1} END {printf "repetitiveElement_antisense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	#cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_REP)_antisense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
+	#cat $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/$(INDEX_REP)_antisense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
+	#cat $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount | awk '{sum+=$$1} END {printf "repetitiveElement_antisense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	#
 	## Assigned non-redundantly to annotated circular RNAs (sense)
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_CIRCULARRNA)_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
@@ -669,6 +669,17 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/reads.fa: $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPL
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/$(INDEX_CIRCULARRNA)_antisense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount | awk '{sum+=$$1} END {printf "circularRNA_antisense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
+
+
+##
+## Align reads to repetitive element sequences, just in case repetitive reads have not been mapped to the genome
+##
+$(OUTPUT_DIR)/$(SAMPLE_ID)/reads_NotEndogenous.fa: $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/reads.fa
+	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) SMRNAPIPELINE: Mapping reads to repetitive elements in the host genome:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) SMRNAPIPELINE: $(BOWTIE_EXE) -p $(N_THREADS) $(BOWTIE2_MAPPING_PARAMS_RRNA) --un $(OUTPUT_DIR)/$(SAMPLE_ID)/reads_NotEndogenous.fa -x $(REP_LIBS) -U $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/reads.fa 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '$$2 != 4 {print $$0}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/RepeatElementsMapped.sam\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(BOWTIE_EXE) -p $(N_THREADS) $(BOWTIE2_MAPPING_PARAMS_RRNA) --un $(OUTPUT_DIR)/$(SAMPLE_ID)/reads_NotEndogenous.fa -x $(REP_LIBS) -U $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/reads.fa 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '$$2 != 4 {print $$0}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/RepeatElementsMapped.sam
+	@echo -e "$(ts) SMRNAPIPELINE: Finished mapping to repetitive elements in the host genome\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 
 ##
