@@ -12,7 +12,7 @@
 ##                                                                                   ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                        ##
 ##                                                                                   ##
-## Version 2.2.4 (2015-05-20)                                                        ##
+## Version 2.2.5 (2015-05-29)                                                        ##
 ##                                                                                   ##
 #######################################################################################
 
@@ -166,14 +166,16 @@ ifeq ($(MAIN_ORGANISM),hsa)  ## FOR HUMAN
 
 		INDEX_GENCODE 		:= hg19_gencode
 		INDEX_PIRNA	 		:= hg19_piRNAs
-		INDEX_REP           := hg19_RepetitiveElements
+		#INDEX_REP           := hg19_RepetitiveElements
+		INDEX_REP           := $(SRNABENCH_LIBS)/customIndices/hg19_repetitiveElements
 		BOWTIE_INDEX_RRNA	:= $(SRNABENCH_LIBS)/customIndices/hg19_rRNA
 		
 	else ifeq ($(MAIN_ORGANISM_GENOME_ID),hg38) ## hg38
 		
 		INDEX_GENCODE 		:= hg38_gencode
 		INDEX_PIRNA	 		:= hg19_piRNAs
-		INDEX_REP           := hg38_RepetitiveElements
+		#INDEX_REP           := hg38_RepetitiveElements
+		INDEX_REP           := $(SRNABENCH_LIBS)/customIndices/hg38_repetitiveElements
 		BOWTIE_INDEX_RRNA	:= $(SRNABENCH_LIBS)/customIndices/hg38_rRNA
 		
 	endif
@@ -185,7 +187,8 @@ else ifeq ($(MAIN_ORGANISM),mmu)  ## FOR MOUSE
 	INDEX_GENCODE 		:= mm10_gencode
 	INDEX_TRNA			:= mm10_tRNAs
 	INDEX_PIRNA	 		:= mm10_piRNAs
-	INDEX_REP           := mm10_RepetitiveElements
+	#INDEX_REP           := mm10_RepetitiveElements
+	INDEX_REP           := $(SRNABENCH_LIBS)/customIndices/mm10_repetitiveElements
 	INDEX_CIRCULARRNA	:= mm10_CircularRNAs
 	BOWTIE_INDEX_RRNA	:= $(SRNABENCH_LIBS)/customIndices/mm10_rRNA
 	
@@ -194,7 +197,8 @@ endif
 GENCODE_LIBS := libs=$(INDEX_GENCODE)$(BOWTIE_OVERRIDE)
 TRNA_LIBS    := libs=$(INDEX_TRNA)$(BOWTIE_OVERRIDE) tRNA=$(INDEX_TRNA) 
 PIRNA_LIBS   := libs=$(INDEX_PIRNA)$(BOWTIE_OVERRIDE)
-REP_LIBS     := libs=$(INDEX_REP)$(BOWTIE_OVERRIDE)
+#REP_LIBS     := libs=$(INDEX_REP)$(BOWTIE_OVERRIDE)
+REP_LIBS     := $(INDEX_REP)
 CIRC_LIBS    := libs=$(INDEX_CIRCULARRNA)$(BOWTIE_OVERRIDE)
 
 
@@ -651,15 +655,6 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/reads.fa: $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPL
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/$(INDEX_GENCODE)_antisense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount | awk '{sum+=$$1} END {printf "gencode_antisense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	#
-	## Assigned non-redundantly to annotated repetitive elements (sense)
-	#cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_REP)_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
-	#cat $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/$(INDEX_REP)_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
-	#cat $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount | awk '{sum+=$$1} END {printf "repetitiveElement_sense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	## Assigned non-redundantly to annotated repetitive elements (antisense)
-	#cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_REP)_antisense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
-	#cat $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/$(INDEX_REP)_antisense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
-	#cat $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount | awk '{sum+=$$1} END {printf "repetitiveElement_antisense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	#
 	## Assigned non-redundantly to annotated circular RNAs (sense)
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(INDEX_CIRCULARRNA)_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/$(INDEX_CIRCULARRNA)_sense.grouped | grep -v "RPM (total)" | awk '{sum+=$$4} END {print sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.readcount
@@ -677,22 +672,26 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/reads.fa: $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPL
 $(OUTPUT_DIR)/$(SAMPLE_ID)/reads_NotEndogenous.fa: $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/reads.fa
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) SMRNAPIPELINE: Mapping reads to repetitive elements in the host genome:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: $(BOWTIE_EXE) -p $(N_THREADS) $(BOWTIE2_MAPPING_PARAMS_RRNA) --un $(OUTPUT_DIR)/$(SAMPLE_ID)/reads_NotEndogenous.fa -x $(REP_LIBS) -U $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/reads.fa 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '$$2 != 4 {print $$0}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/RepeatElementsMapped.sam\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	$(BOWTIE_EXE) -p $(N_THREADS) $(BOWTIE2_MAPPING_PARAMS_RRNA) --un $(OUTPUT_DIR)/$(SAMPLE_ID)/reads_NotEndogenous.fa -x $(REP_LIBS) -U $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/reads.fa 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '$$2 != 4 {print $$0}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/RepeatElementsMapped.sam
+	@echo -e "$(ts) SMRNAPIPELINE: $(BOWTIE_EXE) -p $(N_THREADS) $(BOWTIE2_MAPPING_PARAMS_RRNA) -f --un $(OUTPUT_DIR)/$(SAMPLE_ID)/reads_NotEndogenous.fa -x $(REP_LIBS) -U $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/reads.fa 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '$$2 != 4 {print $$0}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/RepeatElementsMapped.sam\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(BOWTIE_EXE) -p $(N_THREADS) $(BOWTIE2_MAPPING_PARAMS_RRNA) -f --un $(OUTPUT_DIR)/$(SAMPLE_ID)/reads_NotEndogenous.fa -x $(REP_LIBS) -U $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/reads.fa 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '$$2 != 4 {print $$0}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/RepeatElementsMapped.sam
 	@echo -e "$(ts) SMRNAPIPELINE: Finished mapping to repetitive elements in the host genome\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	## Input to RE alignment
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/reads.fa | grep ">" | awk -F "#" '{sum+=$$2} END {print "input_to_repetitiveElement_alignment\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	## Assigned non-redundantly to annotated REs	
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/RepeatElementsMapped.sam | grep -v "^@" | awk '{print $$1}' | sort | uniq | awk -F "#" '{SUM+=$$2}END{print "repetitiveElements\t"SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 
 
 ##
 ## Use the unmapped reads and search against all plant and viral miRNAs in miRBase
 ##
-$(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/reads.fa: $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/reads.fa
+$(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/reads.fa: $(OUTPUT_DIR)/$(SAMPLE_ID)/reads_NotEndogenous.fa
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) SMRNAPIPELINE: Mapping reads to smallRNAs of plants and viruses:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: $(JAVA_EXE) $(FIXED_PARAMS_EXOGENOUS) input=$(OUTPUT_DIR)/$(SAMPLE_ID)/readsNotDetected.fa output=$(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	$(JAVA_EXE) $(FIXED_PARAMS_EXOGENOUS) input=$(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/reads.fa output=$(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
+	@echo -e "$(ts) SMRNAPIPELINE: $(JAVA_EXE) $(FIXED_PARAMS_EXOGENOUS) input=$(OUTPUT_DIR)/$(SAMPLE_ID)/reads_NotEndogenous.fa output=$(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(JAVA_EXE) $(FIXED_PARAMS_EXOGENOUS) input=$(OUTPUT_DIR)/$(SAMPLE_ID)/reads_NotEndogenous.fa output=$(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
 	@echo -e "$(ts) SMRNAPIPELINE: Finished mapping to plant and virus small-RNAs\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Input to exogenous miRNA alignment
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome/reads.fa | grep ">" | awk -F "#" '{sum+=$$2} END {print "input_to_miRNA_exogenous\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/reads_NotEndogenous.fa | grep ">" | awk -F "#" '{sum+=$$2} END {print "input_to_miRNA_exogenous\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	## Assigned non-redundantly to annotated exogenous miRNAs
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/mature_sense.grouped | awk '{sum+=$$4} END {printf "miRNA_exogenous_sense\t%.0f\n",sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 
