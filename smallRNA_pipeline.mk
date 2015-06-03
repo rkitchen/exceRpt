@@ -12,9 +12,10 @@
 ##                                                                                   ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                        ##
 ##                                                                                   ##
-## Version 2.2.5 (2015-05-29)                                                        ##
+## Version 2.2.6 (2015-06-03)                                                        ##
 ##                                                                                   ##
 #######################################################################################
+EXCERPT_VERSION := 2.2.6
 
 
 ##
@@ -473,7 +474,7 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/Progress_1_FoundAdapter.dat:
 	$(COMMAND_WRITE_ADAPTER_SEQ)
 	@echo -e "$(ts) SMRNAPIPELINE: Progress_1_FoundAdapter" > $(OUTPUT_DIR)/$(SAMPLE_ID)/Progress_1_FoundAdapter.dat
 	#
-	@echo -e "#STATS from smallRNA-seq Pipeline for sample $(SAMPLE_ID)" > $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	@echo -e "#STATS from smallRNA-seq Pipeline v.$(EXCERPT_VERSION) for sample $(SAMPLE_ID)" > $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	@echo -e "Stage\tReadCount" >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 
 
