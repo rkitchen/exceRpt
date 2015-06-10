@@ -464,7 +464,7 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/Progress_1_FoundAdapter.dat:
 	#$(EXPORT_CMD)
 	@echo -e "$(USEAGE)"
 	mkdir -p $(OUTPUT_DIR)/$(SAMPLE_ID)
-	@echo -e "$(ts) SMRNAPIPELINE: BEGIN smallRNA-seq Pipeline for sample $(SAMPLE_ID)\n======================\n" > $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) SMRNAPIPELINE: BEGIN exceRpt smallRNA-seq pipeline for sample $(SAMPLE_ID)\n======================\n" > $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) SMRNAPIPELINE: BEGIN \n" > $(OUTPUT_DIR)/$(SAMPLE_ID).err
 	@echo -e "$(ts) SMRNAPIPELINE: Created results dir: $(OUTPUT_DIR)/$(SAMPLE_ID)\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	#
