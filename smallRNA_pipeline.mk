@@ -12,10 +12,10 @@
 ##                                                                                   ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                        ##
 ##                                                                                   ##
-## Version 2.2.7 (2015-06-17)                                                        ##
+## Version 2.2.8 (2015-06-18)                                                        ##
 ##                                                                                   ##
 #######################################################################################
-EXCERPT_VERSION := 2.2.7
+EXCERPT_VERSION := 2.2.8
 
 
 ##
@@ -98,7 +98,7 @@ ifeq ($(LOCAL_EXECUTION),true)
 	SAMTOOLS_EXE     := $(EXE_DIR)/samtools-0.1.18/samtools
 	FASTQC_EXE       := $(JAVA_EXE) -classpath $(EXE_DIR)/FastQC_0.11.2:$(EXE_DIR)/FastQC_0.11.2/sam-1.103.jar:$(EXE_DIR)/FastQC_0.11.2/jbzip2-0.9.jar
 	#SRATOOLS_EXE     := $(EXE_DIR)/sratoolkit.2.1.7-centos_linux64/fastq-dump
-	SRATOOLS_EXE     := $(EXE_DIR)/sratoolkit.2.3.5-2-centos_linux64/bin/fastq-dump
+	SRATOOLS_EXE     := $(EXE_DIR)/sratoolkit.2.5.1-centos_linux64/bin/fastq-dump
 	THUNDER_EXE      := $(EXE_DIR)/Thunder.jar
 	SRNABENCH_EXE    := $(EXE_DIR)/sRNAbench.jar
 	SRNABENCH_LIBS   := $(EXE_DIR)/sRNAbenchDB
