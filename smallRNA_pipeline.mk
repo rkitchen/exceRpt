@@ -465,7 +465,7 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/Progress_1_FoundAdapter.dat:
 	#$(EXPORT_CMD)
 	@echo -e "$(USEAGE)"
 	mkdir -p $(OUTPUT_DIR)/$(SAMPLE_ID)
-	@echo -e "$(ts) SMRNAPIPELINE: BEGIN exceRpt smallRNA-seq pipeline for sample $(SAMPLE_ID)\n======================\n" > $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) SMRNAPIPELINE: BEGIN exceRpt smallRNA-seq pipeline v.$(EXCERPT_VERSION) for sample $(SAMPLE_ID)\n======================\n" > $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) SMRNAPIPELINE: BEGIN \n" > $(OUTPUT_DIR)/$(SAMPLE_ID).err
 	@echo -e "$(ts) SMRNAPIPELINE: Created results dir: $(OUTPUT_DIR)/$(SAMPLE_ID)\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	#
@@ -475,7 +475,7 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/Progress_1_FoundAdapter.dat:
 	$(COMMAND_WRITE_ADAPTER_SEQ)
 	@echo -e "$(ts) SMRNAPIPELINE: Progress_1_FoundAdapter" > $(OUTPUT_DIR)/$(SAMPLE_ID)/Progress_1_FoundAdapter.dat
 	#
-	@echo -e "#STATS from smallRNA-seq Pipeline v.$(EXCERPT_VERSION) for sample $(SAMPLE_ID)" > $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	@echo -e "#STATS from the exceRpt smallRNA-seq pipeline v.$(EXCERPT_VERSION) for sample $(SAMPLE_ID)" > $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	@echo -e "Stage\tReadCount" >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 
 
