@@ -92,7 +92,7 @@ ifeq ($(LOCAL_EXECUTION),true)
 	JAVA_EXE         := /usr/bin/java
 	FASTX_CLIP_EXE   := $(EXE_DIR)/fastx_0.0.14/bin/fastx_clipper
 	FASTX_FILTER_EXE := $(EXE_DIR)/fastx_0.0.14/bin/fastq_quality_filter
-	#BOWTIE1_PATH    := $(EXE_DIR)/bowtie-1.1.1
+	BOWTIE1_PATH    := $(EXE_DIR)/bowtie-1.1.1/bowtie
 	#VIENNA_PATH     := $(EXE_DIR)/ViennaRNA_2.1.5/bin
 	BOWTIE_EXE       := $(EXE_DIR)/bowtie2-2.2.4/bowtie2
 	SAMTOOLS_EXE     := $(EXE_DIR)/samtools-0.1.18/samtools
