@@ -68,6 +68,14 @@ breaks=seq(0,max(fractions),length.out=50)
 heatmap.2(t(fractions), trace="none",breaks=breaks,col=colorRampPalette(c("white","red","yellow"))(length(breaks)-1), key.xlab="estimated fraction contributed")
 
 
+total = 20477310
+sigs = rbind(c(125260,162195),c(104415,301971))/20477310
+solve(rbind(c(15156,12995),c(4590,0)))
+res = DeconRNASeq(as.data.frame(rbind(c(15156,12995),c(4590,0))), as.data.frame(rbind(c(1,1),c(1,1))), known.prop=F, fig=F, checksig=TRUE)
+require(NMF)
+nmf(rbind(c(15156,12995),c(4590,0)), 1)
+
+
 # 
 # 
 # require(plyr)
