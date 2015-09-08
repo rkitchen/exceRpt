@@ -12,10 +12,10 @@
 ##                                                                                   ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                        ##
 ##                                                                                   ##
-## Version 3.0.3 (2015-08-11)                                                        ##
+## Version 3.1.0 (2015-09-01)                                                        ##
 ##                                                                                   ##
 #######################################################################################
-EXCERPT_VERSION := 3.0.3
+EXCERPT_VERSION := 3.1.0
 
 
 ##
@@ -100,7 +100,8 @@ ifeq ($(LOCAL_EXECUTION),true)
 	SRNABENCH_EXE    := $(EXE_DIR)/sRNAbench.jar
 	SRNABENCH_LIBS   := $(EXE_DIR)/sRNAbenchDB
 	DATABASE_PATH    := $(EXE_DIR)/DATABASE
-	STAR_EXE         := $(EXE_DIR)/STAR_2.4.0i/bin/Linux_x86_64/STAR
+	#STAR_EXE         := $(EXE_DIR)/STAR_2.4.0i/bin/Linux_x86_64/STAR
+	STAR_EXE         := $(EXE_DIR)/STAR_2.4.2a/bin/Linux_x86_64/STAR
 	STAR_GENOMES_DIR := /gpfs/scratch/fas/gerstein/rrk24/ANNOTATIONS/Genomes_BacteriaFungiMammalPlantProtistVirus
 	
 	##
@@ -331,19 +332,19 @@ endif
 ##
 ## Compress only the most vital output!
 ##
+#ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome | awk '{print $$9}' | grep "sense.grouped\|stat" | awk '{print "$(SAMPLE_ID)/noGenome/"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt;
 COMPRESS_COMMAND := ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID) | awk '{print $$9}' | grep "readCounts_\|.readLengths.txt\|_fastqc.zip\|.counts\|.adapterSeq\|.qualityEncoding" | awk '{print "$(SAMPLE_ID)/"$$1}' > $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt; \
-#ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome | awk '{print $$9}' | grep "sense.grouped\|stat" | awk '{print "$(SAMPLE_ID)/noGenome/"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt; \
 echo $(SAMPLE_ID).log >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt; \
 echo $(SAMPLE_ID).stats >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt
 ifneq ($(CALIBRATOR_LIBRARY),NULL)
-	#COMPRESS_COMMAND := $(COMPRESS_COMMAND); echo $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.calibratormapped.counts >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt
-	COMPRESS_COMMAND := $(COMPRESS_COMMAND); echo $(SAMPLE_ID).clipped.filtered.calibratormapped.counts >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt
+	COMPRESS_COMMAND := $(COMPRESS_COMMAND); ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID) | awk '{print $$9}' | grep "calibratormapped.counts" | awk '{print "$(SAMPLE_ID)/"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt
 endif
 ifneq ($(wildcard $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/.),)
-	COMPRESS_COMMAND := $(COMPRESS_COMMAND); ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA | awk '{print $$9}' | grep "sense.grouped" | awk '{print "$(SAMPLE_ID)/EXOGENOUS_miRNA/"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt
+	COMPRESS_COMMAND := $(COMPRESS_COMMAND); ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA | awk '{print $$9}' | grep "exogenous_miRBase_mapped" | awk '{print "$(SAMPLE_ID)/EXOGENOUS_miRNA/"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt
 endif
 ifneq ($(wildcard $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/.),)
-	COMPRESS_COMMAND := $(COMPRESS_COMMAND); ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes | awk '{print $$9}' | grep "ExogenousGenomicAlignments.sorted.txt\|ExogenousGenomicAlignments.result.txt" | awk '{print "$(SAMPLE_ID)/EXOGENOUS_genomes/"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt
+	#COMPRESS_COMMAND := $(COMPRESS_COMMAND); ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes | awk '{print $$9}' | grep "ExogenousGenomicAlignments.sorted.txt\|ExogenousGenomicAlignments.result.txt" | awk '{print "$(SAMPLE_ID)/EXOGENOUS_genomes/"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt
+	COMPRESS_COMMAND := $(COMPRESS_COMMAND); ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes | awk '{print $$9}' | grep "ExogenousGenomicAlignments.result.txt" | awk '{print "$(SAMPLE_ID)/EXOGENOUS_genomes/"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt
 endif
 
 
@@ -685,18 +686,18 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousUnaligned_ungapped_noLibs.fq: $(OUTPUT_DIR)
 	$(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) ProcessEndogenousAlignments --hairpin2genome $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRNA_precursor2genome.sam --mature2hairpin $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRNA_mature2precursor.sam --reads2all $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_LIBS.sam --outputPath $(OUTPUT_DIR)/$(SAMPLE_ID) $(ENDOGENOUS_QUANT_RANDOM_BARCODE_STATS) 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) SMRNAPIPELINE: Finished assigning reads\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Summarise alignment statistics
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_miRNAmature_sense.txt | awk '{SUM+=$$2}END{printf "miRNA_sense\t%.0f\n",SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_miRNAmature_antisense.txt | awk '{SUM+=$$2}END{printf "miRNA_antisense\t%.0f\n",SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_miRNAprecursor_sense.txt | awk '{SUM+=$$2}END{printf "miRNAprecursor_sense\t%.0f\n",SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_miRNAprecursor_antisense.txt | awk '{SUM+=$$2}END{printf "miRNAprecursor_antisense\t%.0f\n",SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_tRNA_sense.txt | awk '{SUM+=$$2}END{printf "tRNA_sense\t%.0f\n",SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_tRNA_antisense.txt | awk '{SUM+=$$2}END{printf "tRNA_antisense\t%.0f\n",SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_piRNA_sense.txt | awk '{SUM+=$$2}END{printf "piRNA_sense\t%.0f\n",SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_piRNA_antisense.txt | awk '{SUM+=$$2}END{printf "piRNA_antisense\t%.0f\n",SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_gencode_sense.txt | awk '{SUM+=$$2}END{printf "gencode_sense\t%.0f\n",SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_gencode_antisense.txt | awk '{SUM+=$$2}END{printf "gencode_antisense\t%.0f\n",SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_circularRNA_sense.txt | awk '{SUM+=$$2}END{printf "circularRNA_sense\t%.0f\n",SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_circularRNA_antisense.txt | awk '{SUM+=$$2}END{printf "circularRNA_antisense\t%.0f\n",SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_miRNAmature_sense.txt | awk '{SUM+=$$4}END{printf "miRNA_sense\t%.0f\n",SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_miRNAmature_antisense.txt | awk '{SUM+=$$4}END{printf "miRNA_antisense\t%.0f\n",SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_miRNAprecursor_sense.txt | awk '{SUM+=$$4}END{printf "miRNAprecursor_sense\t%.0f\n",SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_miRNAprecursor_antisense.txt | awk '{SUM+=$$4}END{printf "miRNAprecursor_antisense\t%.0f\n",SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_tRNA_sense.txt | awk '{SUM+=$$4}END{printf "tRNA_sense\t%.0f\n",SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_tRNA_antisense.txt | awk '{SUM+=$$4}END{printf "tRNA_antisense\t%.0f\n",SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_piRNA_sense.txt | awk '{SUM+=$$4}END{printf "piRNA_sense\t%.0f\n",SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_piRNA_antisense.txt | awk '{SUM+=$$4}END{printf "piRNA_antisense\t%.0f\n",SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_gencode_sense.txt | awk '{SUM+=$$4}END{printf "gencode_sense\t%.0f\n",SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_gencode_antisense.txt | awk '{SUM+=$$4}END{printf "gencode_antisense\t%.0f\n",SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_circularRNA_sense.txt | awk '{SUM+=$$4}END{printf "circularRNA_sense\t%.0f\n",SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_circularRNA_antisense.txt | awk '{SUM+=$$4}END{printf "circularRNA_antisense\t%.0f\n",SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	## Count reads not mapping to the genome or to the libraries
 	@echo -e "$(ts) SMRNAPIPELINE: Outputting reads not aligned to either the genome or transcripts:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	grep "nogenome" $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.txt | awk '{print $$1}' | uniq > $(OUTPUT_DIR)/$(SAMPLE_ID)/readsMappedToLibs.tmp
@@ -758,52 +759,108 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/unaligned.fq.gz: $(OUTPUT_DIR)/$(SAMP
 	@echo -e "$(ts) SMRNAPIPELINE: Finished mapping to all miRNAs in miRBase\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 
+
 ##
-## NEW routines for aligning unmapped reads to exogenous sequences
+## Use the unmapped reads and search against all rRNAs in RDP (ribosome DB)
+##
+$(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/unaligned.fq.gz: $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/unaligned.fq.gz
+	mkdir -p $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA
+	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) SMRNAPIPELINE: Mapping reads to rRNA sequences in RDP (a.k.a. ribosome DB):\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) SMRNAPIPELINE: $(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_ --genomeDir $(DATABASE_PATH)/ribosomeDatabase/exogenous_rRNAs --readFilesIn $< --outReadsUnmapped Fastx --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_ --genomeDir $(DATABASE_PATH)/ribosomeDatabase/exogenous_rRNAs --readFilesIn $< --outReadsUnmapped Fastx --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	## Input to exogenous rRNA alignment
+	grep "Number of input reads" $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_Log.final.out | tr '[:blank:]' ' ' | awk -F " \\\| " '{print "input_to_exogenous_rRNA\t"$$2}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	## Assigned non-redundantly to annotated exogenous rRNAs
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_Aligned.out.sam | grep -v "^@" | awk '{print $$1}' | sort | uniq | wc -l | awk '{print "exogenous_rRNA\t"$$0}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	## compress and tidy up
+	gzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_Unmapped.out.mate1 > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/unaligned.fq.gz
+	$(SAMTOOLS_EXE) view -@ $(N_THREADS) -b $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_Aligned.out.sam > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_Aligned.bam
+	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_Unmapped.out.mate1
+	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_Aligned.out.sam
+	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_Log.out
+	@echo -e "$(ts) SMRNAPIPELINE: Finished mapping to rRNA sequences in RDP\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+
+
+
+##
+## Routines for aligning unmapped reads to exogenous sequences
 ##
 ## Bacteria
-$(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria10_Aligned.out.sam: $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/unaligned.fq.gz
+$(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria10_Aligned.out.sam: $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/unaligned.fq.gz
 	mkdir -p $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria1_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA1 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria2_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA2 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria3_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA3 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria4_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA4 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria5_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA5 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria6_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA6 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria7_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA7 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria8_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA8 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria9_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA9 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria10_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA10 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in
+	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) SMRNAPIPELINE: Mapping reads to exogenous GENOMES of BACTERIA:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) SMRNAPIPELINE: Bacteria1:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria1_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA1 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) SMRNAPIPELINE: Bacteria2:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria2_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA2 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) SMRNAPIPELINE: Bacteria3:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria3_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA3 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) SMRNAPIPELINE: Bacteria4:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria4_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA4 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) SMRNAPIPELINE: Bacteria5:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria5_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA5 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) SMRNAPIPELINE: Bacteria6:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria6_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA6 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) SMRNAPIPELINE: Bacteria7:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria7_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA7 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) SMRNAPIPELINE: Bacteria8:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria8_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA8 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) SMRNAPIPELINE: Bacteria9:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria9_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA9 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) SMRNAPIPELINE: Bacteria10:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria10_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA10 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) SMRNAPIPELINE: Finished mapping to exogenous GENOMES of BACTERIA\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 ## Plants
-$(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Plants5_Aligned.out.sam: $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/unaligned.fq.gz
+$(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Plants5_Aligned.out.sam: $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/unaligned.fq.gz
 	mkdir -p $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Plants1_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_PLANTS1 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Plants2_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_PLANTS2 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Plants3_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_PLANTS3 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Plants4_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_PLANTS4 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Plants5_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_PLANTS5 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in
+	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) SMRNAPIPELINE: Mapping reads to exogenous GENOMES of PLANTS:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) SMRNAPIPELINE: Plants1:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Plants1_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_PLANTS1 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) SMRNAPIPELINE: Plants2:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Plants2_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_PLANTS2 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) SMRNAPIPELINE: Plants3:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Plants3_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_PLANTS3 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) SMRNAPIPELINE: Plants4:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Plants4_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_PLANTS4 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) SMRNAPIPELINE: Plants5:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Plants5_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_PLANTS5 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) SMRNAPIPELINE: Finished mapping to exogenous GENOMES of PLANTS\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 ## Fungi, Protist, and Virus
-$(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/FungiProtistVirus_Aligned.out.sam: $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/unaligned.fq.gz
+$(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/FungiProtistVirus_Aligned.out.sam: $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/unaligned.fq.gz
 	mkdir -p $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/FungiProtistVirus_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_FUNGI_PROTIST_VIRUS --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in
+	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) SMRNAPIPELINE: Mapping reads to exogenous GENOMES of FUNGI, PROTISTS, and VIRUSES:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/FungiProtistVirus_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_FUNGI_PROTIST_VIRUS --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) SMRNAPIPELINE: Finished mapping to exogenous GENOMES of FUNGI, PROTISTS, and VIRUSES\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 ## Vertebrates
-$(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Vertebrate4_Aligned.out.sam: $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/unaligned.fq.gz
+$(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Vertebrate4_Aligned.out.sam: $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/unaligned.fq.gz
 	mkdir -p $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Vertebrate1_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_VERTEBRATE1 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Vertebrate2_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_VERTEBRATE2 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Vertebrate3_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_VERTEBRATE3 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Vertebrate4_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_VERTEBRATE4 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in
-
+	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) SMRNAPIPELINE: Mapping reads to exogenous GENOMES of VERTEBRATES:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) SMRNAPIPELINE: Vertebrate1:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Vertebrate1_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_VERTEBRATE1 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) SMRNAPIPELINE: Vertebrate2:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Vertebrate2_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_VERTEBRATE2 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) SMRNAPIPELINE: Vertebrate3:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Vertebrate3_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_VERTEBRATE3 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) SMRNAPIPELINE: Vertebrate4:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Vertebrate4_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_VERTEBRATE4 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) SMRNAPIPELINE: Finished mapping to exogenous GENOMES of VERTEBRATES\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 
 ##
 ## Combine exogenous genome alignment info
 ##
 $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.txt: $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria10_Aligned.out.sam $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Plants5_Aligned.out.sam $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/FungiProtistVirus_Aligned.out.sam $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Vertebrate4_Aligned.out.sam
-	
+	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) SMRNAPIPELINE: Collecting all alignments to exogenous GENOMES:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	#
 	#cat $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria1_Aligned.out.sam | grep -v "^@" | awk '{print $$1,$$3,$$4,$$6,$$10}' | uniq | sed 's/[:$$]/ /g' | awk '{print $$1"\tBacteria\t"$$2"\t"$$7"\t"$$12"\t"$$13"\t"$$14}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria_Aligned.out.sam.summary
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria1_Aligned.out.sam | grep -v "^@" | awk '{print $$1,$$3,$$4,$$6,$$10}' | uniq | awk '{split($$2,a,"[$$:]");print $$1"\tBacteria\t"a[1]"\t"a[7]"\t"$$3"\t"$$4"\t"$$5}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria_Aligned.out.sam.summary
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria2_Aligned.out.sam | grep -v "^@" | awk '{print $$1,$$3,$$4,$$6,$$10}' | uniq | awk '{split($$2,a,"[$$:]");print $$1"\tBacteria\t"a[1]"\t"a[7]"\t"$$3"\t"$$4"\t"$$5}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria_Aligned.out.sam.summary
@@ -841,14 +898,15 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.t
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Protist_Aligned.out.sam.summary >> $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.txt
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Vertebrate_Aligned.out.sam.summary >> $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.txt
 	#
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.txt | sort -k 1 > $@
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.txt | sort -k 1,1 > $@
 	#
 	## Input to exogenous genome alignment
-	gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/unaligned.fq.gz | wc -l | awk '{print "input_to_exogenous_genomes\t"$$1/4}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/unaligned.fq.gz | wc -l | awk '{print "input_to_exogenous_genomes\t"$$1/4}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	## Count reads mapped to exogenous genomes:
 	#cat $@ | awk '{print $$1}' | uniq | awk -F "#" '{SUM += $$2} END {print "exogenous_genomes\t"SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	cat $@ | awk '{print $$1}' | uniq | wc -l | awk '{print "exogenous_genomes\t"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-
+	#
+	@echo -e "\n$(ts) SMRNAPIPELINE: Finished mapping to exogenous GENOMES of VERTEBRATES\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 
 ##
@@ -863,13 +921,14 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.result.t
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.unique.txt | awk '{print $$1}' | uniq -c | awk '{if($$1==1) print $$2}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/tmp.speciesUniqueReads
 	#
 	## count all reads aligning to each species, regardless of multimapping
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.unique.txt | sed 's/#/\t/' | awk '{arr[$$3"\t"$$4]+=$$2} END {for (x in arr) print x"\t"arr[x]}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/tmp.counts
+	#cat $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.unique.txt | sed 's/#/\t/' | awk '{arr[$$3"\t"$$4]+=$$2} END {for (x in arr) print x"\t"arr[x]}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/tmp.counts
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.unique.txt | awk '{arr[$$2"\t"$$3]+=1} END {for (x in arr) print x"\t"arr[x]}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/tmp.counts
 	## count only reads aligning to each species that only multi map to the same kingdom
 	awk 'NR==FNR {h[$$1]="YES_YES_YES"; next} {print $$1,$$2,$$3,h[$$1]}' $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/tmp.kingdomUniqueReads $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.unique.txt | grep "YES_YES_YES" | awk '{print $$1"\t"$$2"\t"$$3}' | sed 's/#/\t/' | awk '{arr[$$3"\t"$$4]+=$$2} END {for (x in arr) print x"\t"arr[x]}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/tmp.kingdom.counts
 	awk 'NR==FNR {h[$$1]="YES_YES_YES"; next} {print $$1,$$2,$$3,h[$$1]}' $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/tmp.speciesUniqueReads $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.unique.txt | grep "YES_YES_YES" | awk '{print $$1"\t"$$2"\t"$$3}' | sed 's/#/\t/' | awk '{arr[$$3"\t"$$4]+=$$2} END {for (x in arr) print x"\t"arr[x]}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/tmp.species.counts
 	## combine all counts and kingdom level counts:
-	awk 'NR==FNR {h[$$2]=$$3; next} {if($$2 in h) print $$0"\t"h[$$2]; else print $$0"\t0"}' $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/tmp.kingdom.counts $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/tmp.counts > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/tmp
-	awk 'NR==FNR {h[$$2]=$$3; next} {if($$2 in h) print $$0"\t"h[$$2]; else print $$0"\t0"}' $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/tmp.species.counts $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/tmp | sort -nrk 5 > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.result.txt
+	awk 'NR==FNR {h[$$1]=$$2; next} {if($$2 in h) print $$0"\t"h[$$2]; else print $$0"\t0"}' $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/tmp.kingdom.counts $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/tmp.counts > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/tmp
+	awk 'NR==FNR {h[$$1]=$$2; next} {if($$2 in h) print $$0"\t"h[$$2]; else print $$0"\t0"}' $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/tmp.species.counts $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/tmp | sort -nrk 5 > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.result.txt
 	# tidy up
 	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/tmp*
 

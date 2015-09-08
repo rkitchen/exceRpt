@@ -4,7 +4,7 @@
 ##                                                                                   ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                        ##
 ##                                                                                   ##
-## Version 2.1.0 (2015-06-22)                                                        ##
+## Version 3.0.1 (2015-08-12)                                                        ##
 ##                                                                                   ##
 #######################################################################################
 
@@ -37,18 +37,19 @@ if(length(args) >= 1){
   cat("Usage: Rscript mergePipelineRuns.R <data path> [output path]\n\n")
   #data.dir = "~/Box Sync/Work for other people/FraminghamSmallRNA/Data"
   #output.dir = "~/Box Sync/Work for other people/FraminghamSmallRNA"
-  #data.dir = "/Users/robk/WORK/YALE_offline/miRNA/PipelineOutput"
-  #data.dir = "/Users/robk/WORK/YALE_offline/exRNA/newPipelineTest"  
-  #data.dir = "/Users/robk/WORK/YALE_offline/exRNA/DavidGalas"
-  #data.dir = "/Users/robk/WORK/YALE_offline/exRNA/TomTuschl"
-  #data.dir = "/Users/robk/WORK/YALE_offline/exRNA/TomTuschl_singleSample"
-  #data.dir = "/Users/robk/WORK/YALE_offline/exRNA/AlCharest"	
-  #data.dir = "/Users/robk/WORK/YALE_offline/exRNA/LouiseLaurent"
-  #data.dir = "/Users/robk/WORK/YALE_offline/exRNA/YanAssman"
-  #data.dir = "/Users/robk/WORK/YALE_offline/exRNA/exceRptLibraryAnalysis"
-  #data.dir = "/Users/robk/WORK/YALE_offline/exRNA/exceRptCombinatorialAnalysis"
-  #data.dir = "/Users/robk/WORK/YALE_offline/exRNA/TESTING"
-  
+  #data.dir = "~/WORK/YALE_offline/miRNA/PipelineOutput"
+  #data.dir = "~/WORK/YALE_offline/exRNA/newPipelineTest"  
+  #data.dir = "~/WORK/YALE_offline/exRNA/DavidGalas"
+  #data.dir = "~/WORK/YALE_offline/exRNA/TomTuschl"
+  #data.dir = "~/WORK/YALE_offline/exRNA/TomTuschl_singleSample"
+  #data.dir = "~/WORK/YALE_offline/exRNA/AlCharest"	
+  #data.dir = "~/WORK/YALE_offline/exRNA/LouiseLaurent"
+  #data.dir = "~/WORK/YALE_offline/exRNA/YanAssman"
+  #data.dir = "~/WORK/YALE_offline/exRNA/exceRptLibraryAnalysis"
+  #data.dir = "~/WORK/YALE_offline/exRNA/exceRptCombinatorialAnalysis"
+  #data.dir = "~/WORK/YALE_offline/exRNA/TESTING"
+  #data.dir = "~/WORK/YALE_offline/exRNA/AmyBuck"
+  data.dir = "~/WORK/YALE_offline/BrainSpan/smallRNA_new/exceRpt_Results"
   output.dir = data.dir
 }
 
@@ -86,13 +87,13 @@ SearchForSampleData = function(base.dir, directory=""){
   dir.use = paste(base.dir, directory, sep = "/")
   subdirs = dir(dir.use)
   if(length(subdirs) > 0){
-    i.stats = grep(".stats$", subdirs, perl=T)
-    i.zip = grep(".zip$", subdirs, perl=T)
-    i.tar = grep(".tgz$|.tar.gz$", subdirs, perl=T)
+    i.stats = grep("\\.stats$", subdirs, perl=T)
+    i.zip = grep("\\.zip$", subdirs, perl=T)
+    i.tar = grep("\\.tgz$|\\.tar.gz$", subdirs, perl=T)
     
     ## handle decompressed pipeline output
     if(length(i.stats) > 0){
-      tmp = gsub(".stats","",subdirs[i.stats])
+      tmp = gsub("\\.stats$","",subdirs[i.stats])
       to.return = c(to.return, paste(dir.use,tmp,sep="/"))
     }
     
@@ -100,9 +101,9 @@ SearchForSampleData = function(base.dir, directory=""){
     if(length(i.zip) > 0){
       for(x in i.zip){
         tmp.contents = unzip(paste(dir.use,subdirs[x],sep="/"), list=T)[,1]
-        if(length(grep(".stats$", tmp.contents, perl=T)) > 0){
-          try(unzip(paste(dir.use,subdirs[x],sep="/"), exdir=gsub(".zip","",paste(dir.use,subdirs[x],sep="/")), overwrite=FALSE), silent=T)
-          to.return = c(to.return, paste(dir.use,gsub(".zip$","",subdirs[x]),sep="/",gsub(".stats$","",tmp.contents[grep(".stats$", tmp.contents)])))
+        if(length(grep("\\.stats$", tmp.contents, perl=T)) > 0){
+          try(unzip(paste(dir.use,subdirs[x],sep="/"), exdir=file_path_as_absolute(gsub("\\.zip","",paste(dir.use,subdirs[x],sep="/"))), overwrite=FALSE), silent=T)
+          to.return = c(to.return, paste(dir.use,gsub("\\.zip$","",subdirs[x]),sep="/",gsub("\\.stats$","",tmp.contents[grep("\\.stats$", tmp.contents)])))
         }
       }
     }
@@ -112,16 +113,16 @@ SearchForSampleData = function(base.dir, directory=""){
       for(x in i.tar){
         tmp.dir = paste(dir.use,subdirs[x],sep="/")
         tmp.contents = untar(tmp.dir, list=T, tar="tar")
-        if(length(grep(".stats$", tmp.contents, perl=T)) > 0){
-          try(untar(tmp.dir, exdir=gsub(".tgz$|.tar.gz$","",tmp.dir), tar="tar"), silent=T)
-          to.return = c(to.return, paste(dir.use,gsub(".tgz$|.tar.gz$","",subdirs[x]),sep="/",gsub(".stats$","",tmp.contents[grep(".stats$", tmp.contents)])))
+        if(length(grep("\\.stats$", tmp.contents, perl=T)) > 0){
+          try(untar(tmp.dir, exdir=file_path_as_absolute(gsub("\\.tgz$|\\.tar.gz$","",tmp.dir)), tar="tar"), silent=T)
+          to.return = c(to.return, paste(dir.use, gsub("\\.tgz$|\\.tar.gz$","",subdirs[x]), gsub("\\.stats$","",tmp.contents[grep("\\.stats$", tmp.contents)]),sep="/"))
         }
       }
     }
     
     ## handle unknown directories
-    i.known = c(i.stats,i.zip)
-    if(length(i.known) == 0){		# there are no .stats or .zip files in the directory!
+    i.known = c(i.stats,i.zip,i.tar)
+    if(length(i.known) == 0){		# there are no .stats, .zip, or .tgz/.tar.gz files in the directory!
       i.unknown = 1:length(subdirs)
     }else{
       i.unknown = (1:length(subdirs))[-i.known]
@@ -147,39 +148,6 @@ NumberOfCompatibleSamples = length(samplePathList)
 stopifnot(NumberOfCompatibleSamples > 0)
 
 
-##
-## Function to read the sample data
-##
-readData = function(path,file,countColumnIndex=4){
-  if(length(grep(file,dir(path))) == 1){
-    file = dir(path)[grep(file,dir(path))]
-    tmp = read.table(paste(path,file,sep="/"), header=T, sep="\t", comment.char="", stringsAsFactors=F, fill=T, colClasses=c("character","numeric","numeric","numeric","numeric","numeric"))[,1:6]
-    
-    ## New!  Handle reads aligning to the libraries, but not to the host genome (for splice junctions, etc)
-    if(file %in% dir(paste(path,"noGenome",sep="/"))){
-      tmp2 = read.table(paste(paste(path,"noGenome",sep="/"),file,sep="/"), header=T, sep="\t", comment.char="", stringsAsFactors=F, fill=T, colClasses=c("character","numeric","numeric","numeric","numeric","numeric"))[,1:6]
-      colnames(tmp2) = colnames(tmp)
-      
-      ## Find features that already have genome-counts
-      to.add = tmp2[tmp2$name %in% tmp$name, ]
-      if(nrow(to.add) > 0){
-        tmp[match(to.add$name, tmp$name), countColumnIndex] = tmp[match(to.add$name, tmp$name), countColumnIndex] + to.add[,countColumnIndex]
-      }
-      ## For the features that do not have genome-counts, add them to the end of the matrix
-      tmp = rbind(tmp, tmp2[!tmp2$name %in% tmp$name, ])
-    }
-    
-    #return(ddply(tmp,"name",function(block){ coords=""; if(ncol(block)==7){ coords=paste(block[,7],collapse="_") }; return(c(sum(block[,countColumnIndex]), coords)) }))
-    if(length(unique(tmp$name)) == nrow(tmp)){
-      return(tmp[,c(1,countColumnIndex)])
-    }else{
-      return(ddply(tmp,"name",function(block){ return(sum(block[,countColumnIndex])) }))
-    }
-  }else{
-    return(NULL)
-  }
-}
-
 
 ##
 ## Create objects to contain the data
@@ -189,11 +157,10 @@ allIDs.miRNA = NULL
 allIDs.tRNA = NULL
 allIDs.piRNA = NULL
 allIDs.gencode = NULL
-#allIDs.repElements = NULL
 allIDs.circularRNA = NULL
 allIDs.exogenous_miRNA = NULL
 allIDs.exogenous_genomes = NULL
-mapping.stats = matrix(0,nrow=length(samplePathList),ncol=25, dimnames=list(1:length(samplePathList), c("input","successfully_clipped","failed_quality_filter","failed_homopolymer_filter","calibrator","UniVec_contaminants","rRNA","reads_used_for_alignment","genome","miRNA_sense","miRNA_antisense","tRNA_sense","tRNA_antisense","piRNA_sense","piRNA_antisense","gencode_sense","gencode_antisense","circularRNA_sense","circularRNA_antisense","input_to_repetitiveElement_alignment","repetitiveElements","input_to_miRNA_exogenous","miRNA_exogenous_sense","input_to_exogenous_genomes","exogenous_genomes")))
+mapping.stats = matrix(0,nrow=length(samplePathList),ncol=28, dimnames=list(1:length(samplePathList), c("input","successfully_clipped","failed_quality_filter","failed_homopolymer_filter","calibrator","UniVec_contaminants","rRNA","reads_used_for_alignment","genome","miRNA_sense","miRNA_antisense","miRNAprecursor_sense","miRNAprecursor_antisense","tRNA_sense","tRNA_antisense","piRNA_sense","piRNA_antisense","gencode_sense","gencode_antisense","circularRNA_sense","circularRNA_antisense","not_mapped_to_genome_or_libs","repetitiveElements","endogenous_gapped","input_to_exogenous_miRNA","exogenous_miRNA","input_to_exogenous_genomes","exogenous_genomes")))
 maxReadLength = 1000
 read.lengths = matrix(0,nrow=length(samplePathList),ncol=maxReadLength+1,dimnames=list(1:length(samplePathList), 0:maxReadLength))
 
@@ -221,60 +188,107 @@ for(i in 1:length(samplePathList)){
     read.lengths[i, 1:ncol(tmp)] = as.numeric(tmp[2,])
     rownames(read.lengths)[i] = thisSampleID
   }
-  ## TODO:  Read the read-lengths input to sRNAbench in /stat?
-  if("readLengthAnalysis.txt" %in% dir(paste(samplePathList[i],"/stat",sep=""))){
-    #read.table(paste(samplePathList[i],"/stat/readLengthAnalysis.txt",sep=""), sep="\t", header=T)
-  }
   
   
   ##
   ## Read the adapter sequence
   ##
   if(paste(thisSampleID,".adapterSeq",sep="") %in% dir(samplePathList[i])){
-  	tmp.seq = try(read.table(paste(samplePathList[i],"/",thisSampleID,".adapterSeq",sep="")), silent=T)
-  	if(class(tmp.seq) == "try-error"){
-  		adapterSeq = NA
-  	}else{
-		adapterSeq = as.character(tmp.seq[1,1])
-  	}
+    tmp.seq = try(read.table(paste(samplePathList[i],"/",thisSampleID,".adapterSeq",sep="")), silent=T)
+    if(class(tmp.seq) == "try-error"){
+      adapterSeq = NA
+    }else{
+      adapterSeq = as.character(tmp.seq[1,1])
+    }
   }
   
   
   ##
   ## Read sample data
   ##
-  if("mature_sense.grouped" %in% dir(samplePathList[i])){
-    countColumnIndex=4
-    miRNA = readData(samplePathList[i],"mature_sense.grouped", countColumnIndex)
-    tRNA = readData(samplePathList[i],"_tRNAs_sense.grouped", countColumnIndex)
-    piRNA = readData(samplePathList[i],"_piRNAs_sense.grouped", countColumnIndex)
-    gencode = readData(samplePathList[i],"_gencode_sense.grouped", countColumnIndex)
-    circRNA = readData(samplePathList[i],"_CircularRNAs_sense.grouped", countColumnIndex)
-    #repElements = readData(samplePathList[i],"_RepetitiveElements_sense.grouped", countColumnIndex)
-  }else{
-    ## Not valid pipeline output!
+  availableFiles = dir(samplePathList[i])
+  miRNA_sense=miRNA_antisense = tRNA_sense=tRNA_antisense = piRNA_sense=piRNA_antisense = gencode_sense=gencode_antisense = circRNA_sense=circRNA_antisense = NULL
+  
+  if("readCounts_miRNAmature_sense.txt" %in% availableFiles){
+    miRNA_sense = read.table(paste(samplePathList[i],"readCounts_miRNAmature_sense.txt",sep="/"), header=T, sep="\t", comment.char="", stringsAsFactors=F,colClasses=c("character","numeric","numeric","numeric","numeric"), row.names=1)
+    miRNA_sense = cbind(miRNA_sense, ID=sapply(rownames(miRNA_sense), function(id){ multiID = unlist(strsplit(id,"\\|")); multiIDs = sapply(multiID, function(idPart){unlist(strsplit(idPart,":"))[1]});   if(length(multiIDs) == 1){ multiIDs }else{ paste(sort(multiIDs),collapse="|") }  }))
+  }
+  if("readCounts_miRNAmature_antisense.txt" %in% availableFiles){
+    miRNA_antisense = read.table(paste(samplePathList[i],"readCounts_miRNAmature_antisense.txt",sep="/"), header=T, sep="\t", comment.char="", stringsAsFactors=F,colClasses=c("character","numeric","numeric","numeric","numeric"), row.names=1)
+    miRNA_antisense = cbind(miRNA_antisense, ID=sapply(rownames(miRNA_antisense), function(id){ multiID = unlist(strsplit(id,"\\|")); multiIDs = sapply(multiID, function(idPart){unlist(strsplit(idPart,":"))[1]});   if(length(multiIDs) == 1){ multiIDs }else{ paste(sort(multiIDs),collapse="|") }  }))
   }
   
-  # Update list of detected smallRNA IDs
-  allIDs.miRNA = unique(c(allIDs.miRNA, as.character(miRNA[,1])))
-  allIDs.tRNA = unique(c(allIDs.tRNA, as.character(tRNA[,1])))
-  allIDs.piRNA = unique(c(allIDs.piRNA, as.character(piRNA[,1])))
-  allIDs.gencode = unique(c(allIDs.gencode, as.character(gencode[,1])))
-  allIDs.circularRNA = unique(c(allIDs.circularRNA, as.character(circRNA[,1])))
-  #allIDs.repElements = unique(c(allIDs.repElements, as.character(repElements[,1])))
+  if("readCounts_tRNA_sense.txt" %in% availableFiles){
+    tmp = read.table(paste(samplePathList[i],"readCounts_tRNA_sense.txt",sep="/"), header=T, sep="\t", comment.char="", stringsAsFactors=F,colClasses=c("character","numeric","numeric","numeric","numeric"), row.names=1)
+    tmp = cbind(tmp, ID=sapply(rownames(tmp), function(id){ unlist(strsplit(id,"-"))[2]  }))
+    tRNA_sense = ddply(tmp, "ID", function(mat){ c(as.numeric(mat[1,1:2]),sum(mat$multimapAdjustedReadCount),sum(mat$multimapAdjustedBarcodeCount)) })
+    colnames(tRNA_sense)[-1] = colnames(tmp)[1:4]
+    tRNA_sense = tRNA_sense[order(tRNA_sense$multimapAdjustedReadCount,decreasing=T), ]
+  }
+  if("readCounts_tRNA_antisense.txt" %in% availableFiles){
+    tmp = read.table(paste(samplePathList[i],"readCounts_tRNA_antisense.txt",sep="/"), header=T, sep="\t", comment.char="", stringsAsFactors=F,colClasses=c("character","numeric","numeric","numeric","numeric"), row.names=1)
+    tmp = cbind(tmp, ID=sapply(rownames(tmp), function(id){ unlist(strsplit(id,"-"))[2]  }))
+    tRNA_antisense = ddply(tmp, "ID", function(mat){ c(as.numeric(mat[1,1:2]),sum(mat$multimapAdjustedReadCount),sum(mat$multimapAdjustedBarcodeCount)) })
+    colnames(tRNA_antisense)[-1] = colnames(tmp)[1:4]
+    tRNA_antisense = tRNA_antisense[order(tRNA_antisense$multimapAdjustedReadCount,decreasing=T), ]
+  }
   
-  sample.data[[i]] = list("miRNA"=miRNA, "tRNA"=tRNA, "piRNA"=piRNA, "gencode"=gencode, "circRNA"=circRNA, "adapterSeq"=adapterSeq)
+  if("readCounts_piRNA_sense.txt" %in% availableFiles){
+    piRNA_sense = read.table(paste(samplePathList[i],"readCounts_piRNA_sense.txt",sep="/"), header=T, sep="\t", comment.char="", stringsAsFactors=F,colClasses=c("character","numeric","numeric","numeric","numeric"), row.names=1)
+  }
+  if("readCounts_piRNA_antisense.txt" %in% availableFiles){
+    piRNA_antisense = read.table(paste(samplePathList[i],"readCounts_piRNA_antisense.txt",sep="/"), header=T, sep="\t", comment.char="", stringsAsFactors=F,colClasses=c("character","numeric","numeric","numeric","numeric"), row.names=1)
+  }
+  
+  
+  makeGeneID = function(id){ 
+    bits=unlist(strsplit(id,":")); geneNameBits=unlist(strsplit(bits[3],"-")); 
+    geneName = geneNameBits[1]
+    if(length(geneNameBits) > 2){ geneName=paste(geneNameBits[-length(geneNameBits)],collapse="-") }
+    paste(geneName,bits[2],sep=":") 
+  }
+  if("readCounts_gencode_sense.txt" %in% availableFiles){
+    tmp = read.table(paste(samplePathList[i],"readCounts_gencode_sense.txt",sep="/"), header=T, sep="\t", comment.char="", stringsAsFactors=F,colClasses=c("character","numeric","numeric","numeric","numeric"), row.names=1)
+    tmp = cbind(tmp, ID=sapply(rownames(tmp), makeGeneID))
+    gencode_sense = ddply(tmp, "ID", function(mat){ c(as.numeric(mat[1,1:2]),sum(mat$multimapAdjustedReadCount),sum(mat$multimapAdjustedBarcodeCount)) })
+    colnames(gencode_sense)[-1] = colnames(tmp)[1:4]
+    gencode_sense = gencode_sense[order(gencode_sense$multimapAdjustedReadCount,decreasing=T), ]
+  }
+  if("readCounts_gencode_antisense.txt" %in% availableFiles){
+    tmp = read.table(paste(samplePathList[i],"readCounts_gencode_antisense.txt",sep="/"), header=T, sep="\t", comment.char="", stringsAsFactors=F,colClasses=c("character","numeric","numeric","numeric","numeric"), row.names=1)
+    tmp = cbind(tmp, ID=sapply(rownames(tmp), makeGeneID))
+    gencode_antisense = ddply(tmp, "ID", function(mat){ c(as.numeric(mat[1,1:2]),sum(mat$multimapAdjustedReadCount),sum(mat$multimapAdjustedBarcodeCount)) })
+    colnames(gencode_antisense)[-1] = colnames(tmp)[1:4]
+    gencode_antisense = gencode_antisense[order(gencode_antisense$multimapAdjustedReadCount,decreasing=T), ]
+  }
+  
+  if("readCounts_circRNA_sense.txt" %in% availableFiles){
+    circRNA_sense = read.table(paste(samplePathList[i],"readCounts_circRNA_sense.txt",sep="/"), header=T, sep="\t", comment.char="", stringsAsFactors=F,colClasses=c("character","numeric","numeric","numeric","numeric"), row.names=1)
+  }
+  if("readCounts_circRNA_antisense.txt" %in% availableFiles){
+    circRNA_antisense = read.table(paste(samplePathList[i],"readCounts_circRNA_antisense.txt",sep="/"), header=T, sep="\t", comment.char="", stringsAsFactors=F,colClasses=c("character","numeric","numeric","numeric","numeric"), row.names=1)
+  }
+  
+  
+  # Update list of detected smallRNA IDs
+  allIDs.miRNA = unique(c(allIDs.miRNA, as.character(miRNA_sense$ID)))
+  allIDs.tRNA = unique(c(allIDs.tRNA, as.character(tRNA_sense$ID)))
+  allIDs.piRNA = unique(c(allIDs.piRNA, rownames(piRNA_sense)))
+  allIDs.gencode = unique(c(allIDs.gencode, as.character(gencode_sense$ID)))
+  allIDs.circularRNA = unique(c(allIDs.circularRNA, rownames(circRNA_sense)))
+  
+  sample.data[[i]] = list("miRNA_sense"=miRNA_sense,"miRNA_antisense"=miRNA_antisense, "tRNA_sense"=tRNA_sense,"tRNA_antisense"=tRNA_antisense, "piRNA_sense"=piRNA_sense,"piRNA_antisense"=piRNA_antisense, "gencode_sense"=gencode_sense,"gencode_antisense"=gencode_antisense, "circRNA_sense"=circRNA_sense,"circRNA_antisense"=circRNA_antisense, "adapterSeq"=adapterSeq)
   names(sample.data)[i] = thisSampleID
   
   
   ##
   ## Read exogenous miRNA alignments (if applicable)
   ##
-  if("EXOGENOUS_miRNA" %in% dir(samplePathList[i])){
+  if("EXOGENOUS_miRNA" %in% availableFiles){
     tmp.dir = paste(samplePathList[i],"EXOGENOUS_miRNA",sep="/")
-	  if("mature_sense.grouped" %in% dir(tmp.dir)){
-      sample.data[[i]]$exogenous_miRNA = readData(tmp.dir,"mature_sense.grouped", 4)
-	    allIDs.exogenous_miRNA = unique(c(allIDs.exogenous_miRNA, as.character(sample.data[[i]]$exogenous_miRNA[,1])))
+    if("mature_sense.grouped" %in% dir(tmp.dir)){
+      #sample.data[[i]]$exogenous_miRNA = readData(tmp.dir,"mature_sense.grouped", 4)
+      #allIDs.exogenous_miRNA = unique(c(allIDs.exogenous_miRNA, as.character(sample.data[[i]]$exogenous_miRNA[,1])))
     }
   }
   
@@ -282,15 +296,17 @@ for(i in 1:length(samplePathList)){
   ##
   ## Read exogenous genome alignments (if applicable)
   ##
-  if("EXOGENOUS_genomes" %in% dir(samplePathList[i])){
+  if("EXOGENOUS_genomes" %in% availableFiles){
     tmp.dir = paste(samplePathList[i],"EXOGENOUS_genomes",sep="/")
     if("ExogenousGenomicAlignments.result.txt" %in% dir(tmp.dir)){
-      sample.data[[i]]$exogenous_genomes = read.table(paste(tmp.dir, "ExogenousGenomicAlignments.result.txt",sep="/"), stringsAsFactors=F, comment.char="")
-      rownames(sample.data[[i]]$exogenous_genomes) = apply(sample.data[[i]]$exogenous_genomes[,1:2], 1, paste, collapse="|")
-      colnames(sample.data[[i]]$exogenous_genomes) = c("Kingdom","Species","ReadCount_all","ReadCount_kingdomSpecific","ReadCount_speciesSpecific")
+      tmp = read.table(paste(tmp.dir, "ExogenousGenomicAlignments.result.txt",sep="/"), stringsAsFactors=F, comment.char="")
+      rownames(tmp) = apply(tmp[,1:2], 1, paste, collapse="|")
+      #colnames(tmp) = c("Kingdom","Species","ReadCount_all","ReadCount_kingdomSpecific","ReadCount_speciesSpecific")
+      sample.data[[i]]$exogenous_genomes = tmp
       allIDs.exogenous_genomes = unique(c(allIDs.exogenous_genomes, as.character(rownames(sample.data[[i]]$exogenous_genomes))))
     }
   }
+  print(".")
 }
 
 
@@ -302,31 +318,31 @@ read.lengths = read.lengths[,colSums(read.lengths) > 0, drop=F]
 
 
 ##
-## Save result
+## Collect IDs
 ##
-allIDs = list("miRNA"=allIDs.miRNA, "tRNA"=allIDs.tRNA, "piRNA"=allIDs.piRNA, "gencode"=allIDs.gencode, "circRNA"=allIDs.circularRNA, "exogenous_miRNA"=allIDs.exogenous_miRNA, "exogenous_genomes"=allIDs.exogenous_genomes)
+allIDs = list("miRNA_sense"=allIDs.miRNA, "tRNA_sense"=allIDs.tRNA, "piRNA_sense"=allIDs.piRNA, "gencode_sense"=allIDs.gencode, "circRNA_sense"=allIDs.circularRNA, "exogenous_miRNA"=allIDs.exogenous_miRNA, "exogenous_genomes"=allIDs.exogenous_genomes)
 
 
 ##
 ## Convert sample data to large per-smallRNA expression matrices
 ##
-exprs.miRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$miRNA), dimnames=list(allIDs$miRNA, names(sample.data)))
-exprs.tRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$tRNA), dimnames=list(allIDs$tRNA, names(sample.data)))
-exprs.piRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$piRNA), dimnames=list(allIDs$piRNA, names(sample.data)))
-exprs.gencode = matrix(0,ncol=length(sample.data),nrow=length(allIDs$gencode), dimnames=list(allIDs$gencode, names(sample.data)))
-exprs.circRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$circRNA), dimnames=list(allIDs$circRNA, names(sample.data)))
-#exprs.repElements = matrix(0,ncol=length(sample.data),nrow=length(allIDs$repElements), dimnames=list(allIDs$repElements, names(sample.data)))
-exprs.exogenous_miRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$exogenous_miRNA), dimnames=list(allIDs$exogenous_miRNA, names(sample.data)))
-exprs.exogenous_genomes = matrix(0,ncol=length(sample.data),nrow=length(allIDs$exogenous_genomes), dimnames=list(allIDs$exogenous_genomes, names(sample.data)))
+exprs.miRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$miRNA_sense), dimnames=list(allIDs$miRNA_sense, names(sample.data)))
+exprs.tRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$tRNA_sense), dimnames=list(allIDs$tRNA_sense, names(sample.data)))
+exprs.piRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$piRNA_sense), dimnames=list(allIDs$piRNA_sense, names(sample.data)))
+exprs.gencode = matrix(0,ncol=length(sample.data),nrow=length(allIDs$gencode_sense), dimnames=list(allIDs$gencode_sense, names(sample.data)))
+exprs.circRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$circRNA_sense), dimnames=list(allIDs$circRNA_sense, names(sample.data)))
+
+#exprs.exogenous_miRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$exogenous_miRNA), dimnames=list(allIDs$exogenous_miRNA, names(sample.data)))
+#exprs.exogenous_genomes = matrix(0,ncol=length(sample.data),nrow=length(allIDs$exogenous_genomes), dimnames=list(allIDs$exogenous_genomes, names(sample.data)))
 for(i in 1:length(sample.data)){
-  exprs.miRNA[match(sample.data[[i]]$miRNA[,1], rownames(exprs.miRNA)),i] = as.numeric(sample.data[[i]]$miRNA[,2])
-  exprs.tRNA[match(sample.data[[i]]$tRNA[,1], rownames(exprs.tRNA)),i] = as.numeric(sample.data[[i]]$tRNA[,2])
-  exprs.piRNA[match(sample.data[[i]]$piRNA[,1], rownames(exprs.piRNA)),i] = as.numeric(sample.data[[i]]$piRNA[,2])
-  exprs.gencode[match(sample.data[[i]]$gencode[,1], rownames(exprs.gencode)),i] = as.numeric(sample.data[[i]]$gencode[,2])
-  exprs.circRNA[match(sample.data[[i]]$circRNA[,1], rownames(exprs.circRNA)),i] = as.numeric(sample.data[[i]]$circRNA[,2])
-  #exprs.repElements[match(sample.data[[i]]$repElements[,1], rownames(exprs.repElements)),i] = as.numeric(sample.data[[i]]$repElements[,2])
-  exprs.exogenous_miRNA[match(sample.data[[i]]$exogenous_miRNA[,1], rownames(exprs.exogenous_miRNA)),i] = as.numeric(sample.data[[i]]$exogenous_miRNA[,2])
-  exprs.exogenous_genomes[match(rownames(sample.data[[i]]$exogenous_genomes), rownames(exprs.exogenous_genomes)),i] = as.numeric(sample.data[[i]]$exogenous_genomes$ReadCount_speciesSpecific)
+  exprs.miRNA[match(sample.data[[i]]$miRNA_sense$ID, rownames(exprs.miRNA)),i] = as.numeric(sample.data[[i]]$miRNA_sense$multimapAdjustedReadCount)
+  exprs.tRNA[match(sample.data[[i]]$tRNA_sense$ID, rownames(exprs.tRNA)),i] = as.numeric(sample.data[[i]]$tRNA_sense$multimapAdjustedReadCount)
+  exprs.piRNA[match(rownames(sample.data[[i]]$piRNA_sense), rownames(exprs.piRNA)),i] = as.numeric(sample.data[[i]]$piRNA_sense$multimapAdjustedReadCount)
+  exprs.gencode[match(sample.data[[i]]$gencode_sense$ID, rownames(exprs.gencode)),i] = as.numeric(sample.data[[i]]$gencode_sense$multimapAdjustedReadCount)
+  exprs.circRNA[match(rownames(sample.data[[i]]$circRNA_sense), rownames(exprs.circRNA)),i] = as.numeric(sample.data[[i]]$circRNA_sense$multimapAdjustedReadCount)
+  
+  #exprs.exogenous_miRNA[match(sample.data[[i]]$exogenous_miRNA[,1], rownames(exprs.exogenous_miRNA)),i] = as.numeric(sample.data[[i]]$exogenous_miRNA[,2])
+  #exprs.exogenous_genomes[match(rownames(sample.data[[i]]$exogenous_genomes), rownames(exprs.exogenous_genomes)),i] = as.numeric(sample.data[[i]]$exogenous_genomes$ReadCount_speciesSpecific)
 }
 
 
