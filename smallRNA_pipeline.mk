@@ -21,10 +21,8 @@ EXCERPT_VERSION := 3.1.0
 ##
 ## 1) On the command line, be sure to specify the following MANDATORY parameters
 ##
-DATA_DIR                	:= NULL
 OUTPUT_DIR              	:= NULL
 INPUT_FILE_PATH         	:= NULL
-SAMPLE_NAME             	:= NULL
 ## You can also override the following OPTIONAL parameters on the commandline
 CALIBRATOR_LIBRARY      	:= NULL
 RANDOM_BARCODE_LENGTH		:= 0
@@ -52,7 +50,7 @@ LOCAL_EXECUTION := true
 ##
 ADAPTER_SEQ                     := guessKnown
 REMOVE_LARGE_INTERMEDIATE_FILES := false
-
+SAMPLE_NAME             		:= NULL
 QFILTER_MIN_READ_FRAC           := 80
 QFILTER_MIN_QUAL                := 20
 
@@ -97,10 +95,7 @@ ifeq ($(LOCAL_EXECUTION),true)
 	FASTQC_EXE       := $(JAVA_EXE) -classpath $(EXE_DIR)/FastQC_0.11.2:$(EXE_DIR)/FastQC_0.11.2/sam-1.103.jar:$(EXE_DIR)/FastQC_0.11.2/jbzip2-0.9.jar
 	SRATOOLS_EXE     := $(EXE_DIR)/sratoolkit.2.5.1-centos_linux64/bin/fastq-dump
 	THUNDER_EXE      := $(EXE_DIR)/Thunder.jar
-	SRNABENCH_EXE    := $(EXE_DIR)/sRNAbench.jar
-	SRNABENCH_LIBS   := $(EXE_DIR)/sRNAbenchDB
 	DATABASE_PATH    := $(EXE_DIR)/DATABASE
-	#STAR_EXE         := $(EXE_DIR)/STAR_2.4.0i/bin/Linux_x86_64/STAR
 	STAR_EXE         := $(EXE_DIR)/STAR_2.4.2a/bin/Linux_x86_64/STAR
 	STAR_GENOMES_DIR := /gpfs/scratch/fas/gerstein/rrk24/ANNOTATIONS/Genomes_BacteriaFungiMammalPlantProtistVirus
 	
@@ -132,6 +127,7 @@ else
 	SRATOOLS_EXE := fastq-dump
 	SRNABENCH_EXE := $(SRNABENCH_EXE)
 	THUNDER_EXE := $(THUNDER_EXE)
+	DATABASE_PATH := $(EXCERPT_DATABASE)
 	
 	## Path to sRNABench libraries
 	SRNABENCH_LIBS := $(SRNABENCH_LIBS)
@@ -189,7 +185,7 @@ endif
 ##
 ## List of plant and virus species IDs to which to map reads that do not map to the genome of the primary organism
 ##
-EXOGENOUS_MIRNA_SPECIES := $(shell cat $(SRNABENCH_LIBS)/libs/mature.fa | grep ">" | awk -F '-' '{print $$1}' | sed 's/>//g'| sort | uniq | tr '\n' ':' | rev | cut -c 2- | rev)
+#EXOGENOUS_MIRNA_SPECIES := $(shell cat $(SRNABENCH_LIBS)/libs/mature.fa | grep ">" | awk -F '-' '{print $$1}' | sed 's/>//g'| sort | uniq | tr '\n' ':' | rev | cut -c 2- | rev)
 
 ## Parameters to use for the bowtie mapping of calibrator oligos and rRNAs
 BOWTIE2_MAPPING_PARAMS_CALIBRATOR := -D 15 -R 2 -N 1 -L 16 -i S,1,0
@@ -242,7 +238,7 @@ ifeq ($(ADAPTER_SEQ),NULL)
 	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.*
 	LOGENTRY_WRITE_ADAPTER := $(ts) SMRNAPIPELINE: Identifying unknown 3' adapter sequence. Removing 3' adapter sequence using fastX:\n
 else ifeq ($(ADAPTER_SEQ),guessKnown)
-	COMMAND_WRITE_ADAPTER_SEQ := $(COMMAND_CONVERT_SRA) 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err | $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) FindAdapter -n 10000 -m 1000000 -s 7 -a $(DATABASE_PATH)/adapters.fa - > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).adapterSeq 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	COMMAND_WRITE_ADAPTER_SEQ := $(COMMAND_CONVERT_SRA) 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err | $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) FindAdapter -n 10000 -m 1000000 -s 7 -a $(DATABASE_PATH)/adapters/adapters.fa - > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).adapterSeq 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	LOGENTRY_WRITE_ADAPTER := $(ts) SMRNAPIPELINE: Identifying 3' adapter from list of known sequences.  Removing 3' adapter sequence using fastX:\n
 else ifeq ($(ADAPTER_SEQ),none)
 	COMMAND_WRITE_ADAPTER_SEQ := echo 'no adapter' > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).adapterSeq;
@@ -312,12 +308,6 @@ cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.rRNAmapped.sam | gr
 cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.rRNAmapped.sam | $(SAMTOOLS_EXE) view -Sb - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.rRNAmapped.bam; \
 rm $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.rRNAmapped.sam
 
-
-
-## Parameters for the endogenous-exRNA mapping
-#FIXED_PARAMS_MAIN      := -Xmx$(JAVA_RAM) -jar $(SRNABENCH_EXE) dbPath=$(SRNABENCH_LIBS) p=$(N_THREADS) chunkmbs=$(BOWTIE_CHUNKMBS) microRNA=$(MAIN_ORGANISM) species=$(MAIN_ORGANISM_GENOME_ID) plotMiR=true plotLibs=false predict=false $(OTHER_LIBRARIES) writeGenomeDist=true noMM=$(MISMATCH_N_MIRNA) maxReadLength=75 noGenome=true mBowtie=$(MULTIMAP_MAX)
-## Parameters for the exogenous-exRNA mapping
-FIXED_PARAMS_EXOGENOUS := -Xmx$(JAVA_RAM) -jar $(SRNABENCH_EXE) dbPath=$(SRNABENCH_LIBS) p=$(N_THREADS) chunkmbs=$(BOWTIE_CHUNKMBS) microRNA=$(EXOGENOUS_MIRNA_SPECIES) plotMiR=true predict=false noMM=$(MISMATCH_N_MIRNA)
 
 
 ##
@@ -435,8 +425,8 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/Progress_1_FoundAdapter.dat:
 $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz: $(OUTPUT_DIR)/$(SAMPLE_ID)/Progress_1_FoundAdapter.dat
 	## Run the SW alignment of known adapters regardless of user preference
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Checking adapter against known sequences: $(COMMAND_CONVERT_SRA) 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err | $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) FindAdapter -n 1000 -m 100000 -s 7 -a $(DATABASE_PATH)/adapters.fa - > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).knownAdapterSeq 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	$(COMMAND_CONVERT_SRA) 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err | $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) FindAdapter -n 1000 -m 100000 -s 7 -a $(DATABASE_PATH)/adapters.fa - > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).knownAdapterSeq 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) SMRNAPIPELINE: Checking adapter against known sequences: $(COMMAND_CONVERT_SRA) 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err | $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) FindAdapter -n 1000 -m 100000 -s 7 -a $(DATABASE_PATH)/adapters/adapters.fa - > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).knownAdapterSeq 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(COMMAND_CONVERT_SRA) 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err | $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) FindAdapter -n 1000 -m 100000 -s 7 -a $(DATABASE_PATH)/adapters/adapters.fa - > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).knownAdapterSeq 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) SMRNAPIPELINE: Known adapter sequence: $(shell cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).knownAdapterSeq)\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Carry on with the adapter provided / guessed
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
