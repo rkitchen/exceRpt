@@ -4,7 +4,7 @@
 ##                                                                                   ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                        ##
 ##                                                                                   ##
-## Version 3.0.1 (2015-08-12)                                                        ##
+## Version 3.0.2 (2015-09-15)                                                        ##
 ##                                                                                   ##
 #######################################################################################
 
@@ -35,6 +35,7 @@ if(length(args) >= 1){
   ## if no data directory is specified, throw an error message and try a hard coded path (for testing)
   cat("ERROR: no input data directory specified!\n\n")
   cat("Usage: Rscript mergePipelineRuns.R <data path> [output path]\n\n")
+  #base = "/Users/robk/WORK/YALE_offline"
   #data.dir = "~/Box Sync/Work for other people/FraminghamSmallRNA/Data"
   #output.dir = "~/Box Sync/Work for other people/FraminghamSmallRNA"
   #data.dir = "~/WORK/YALE_offline/miRNA/PipelineOutput"
@@ -49,7 +50,8 @@ if(length(args) >= 1){
   #data.dir = "~/WORK/YALE_offline/exRNA/exceRptCombinatorialAnalysis"
   #data.dir = "~/WORK/YALE_offline/exRNA/TESTING"
   #data.dir = "~/WORK/YALE_offline/exRNA/AmyBuck"
-  data.dir = "~/WORK/YALE_offline/BrainSpan/smallRNA_new/exceRpt_Results"
+  #data.dir = paste(base,"exRNA/AmyBuck",sep="/")
+  #data.dir = "~/WORK/YALE_offline/BrainSpan/smallRNA_new/exceRpt_Results"
   output.dir = data.dir
 }
 
@@ -63,11 +65,14 @@ if(!"gplots" %in% rownames(installed.packages())) { install.packages("gplots",re
 if(!"marray" %in% rownames(installed.packages())) { source("http://bioconductor.org/biocLite.R"); biocLite("marray") }
 if(!"reshape2" %in% rownames(installed.packages())) { install.packages("reshape2",repos='http://cran.us.r-project.org') }
 if(!"ggplot2" %in% rownames(installed.packages())) { install.packages("ggplot2",repos='http://cran.us.r-project.org') }
+if(!"tools" %in% rownames(installed.packages())) { install.packages("tools",repos='http://cran.us.r-project.org') }
 require(plyr)
 require(gplots)
 require(marray)
 require(reshape2)
 require(ggplot2)
+require(tools)
+
 
 
 ######################################################################################
@@ -102,7 +107,7 @@ SearchForSampleData = function(base.dir, directory=""){
       for(x in i.zip){
         tmp.contents = unzip(paste(dir.use,subdirs[x],sep="/"), list=T)[,1]
         if(length(grep("\\.stats$", tmp.contents, perl=T)) > 0){
-          try(unzip(paste(dir.use,subdirs[x],sep="/"), exdir=file_path_as_absolute(gsub("\\.zip","",paste(dir.use,subdirs[x],sep="/"))), overwrite=FALSE), silent=T)
+          try(unzip(paste(dir.use,subdirs[x],sep="/"), exdir=gsub("\\.zip","",file_path_as_absolute(paste(dir.use,subdirs[x],sep="/"))), overwrite=FALSE), silent=T)
           to.return = c(to.return, paste(dir.use,gsub("\\.zip$","",subdirs[x]),sep="/",gsub("\\.stats$","",tmp.contents[grep("\\.stats$", tmp.contents)])))
         }
       }
@@ -114,7 +119,7 @@ SearchForSampleData = function(base.dir, directory=""){
         tmp.dir = paste(dir.use,subdirs[x],sep="/")
         tmp.contents = untar(tmp.dir, list=T, tar="tar")
         if(length(grep("\\.stats$", tmp.contents, perl=T)) > 0){
-          try(untar(tmp.dir, exdir=file_path_as_absolute(gsub("\\.tgz$|\\.tar.gz$","",tmp.dir)), tar="tar"), silent=T)
+          try(untar(tmp.dir, exdir=gsub("\\.tgz$|\\.tar.gz$","",file_path_as_absolute(tmp.dir)), tar="tar"), silent=T)
           to.return = c(to.return, paste(dir.use, gsub("\\.tgz$|\\.tar.gz$","",subdirs[x]), gsub("\\.stats$","",tmp.contents[grep("\\.stats$", tmp.contents)]),sep="/"))
         }
       }
@@ -160,7 +165,7 @@ allIDs.gencode = NULL
 allIDs.circularRNA = NULL
 allIDs.exogenous_miRNA = NULL
 allIDs.exogenous_genomes = NULL
-mapping.stats = matrix(0,nrow=length(samplePathList),ncol=28, dimnames=list(1:length(samplePathList), c("input","successfully_clipped","failed_quality_filter","failed_homopolymer_filter","calibrator","UniVec_contaminants","rRNA","reads_used_for_alignment","genome","miRNA_sense","miRNA_antisense","miRNAprecursor_sense","miRNAprecursor_antisense","tRNA_sense","tRNA_antisense","piRNA_sense","piRNA_antisense","gencode_sense","gencode_antisense","circularRNA_sense","circularRNA_antisense","not_mapped_to_genome_or_libs","repetitiveElements","endogenous_gapped","input_to_exogenous_miRNA","exogenous_miRNA","input_to_exogenous_genomes","exogenous_genomes")))
+mapping.stats = matrix(0,nrow=length(samplePathList),ncol=30, dimnames=list(1:length(samplePathList), c("input","successfully_clipped","failed_quality_filter","failed_homopolymer_filter","calibrator","UniVec_contaminants","rRNA","reads_used_for_alignment","genome","miRNA_sense","miRNA_antisense","miRNAprecursor_sense","miRNAprecursor_antisense","tRNA_sense","tRNA_antisense","piRNA_sense","piRNA_antisense","gencode_sense","gencode_antisense","circularRNA_sense","circularRNA_antisense","not_mapped_to_genome_or_libs","repetitiveElements","endogenous_gapped","input_to_exogenous_miRNA","exogenous_miRNA","input_to_exogenous_rRNA","exogenous_rRNA","input_to_exogenous_genomes","exogenous_genomes")))
 maxReadLength = 1000
 read.lengths = matrix(0,nrow=length(samplePathList),ncol=maxReadLength+1,dimnames=list(1:length(samplePathList), 0:maxReadLength))
 
