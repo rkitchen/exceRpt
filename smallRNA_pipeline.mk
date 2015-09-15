@@ -322,22 +322,13 @@ endif
 ## Compress only the most vital output!
 ##
 #ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome | awk '{print $$9}' | grep "sense.grouped\|stat" | awk '{print "$(SAMPLE_ID)/noGenome/"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt;
-COMPRESS_COMMAND ?= ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID) | awk '{print $$9}' | grep "readCounts_\|.readLengths.txt\|_fastqc.zip\|.counts\|.adapterSeq\|.qualityEncoding" | awk '{print "$(SAMPLE_ID)/"$$1}' > $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt; \
+COMPRESS_COMMAND := ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID) | awk '{print $$9}' | grep "readCounts_\|.readLengths.txt\|_fastqc.zip\|.counts\|.adapterSeq\|.qualityEncoding" | awk '{print "$(SAMPLE_ID)/"$$1}' > $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt; \
 echo $(SAMPLE_ID).log >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt; \
-echo $(SAMPLE_ID).stats >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt
-ifneq ($(CALIBRATOR_LIBRARY),NULL)
-	COMPRESS_COMMAND ?= $(COMPRESS_COMMAND); ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID) | awk '{print $$9}' | grep "calibratormapped.counts" | awk '{print "$(SAMPLE_ID)/"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt
-endif
-ifneq ($(wildcard $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/.),)
-	COMPRESS_COMMAND ?= $(COMPRESS_COMMAND); ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA | awk '{print $$9}' | grep "exogenous_miRBase_mapped" | awk '{print "$(SAMPLE_ID)/EXOGENOUS_miRNA/"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt
-endif
-#ifneq ($(wildcard $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/.),)
-#	COMPRESS_COMMAND ?= $(COMPRESS_COMMAND); ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA | awk '{print $$9}' | grep "exogenous_miRBase_mapped" | awk '{print "$(SAMPLE_ID)/EXOGENOUS_miRNA/"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt
-#endif
-ifneq ($(wildcard $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/.),)
-	#COMPRESS_COMMAND ?= $(COMPRESS_COMMAND); ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes | awk '{print $$9}' | grep "ExogenousGenomicAlignments.sorted.txt\|ExogenousGenomicAlignments.result.txt" | awk '{print "$(SAMPLE_ID)/EXOGENOUS_genomes/"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt
-	COMPRESS_COMMAND ?= $(COMPRESS_COMMAND); ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes | awk '{print $$9}' | grep "ExogenousGenomicAlignments.result.txt" | awk '{print "$(SAMPLE_ID)/EXOGENOUS_genomes/"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt
-endif
+echo $(SAMPLE_ID).stats >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt; \
+ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID) | awk '{print $$9}' | grep "calibratormapped.counts" | awk '{print "$(SAMPLE_ID)/"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt; \
+ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA | awk '{print $$9}' | grep "exogenous_miRBase_mapped" | awk '{print "$(SAMPLE_ID)/EXOGENOUS_miRNA/"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt; \
+#ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA | awk '{print $$9}' | grep "exogenous_miRBase_mapped" | awk '{print "$(SAMPLE_ID)/EXOGENOUS_rRNA/"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt; \
+ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes | awk '{print $$9}' | grep "ExogenousGenomicAlignments.result.txt" | awk '{print "$(SAMPLE_ID)/EXOGENOUS_genomes/"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt
 
 
 
@@ -381,7 +372,7 @@ processSample: $(OUTPUT_DIR)/$(SAMPLE_ID)/$(PROCESS_SAMPLE_REQFILE)
 	#cp $(SRNABENCH_LIBS)/sRNAbenchOutputDescription.txt $(OUTPUT_DIR)/$(SAMPLE_ID)/sRNAbenchOutputDescription.txt 
 	## Compress core results files automatically
 	$(COMPRESS_COMMAND)
-	tar -cvz -C $(OUTPUT_DIR) -T $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt -f $(OUTPUT_DIR)/$(SAMPLE_ID)_results.tgz
+	tar -cvz -C $(OUTPUT_DIR) -T $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt -f $(OUTPUT_DIR)/$(SAMPLE_ID)_results.tgz 2> /dev/null
 	rm $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt
 	## END PIPELINE
 	@echo -e "$(ts) SMRNAPIPELINE: END smallRNA-seq Pipeline for sample $(SAMPLE_ID)\n======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log

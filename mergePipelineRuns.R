@@ -35,7 +35,6 @@ if(length(args) >= 1){
   ## if no data directory is specified, throw an error message and try a hard coded path (for testing)
   cat("ERROR: no input data directory specified!\n\n")
   cat("Usage: Rscript mergePipelineRuns.R <data path> [output path]\n\n")
-  #base = "/Users/robk/WORK/YALE_offline"
   #data.dir = "~/Box Sync/Work for other people/FraminghamSmallRNA/Data"
   #output.dir = "~/Box Sync/Work for other people/FraminghamSmallRNA"
   #data.dir = "~/WORK/YALE_offline/miRNA/PipelineOutput"
@@ -50,7 +49,6 @@ if(length(args) >= 1){
   #data.dir = "~/WORK/YALE_offline/exRNA/exceRptCombinatorialAnalysis"
   #data.dir = "~/WORK/YALE_offline/exRNA/TESTING"
   #data.dir = "~/WORK/YALE_offline/exRNA/AmyBuck"
-  #data.dir = paste(base,"exRNA/AmyBuck",sep="/")
   #data.dir = "~/WORK/YALE_offline/BrainSpan/smallRNA_new/exceRpt_Results"
   output.dir = data.dir
 }
@@ -304,7 +302,7 @@ for(i in 1:length(samplePathList)){
   if("EXOGENOUS_genomes" %in% availableFiles){
     tmp.dir = paste(samplePathList[i],"EXOGENOUS_genomes",sep="/")
     if("ExogenousGenomicAlignments.result.txt" %in% dir(tmp.dir)){
-      tmp = read.table(paste(tmp.dir, "ExogenousGenomicAlignments.result.txt",sep="/"), stringsAsFactors=F, comment.char="")
+      tmp = read.table(paste(tmp.dir, "ExogenousGenomicAlignments.result.txt",sep="/"), stringsAsFactors=F, comment.char="",header=T)
       rownames(tmp) = apply(tmp[,1:2], 1, paste, collapse="|")
       #colnames(tmp) = c("Kingdom","Species","ReadCount_all","ReadCount_kingdomSpecific","ReadCount_speciesSpecific")
       sample.data[[i]]$exogenous_genomes = tmp
@@ -336,18 +334,16 @@ exprs.tRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$tRNA_sense), d
 exprs.piRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$piRNA_sense), dimnames=list(allIDs$piRNA_sense, names(sample.data)))
 exprs.gencode = matrix(0,ncol=length(sample.data),nrow=length(allIDs$gencode_sense), dimnames=list(allIDs$gencode_sense, names(sample.data)))
 exprs.circRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$circRNA_sense), dimnames=list(allIDs$circRNA_sense, names(sample.data)))
-
 #exprs.exogenous_miRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$exogenous_miRNA), dimnames=list(allIDs$exogenous_miRNA, names(sample.data)))
-#exprs.exogenous_genomes = matrix(0,ncol=length(sample.data),nrow=length(allIDs$exogenous_genomes), dimnames=list(allIDs$exogenous_genomes, names(sample.data)))
+exprs.exogenous_genomes = matrix(0,ncol=length(sample.data),nrow=length(allIDs$exogenous_genomes), dimnames=list(allIDs$exogenous_genomes, names(sample.data)))
 for(i in 1:length(sample.data)){
   exprs.miRNA[match(sample.data[[i]]$miRNA_sense$ID, rownames(exprs.miRNA)),i] = as.numeric(sample.data[[i]]$miRNA_sense$multimapAdjustedReadCount)
   exprs.tRNA[match(sample.data[[i]]$tRNA_sense$ID, rownames(exprs.tRNA)),i] = as.numeric(sample.data[[i]]$tRNA_sense$multimapAdjustedReadCount)
   exprs.piRNA[match(rownames(sample.data[[i]]$piRNA_sense), rownames(exprs.piRNA)),i] = as.numeric(sample.data[[i]]$piRNA_sense$multimapAdjustedReadCount)
   exprs.gencode[match(sample.data[[i]]$gencode_sense$ID, rownames(exprs.gencode)),i] = as.numeric(sample.data[[i]]$gencode_sense$multimapAdjustedReadCount)
   exprs.circRNA[match(rownames(sample.data[[i]]$circRNA_sense), rownames(exprs.circRNA)),i] = as.numeric(sample.data[[i]]$circRNA_sense$multimapAdjustedReadCount)
-  
   #exprs.exogenous_miRNA[match(sample.data[[i]]$exogenous_miRNA[,1], rownames(exprs.exogenous_miRNA)),i] = as.numeric(sample.data[[i]]$exogenous_miRNA[,2])
-  #exprs.exogenous_genomes[match(rownames(sample.data[[i]]$exogenous_genomes), rownames(exprs.exogenous_genomes)),i] = as.numeric(sample.data[[i]]$exogenous_genomes$ReadCount_speciesSpecific)
+  exprs.exogenous_genomes[match(rownames(sample.data[[i]]$exogenous_genomes), rownames(exprs.exogenous_genomes)),i] = as.numeric(sample.data[[i]]$exogenous_genomes$ReadCount_speciesSpecific)
 }
 
 
@@ -368,7 +364,8 @@ libSizes$miRNA = colSums(exprs.miRNA)
 ##
 ## Save the raw count data
 ##
-save(exprs.miRNA, exprs.tRNA, exprs.piRNA, exprs.gencode, exprs.circRNA, exprs.exogenous_miRNA, exprs.exogenous_genomes, mapping.stats, libSizes, read.lengths, file=paste(output.dir, "exceRpt_smallRNAQuants_ReadCounts.RData", sep="/"))
+#save(exprs.miRNA, exprs.tRNA, exprs.piRNA, exprs.gencode, exprs.circRNA, exprs.exogenous_miRNA, exprs.exogenous_genomes, mapping.stats, libSizes, read.lengths, file=paste(output.dir, "exceRpt_smallRNAQuants_ReadCounts.RData", sep="/"))
+save(exprs.miRNA, exprs.tRNA, exprs.piRNA, exprs.gencode, exprs.circRNA, exprs.exogenous_genomes, mapping.stats, libSizes, read.lengths, file=paste(output.dir, "exceRpt_smallRNAQuants_ReadCounts.RData", sep="/"))
 write.table(exprs.miRNA, file=paste(output.dir, "exceRpt_miRNA_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
 write.table(exprs.tRNA, file=paste(output.dir, "exceRpt_tRNA_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
 write.table(exprs.piRNA, file=paste(output.dir, "exceRpt_piRNA_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
