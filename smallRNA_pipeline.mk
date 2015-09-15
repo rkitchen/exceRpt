@@ -912,11 +912,11 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.result.t
 	awk 'NR==FNR {h[$$1]=$$2; next} {if($$2 in h) print $$0"\t"h[$$2]; else print $$0"\t0"}' $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/tmp.kingdom.counts $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/tmp.counts > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/tmp
 	#
 	## output results
-	@echo -e "Kingdom\tSpecies\tReadCount_allMappedToThisSpecies\tReadCount_domainSpecific\tReadCount_speciesSpecific" > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.result.txt
+	@echo -e "Kingdom\tSpecies\tReadCount_allMappedToThisSpecies\tReadCount_kingdomSpecific\tReadCount_speciesSpecific" > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.result.txt
 	awk 'NR==FNR {h[$$1]=$$2; next} {if($$2 in h) print $$0"\t"h[$$2]; else print $$0"\t0"}' $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/tmp.species.counts $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/tmp | sort -nrk 5,5 >> $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.result.txt
 	#
 	# Final output format of ExogenousGenomicAlignments.result.txt:
-	# Kingdom	Species	ReadCount_allMappedToThisSpecies	ReadCount_domainSpecific	ReadCount_speciesSpecific
+	# Kingdom	Species	ReadCount_allMappedToThisSpecies	ReadCount_kingdomSpecific	ReadCount_speciesSpecific
 	# Plant	Oryza_indica	25413	2334	559
 	#
 	# tidy up

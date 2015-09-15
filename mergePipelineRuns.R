@@ -335,7 +335,8 @@ exprs.piRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$piRNA_sense),
 exprs.gencode = matrix(0,ncol=length(sample.data),nrow=length(allIDs$gencode_sense), dimnames=list(allIDs$gencode_sense, names(sample.data)))
 exprs.circRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$circRNA_sense), dimnames=list(allIDs$circRNA_sense, names(sample.data)))
 #exprs.exogenous_miRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$exogenous_miRNA), dimnames=list(allIDs$exogenous_miRNA, names(sample.data)))
-exprs.exogenous_genomes = matrix(0,ncol=length(sample.data),nrow=length(allIDs$exogenous_genomes), dimnames=list(allIDs$exogenous_genomes, names(sample.data)))
+exprs.exogenousGenomes_speciesSpecific = matrix(0,ncol=length(sample.data),nrow=length(allIDs$exogenous_genomes), dimnames=list(allIDs$exogenous_genomes, names(sample.data)))
+exprs.exogenousGenomes_kingdomSpecific = matrix(0,ncol=length(sample.data),nrow=length(allIDs$exogenous_genomes), dimnames=list(allIDs$exogenous_genomes, names(sample.data)))
 for(i in 1:length(sample.data)){
   exprs.miRNA[match(sample.data[[i]]$miRNA_sense$ID, rownames(exprs.miRNA)),i] = as.numeric(sample.data[[i]]$miRNA_sense$multimapAdjustedReadCount)
   exprs.tRNA[match(sample.data[[i]]$tRNA_sense$ID, rownames(exprs.tRNA)),i] = as.numeric(sample.data[[i]]$tRNA_sense$multimapAdjustedReadCount)
@@ -343,7 +344,8 @@ for(i in 1:length(sample.data)){
   exprs.gencode[match(sample.data[[i]]$gencode_sense$ID, rownames(exprs.gencode)),i] = as.numeric(sample.data[[i]]$gencode_sense$multimapAdjustedReadCount)
   exprs.circRNA[match(rownames(sample.data[[i]]$circRNA_sense), rownames(exprs.circRNA)),i] = as.numeric(sample.data[[i]]$circRNA_sense$multimapAdjustedReadCount)
   #exprs.exogenous_miRNA[match(sample.data[[i]]$exogenous_miRNA[,1], rownames(exprs.exogenous_miRNA)),i] = as.numeric(sample.data[[i]]$exogenous_miRNA[,2])
-  exprs.exogenous_genomes[match(rownames(sample.data[[i]]$exogenous_genomes), rownames(exprs.exogenous_genomes)),i] = as.numeric(sample.data[[i]]$exogenous_genomes$ReadCount_speciesSpecific)
+  exprs.exogenousGenomes_speciesSpecific[match(rownames(sample.data[[i]]$exogenous_genomes), rownames(exprs.exogenousGenomes_speciesSpecific)),i] = as.numeric(sample.data[[i]]$exogenous_genomes[,5])
+  exprs.exogenousGenomes_kingdomSpecific[match(rownames(sample.data[[i]]$exogenous_genomes), rownames(exprs.exogenousGenomes_kingdomSpecific)),i] = as.numeric(sample.data[[i]]$exogenous_genomes[,4])
 }
 
 
@@ -365,12 +367,14 @@ libSizes$miRNA = colSums(exprs.miRNA)
 ## Save the raw count data
 ##
 #save(exprs.miRNA, exprs.tRNA, exprs.piRNA, exprs.gencode, exprs.circRNA, exprs.exogenous_miRNA, exprs.exogenous_genomes, mapping.stats, libSizes, read.lengths, file=paste(output.dir, "exceRpt_smallRNAQuants_ReadCounts.RData", sep="/"))
-save(exprs.miRNA, exprs.tRNA, exprs.piRNA, exprs.gencode, exprs.circRNA, exprs.exogenous_genomes, mapping.stats, libSizes, read.lengths, file=paste(output.dir, "exceRpt_smallRNAQuants_ReadCounts.RData", sep="/"))
+save(exprs.miRNA, exprs.tRNA, exprs.piRNA, exprs.gencode, exprs.circRNA, exprs.exogenousGenomes_speciesSpecific, exprs.exogenousGenomes_kingdomSpecific, mapping.stats, libSizes, read.lengths, file=paste(output.dir, "exceRpt_smallRNAQuants_ReadCounts.RData", sep="/"))
 write.table(exprs.miRNA, file=paste(output.dir, "exceRpt_miRNA_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
 write.table(exprs.tRNA, file=paste(output.dir, "exceRpt_tRNA_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
 write.table(exprs.piRNA, file=paste(output.dir, "exceRpt_piRNA_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
 write.table(exprs.gencode, file=paste(output.dir, "exceRpt_gencode_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
 write.table(exprs.circRNA, file=paste(output.dir, "exceRpt_circularRNA_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+write.table(exprs.exogenousGenomes_speciesSpecific, file=paste(output.dir, "exceRpt_exogenousGenomes_speciesSpecific_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+write.table(exprs.exogenousGenomes_kingdomSpecific, file=paste(output.dir, "exceRpt_exogenousGenomes_kingdomSpecific_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
 write.table(read.lengths, file=paste(output.dir, "exceRpt_ReadLengths.txt", sep="/"), sep="\t", col.names=NA, quote=F)
 
 
@@ -378,129 +382,6 @@ write.table(read.lengths, file=paste(output.dir, "exceRpt_ReadLengths.txt", sep=
 ## Calculate the fractions of reads mapping at each stage
 ##
 write.table(mapping.stats, file=paste(output.dir,"exceRpt_readMappingSummary.txt",sep="/"), sep="\t", col.names=NA, quote=F)
-
-
-fractions = NULL
-quals = t(mapping.stats)
-
-if("input" %in% colnames(mapping.stats)){
-  inputReads = mapping.stats[,colnames(mapping.stats) %in% c("input")]
-}else{
-  inputReads = rowSums(mapping.stats[,colnames(mapping.stats) %in% c("rRNA","UniVec_contaminants","genome")])
-}
-if("clipped" %in% colnames(mapping.stats)){
-  fractions$clipped = 100*as.numeric(mapping.stats[,colnames(mapping.stats) %in% "clipped"]) / inputReads
-}
-if("calibrator" %in% colnames(mapping.stats)){
-  if( ! is.na(as.numeric(mapping.stats[,colnames(mapping.stats) %in% "calibrator"])[1])){
-    fractions$calibrator = 100*as.numeric(mapping.stats[,grep("calibrator",colnames(mapping.stats))]) / inputReads
-  }
-}
-if("UniVec_contaminants" %in% colnames(mapping.stats)){
-  fractions$UniVec_contaminants = 100*as.numeric(mapping.stats[,colnames(mapping.stats) %in% "UniVec_contaminants"]) / inputReads
-}
-if("rRNA" %in% colnames(mapping.stats)){
-  fractions$rRNA = 100*as.numeric(mapping.stats[,colnames(mapping.stats) %in% "rRNA"]) / inputReads
-}
-if("genome" %in% colnames(mapping.stats)){
-  fractions$genome = 100*as.numeric(mapping.stats[,colnames(mapping.stats) %in% "genome"]) / inputReads
-}
-if("miRNA_sense" %in% colnames(mapping.stats)){
-  miRNA.counts = mapping.stats[,colnames(mapping.stats) %in% "miRNA_sense"]
-  if("miRNA_antisense" %in% colnames(mapping.stats)){
-    miRNA.counts = rowSums(mapping.stats[,colnames(mapping.stats) %in% c("miRNA_sense","miRNA_antisense")])
-  }
-  fractions$miRNA = 100 * miRNA.counts / mapping.stats[,colnames(mapping.stats) %in% "genome"]
-  
-  #mapping.stats = cbind(mapping.stats, miRNA=miRNA.counts)
-}
-
-## Finally, convert the computed alignment fractions to a data.frame
-fracs = t(as.data.frame(fractions))
-colnames(fracs) = rownames(mapping.stats)
-
-
-##
-## Determine heatmap quality colours (green, orange, red) based on read mapping stats
-##
-quals = fracs
-
-## For the fraction of successfully clipped reads
-if("clipped" %in% names(fractions)){
-  i.good = which(fractions$clipped > 90)
-  i.warn = which(fractions$clipped <= 90  &  fractions$clipped > 50)
-  i.bad = which(fractions$clipped <= 50)
-  tmp.row = rownames(quals) %in% "clipped"
-  quals[tmp.row,i.good] = 100; quals[tmp.row,i.warn] = 50; quals[tmp.row,i.bad] = 0; 
-}
-
-## For the calibrator oligo signal
-if("calibrator" %in% names(fractions)){
-  i.good = which(fractions$calibrator < 10)
-  i.warn = which(fractions$calibrator >= 10  &  fractions$calibrator < 50)
-  i.bad = which(fractions$calibrator >= 50)
-  tmp.row=rownames(quals) %in% "calibrator"
-  quals[tmp.row,i.good] = 100; quals[tmp.row,i.warn] = 50; quals[tmp.row,i.bad] = 0; 
-}
-
-## For the UniVec contamination
-if("UniVec_contaminants" %in% names(fractions)){
-  #pass=10; fail=50;
-  pass=25; fail=75;
-  i.good = which(fractions$UniVec_contaminants < pass)
-  i.warn = which(fractions$UniVec_contaminants >= pass  &  fractions$UniVec_contaminants < fail)
-  i.bad = which(fractions$UniVec_contaminants >= fail)
-  tmp.row=rownames(quals) %in% "UniVec_contaminants"
-  quals[tmp.row,i.good] = 100; quals[tmp.row,i.warn] = 50; quals[tmp.row,i.bad] = 0; 
-}
-
-## For the rRNA contamination
-if("rRNA" %in% names(fractions)){
-  #pass=10; fail=50;
-  pass=25; fail=75;
-  i.good = which(fractions$rRNA < pass)
-  i.warn = which(fractions$rRNA >= pass  &  fractions$rRNA < fail)
-  i.bad = which(fractions$rRNA >= fail)
-  tmp.row=rownames(quals) %in% "rRNA"
-  quals[tmp.row,i.good] = 100; quals[tmp.row,i.warn] = 50; quals[tmp.row,i.bad] = 0; 
-}
-
-## For genome mapping rate
-if("genome" %in% names(fractions)){
-  pass=50; fail=25;
-  i.good = which(fractions$genome > pass)
-  i.warn = which(fractions$genome <= pass  &  fractions$genome > fail)
-  i.bad = which(fractions$genome <= fail)
-  tmp.row=rownames(quals) %in% "genome"
-  quals[tmp.row,i.good] = 100; quals[tmp.row,i.warn] = 50; quals[tmp.row,i.bad] = 0; 
-}
-
-## For miRNA mapping rate
-if("miRNA" %in% names(fractions)){
-  pass=50; fail=25;
-  i.good = which(fractions$miRNA > pass)
-  i.warn = which(fractions$miRNA <= pass  &  fractions$miRNA > fail)
-  i.bad = which(fractions$miRNA <= fail)
-  tmp.row=rownames(quals) %in% "miRNA"
-  quals[tmp.row,i.good] = 100; quals[tmp.row,i.warn] = 50; quals[tmp.row,i.bad] = 0; 
-}
-
-
-
-##
-## Plot the heatmap
-##
-if(ncol(exprs.miRNA) > 1){
-  sepwidth = 0.01
-  width = ncol(quals)
-  height = 10
-  if(width <= 5){ width = 5 }
-  pdf(paste(output.dir,"/exceRpt_SampleQC_Heatmap.pdf",sep=""), width=width,height=height)
-  par(oma=c(25,0,1,5))
-  try(heatmap.2(quals, trace="n", Rowv=F, dendrogram="column", colsep=1:ncol(quals), rowsep=1:nrow(quals), sepwidth=c(sepwidth,sepwidth), col=c("red","orange","lightgreen"), cellnote=round(fracs,0), notecol="white", notecex=2, cexRow=2, cexCol=2, breaks=seq(0,100,by=33.3), key=F, keysize=0.5), silent=T)
-  dev.off()
-}
-
 
 
 ##
@@ -521,15 +402,25 @@ pdf(paste(output.dir,"exceRpt_DiagnosticPlots.pdf",sep="/"), height=10, width=20
 
 
 ##
-## plot distribution of clipped read lengths
+## plot distribution of clipped read lengths - read count
 ##
 tmp = melt(read.lengths); colnames(tmp) = c("sample","length","count")
 tmp = tmp[1:max(which(tmp$count > 0)), ]
-p = ggplot(tmp, aes(x=length, y=count, colour=sample)) +geom_line(alpha=0.75) +xlab("read length (nt)") +ylab("# reads")  +ggtitle("read-length distributions") +xlim(14,min(c(75,max(tmp$length))))
+p = ggplot(tmp, aes(x=length, y=count, colour=sample)) +geom_line(alpha=0.75) +xlab("read length (nt)") +ylab("# reads") +ggtitle("read-length distributions") +xlim(14,min(c(75,max(tmp$length))))
 if(nrow(read.lengths) > 30){ p = p +guides(colour=FALSE) }
 p
 #ggplot(tmp, aes(x=as.factor(length), y=count)) +geom_violin()
 #ggplot(tmp, aes(x=as.factor(length), y=count)) +geom_boxplot()
+
+
+##
+## plot distribution of clipped read lengths - fraction
+##
+tmp = melt(t(t(read.lengths)/colSums(read.lengths))); colnames(tmp) = c("sample","length","fraction")
+tmp = tmp[1:max(which(tmp$fraction > 0)), ]
+p = ggplot(tmp, aes(x=length, y=fraction, colour=sample)) +geom_line(alpha=0.75) +xlab("read length (nt)") +ylab("fraction of reads") +ggtitle("read-length distributions") +xlim(14,min(c(75,max(tmp$length))))
+if(nrow(read.lengths) > 30){ p = p +guides(colour=FALSE) }
+p
 
 
 ##
@@ -547,15 +438,39 @@ hist(tmp, breaks=seq(0,ceiling(max(tmp)), by=0.1), col="grey", border="white", x
 #hist((mapping.stats$rRNA / libSizes$all), breaks=seq(0,1,by=0.05), col="grey", border="white", xlim=c(0,1), main="rRNA signal",xlab="fraction rRNA reads",ylab="# samples")
 
 
+
+mapping.stats.orig = mapping.stats
+mapping.stats = mapping.stats[,-grep("input_to_",colnames(mapping.stats))]
 ##
 ## Plot heatmap of mapping percentages through the pipeline
 ##
-toplot = melt(as.matrix(mapping.stats / mapping.stats[,1])); colnames(toplot) = c("Sample","Stage","ReadFraction")
+toplot = melt(as.matrix(mapping.stats / mapping.stats$input)); colnames(toplot) = c("Sample","Stage","ReadFraction")
 toplot$Stage = with(toplot, factor(Stage, levels = rev(levels(Stage))))
 toplot$Sample = factor(as.character(toplot$Sample), levels=rownames(mapping.stats)[sampleOrder])
-p = ggplot(toplot, aes(x=Sample, y=Stage, group=Sample, fill=ReadFraction, label=sprintf("%1.1f%%",ReadFraction*100))) +geom_tile() +scale_fill_gradient2(low="white",high="yellow",mid="steelblue", midpoint=0.5) +theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5))
+p = ggplot(toplot, aes(x=Sample, y=Stage, group=Sample, fill=ReadFraction, label=sprintf("%1.1f%%",ReadFraction*100))) +geom_tile() +scale_fill_gradient2(low="white",high="yellow",mid="steelblue", midpoint=0.5) +theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5)) +ggtitle("fraction aligned reads (normalised by # input reads)")
 if(nrow(mapping.stats) < 50){ p = p +geom_text(size=3) }
 p
+
+##
+## Plot heatmap of mapping percentages through the pipeline
+##
+toplot = melt(as.matrix(mapping.stats / mapping.stats$successfully_clipped)[,-1]); colnames(toplot) = c("Sample","Stage","ReadFraction")
+toplot$Stage = with(toplot, factor(Stage, levels = rev(levels(Stage))))
+toplot$Sample = factor(as.character(toplot$Sample), levels=rownames(mapping.stats)[sampleOrder])
+p = ggplot(toplot, aes(x=Sample, y=Stage, group=Sample, fill=ReadFraction, label=sprintf("%1.1f%%",ReadFraction*100))) +geom_tile() +scale_fill_gradient2(low="white",high="yellow",mid="steelblue", midpoint=0.5) +theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5)) +ggtitle("fraction aligned reads (normalised by # adapter-clipped reads)")
+if(nrow(mapping.stats) < 50){ p = p +geom_text(size=3) }
+p
+
+##
+## Plot heatmap of mapping percentages through the pipeline
+##
+toplot = melt(as.matrix(mapping.stats / mapping.stats$reads_used_for_alignment)[,-c(1:7)]); colnames(toplot) = c("Sample","Stage","ReadFraction")
+toplot$Stage = with(toplot, factor(Stage, levels = rev(levels(Stage))))
+toplot$Sample = factor(as.character(toplot$Sample), levels=rownames(mapping.stats)[sampleOrder])
+p = ggplot(toplot, aes(x=Sample, y=Stage, group=Sample, fill=ReadFraction, label=sprintf("%1.1f%%",ReadFraction*100))) +geom_tile() +scale_fill_gradient2(low="white",high="yellow",mid="steelblue", midpoint=0.5) +theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5)) +ggtitle("fraction aligned reads (normalised by # non-contaminant reads)")
+if(nrow(mapping.stats) < 50){ p = p +geom_text(size=3) }
+p
+
 
 
 ##
@@ -565,15 +480,16 @@ require(plyr)
 sampleTotals = colSums(exprs.miRNA)
 sampleTotals = rbind(sampleTotals, colSums(exprs.tRNA))
 sampleTotals = rbind(sampleTotals, colSums(exprs.piRNA))
-tmp = data.frame(biotype=sapply(rownames(exprs.gencode), function(id){ unlist(strsplit(id,":"))[2] }), exprs.gencode)
+#tmp = data.frame(biotype=sapply(rownames(exprs.gencode), function(id){ unlist(strsplit(id,":"))[2] }), exprs.gencode)
+tmp = data.frame(biotype=sapply(rownames(exprs.gencode), function(id){bits=unlist(strsplit(id,":")); bits[length(bits)]}), exprs.gencode)
 tmp = ddply(tmp, "biotype", function(mat){ colSums(mat[,-1,drop=F]) })
 rownames(tmp) = tmp[,1]; tmp = tmp[,-1,drop=F]
 colnames(tmp) = colnames(sampleTotals)
 sampleTotals = rbind(sampleTotals, tmp)
 sampleTotals = rbind(sampleTotals, colSums(exprs.circRNA))
 #sampleTotals = rbind(sampleTotals, colSums(exprs.repElements))
-sampleTotals = rbind(sampleTotals, colSums(exprs.exogenous_miRNA))
-sampleTotals = rbind(sampleTotals, colSums(exprs.exogenous_genomes))
+#sampleTotals = rbind(sampleTotals, colSums(exprs.exogenous_miRNA))
+sampleTotals = rbind(sampleTotals, mapping.stats$exogenous_genomes)
 if("miRNA" %in% rownames(sampleTotals)){
   i = which(rownames(sampleTotals) %in% "miRNA")
   sampleTotals[i,] = colSums(sampleTotals[c(1,i),,drop=F])
@@ -582,11 +498,11 @@ if("miRNA" %in% rownames(sampleTotals)){
 }else{
   rownames(sampleTotals)[1:3] = c("miRNA","tRNA","piRNA")
 }
-rownames(sampleTotals)[(nrow(sampleTotals)-2):nrow(sampleTotals)] = c("circularRNA","exogenous_miRNA","exogenous_genomes")
+#rownames(sampleTotals)[(nrow(sampleTotals)-2):nrow(sampleTotals)] = c("circularRNA","exogenous_miRNA","exogenous_genomes")
+rownames(sampleTotals)[(nrow(sampleTotals)-1):nrow(sampleTotals)] = c("circularRNA","exogenous_genomes")
 sampleTotals = sampleTotals[order(apply(sampleTotals, 1, median, na.rm=T), decreasing=F), ,drop=F]
 tmp = melt(as.matrix(sampleTotals))
 colnames(tmp) = c("biotype","sampleID","readCount")
-require(ggplot2)
 ggplot(tmp, aes(y=readCount,x=biotype, colour=biotype)) +geom_hline(y=1,linetype="dashed") +geom_boxplot() +scale_y_log10(breaks=c(0.01,0.1,1,10,100,1000,10000,100000,1000000,10000000,100000000)) +guides(colour=FALSE) +coord_flip()
 
 
@@ -603,8 +519,9 @@ exprs.tRNA.rpm = t(10^6 * t(exprs.tRNA) / libSize.use)
 exprs.piRNA.rpm = t(10^6 * t(exprs.piRNA) / libSize.use)
 exprs.gencode.rpm = t(10^6 * t(exprs.gencode) / libSize.use)
 #exprs.repElements.rpm = t(10^6 * t(exprs.repElements) / libSize.use)
-exprs.exogenous_miRNA.rpm = t(10^6 * t(exprs.exogenous_miRNA) / libSize.use)
-exprs.exogenous_genomes.rpm = t(10^6 * t(exprs.exogenous_genomes) / libSize.use)
+#exprs.exogenous_miRNA.rpm = t(10^6 * t(exprs.exogenous_miRNA) / libSize.use)
+exprs.exogenousGenomes_speciesSpecific.rpm = t(10^6 * t(exprs.exogenousGenomes_speciesSpecific) / libSize.use)
+exprs.exogenousGenomes_kingdomSpecific.rpm = t(10^6 * t(exprs.exogenousGenomes_kingdomSpecific) / libSize.use)
 
 #par(mfrow=c(1,2), oma=c(15,0,0,0))
 #boxplot(log10(exprs.miRNA[, sampleOrder]+1E-1), las=2, ylab="log10(miRNA counts)", main="miRNA read count")
@@ -632,16 +549,30 @@ p = ggplot(tmp, aes(x=abundance, colour=sample)) +geom_density() +xlab("Reads pe
 if(ncol(exprs.miRNA.rpm) > 30){ p = p +guides(colour=FALSE) }
 p
 
+
+##
+## Finally, plot exogenous if there are any
+##
+par(oma=c(5,0,0,8))
+tmp.order = order(apply(t(t(exprs.exogenousGenomes_speciesSpecific)/colSums(exprs.exogenousGenomes_speciesSpecific)), 1, median), decreasing=T)
+heatmap.2(log10(exprs.exogenousGenomes_speciesSpecific[tmp.order, ][1:100,]+0.1),trace="none")
+tmp.order = order(apply(t(t(exprs.exogenousGenomes_kingdomSpecific)/colSums(exprs.exogenousGenomes_kingdomSpecific)), 1, median), decreasing=T)
+heatmap.2(log10(exprs.exogenousGenomes_kingdomSpecific[tmp.order, ][1:100,]+0.1),trace="none")
+
+
 dev.off()
 
 
 ##
 ## Save the RPM normalised data
 ##
-save(exprs.miRNA.rpm, exprs.tRNA.rpm, exprs.piRNA.rpm, exprs.gencode.rpm, exprs.exogenous_miRNA.rpm, exprs.exogenous_genomes.rpm, file=paste(output.dir, "exceRpt_smallRNAQuants_ReadsPerMillion.RData", sep="/"))
+#save(exprs.miRNA.rpm, exprs.tRNA.rpm, exprs.piRNA.rpm, exprs.gencode.rpm, exprs.exogenous_miRNA.rpm, exprs.exogenous_genomes.rpm, file=paste(output.dir, "exceRpt_smallRNAQuants_ReadsPerMillion.RData", sep="/"))
+save(exprs.miRNA.rpm, exprs.tRNA.rpm, exprs.piRNA.rpm, exprs.gencode.rpm, exprs.exogenous_genomes.rpm, file=paste(output.dir, "exceRpt_smallRNAQuants_ReadsPerMillion.RData", sep="/"))
 write.table(exprs.miRNA.rpm, file=paste(output.dir, "exceRpt_miRNA_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
 write.table(exprs.tRNA.rpm, file=paste(output.dir, "exceRpt_tRNA_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
 write.table(exprs.piRNA.rpm, file=paste(output.dir, "exceRpt_piRNA_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
 write.table(exprs.gencode.rpm, file=paste(output.dir, "exceRpt_gencode_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+write.table(exprs.exogenousGenomes_speciesSpecific.rpm, file=paste(output.dir, "exceRpt_exogenousGenomes_speciesSpecific_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+write.table(exprs.exogenousGenomes_kingdomSpecific.rpm, file=paste(output.dir, "exceRpt_exogenousGenomes_kingdomSpecific_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
 
 
