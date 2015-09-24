@@ -553,12 +553,18 @@ p
 ##
 ## Finally, plot exogenous if there are any
 ##
-par(oma=c(5,0,0,8))
-tmp.order = order(apply(t(t(exprs.exogenousGenomes_speciesSpecific)/colSums(exprs.exogenousGenomes_speciesSpecific)), 1, median), decreasing=T)
-heatmap.2(log10(exprs.exogenousGenomes_speciesSpecific[tmp.order, ][1:100,]+0.1),trace="none")
-tmp.order = order(apply(t(t(exprs.exogenousGenomes_kingdomSpecific)/colSums(exprs.exogenousGenomes_kingdomSpecific)), 1, median), decreasing=T)
-heatmap.2(log10(exprs.exogenousGenomes_kingdomSpecific[tmp.order, ][1:100,]+0.1),trace="none")
-
+if(nrow(exprs.exogenousGenomes_speciesSpecific) > 0){
+  par(oma=c(5,0,0,8))
+  tmp.order = order(apply(t(t(exprs.exogenousGenomes_speciesSpecific)/colSums(exprs.exogenousGenomes_speciesSpecific)), 1, median), decreasing=T)
+  heatmap.2(log10(exprs.exogenousGenomes_speciesSpecific[tmp.order, ][1:100,]+0.1),trace="none")
+  tmp.order = order(apply(t(t(exprs.exogenousGenomes_kingdomSpecific)/colSums(exprs.exogenousGenomes_kingdomSpecific)), 1, median), decreasing=T)
+  heatmap.2(log10(exprs.exogenousGenomes_kingdomSpecific[tmp.order, ][1:100,]+0.1),trace="none")
+  
+  tmp.order = order(apply(t(t(exprs.exogenousGenomes_speciesSpecific.rpm)/colSums(exprs.exogenousGenomes_speciesSpecific.rpm)), 1, median), decreasing=T)
+  heatmap.2(log10(exprs.exogenousGenomes_speciesSpecific.rpm[tmp.order, ][1:100,]+0.1),trace="none")
+  tmp.order = order(apply(t(t(exprs.exogenousGenomes_kingdomSpecific.rpm)/colSums(exprs.exogenousGenomes_kingdomSpecific.rpm)), 1, median), decreasing=T)
+  heatmap.2(log10(exprs.exogenousGenomes_kingdomSpecific.rpm[tmp.order, ][1:100,]+0.1),trace="none") 
+}
 
 dev.off()
 
@@ -567,7 +573,7 @@ dev.off()
 ## Save the RPM normalised data
 ##
 #save(exprs.miRNA.rpm, exprs.tRNA.rpm, exprs.piRNA.rpm, exprs.gencode.rpm, exprs.exogenous_miRNA.rpm, exprs.exogenous_genomes.rpm, file=paste(output.dir, "exceRpt_smallRNAQuants_ReadsPerMillion.RData", sep="/"))
-save(exprs.miRNA.rpm, exprs.tRNA.rpm, exprs.piRNA.rpm, exprs.gencode.rpm, exprs.exogenous_genomes.rpm, file=paste(output.dir, "exceRpt_smallRNAQuants_ReadsPerMillion.RData", sep="/"))
+save(exprs.miRNA.rpm, exprs.tRNA.rpm, exprs.piRNA.rpm, exprs.gencode.rpm, exprs.exogenousGenomes_speciesSpecific.rpm, exprs.exogenousGenomes_kingdomSpecific.rpm, file=paste(output.dir, "exceRpt_smallRNAQuants_ReadsPerMillion.RData", sep="/"))
 write.table(exprs.miRNA.rpm, file=paste(output.dir, "exceRpt_miRNA_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
 write.table(exprs.tRNA.rpm, file=paste(output.dir, "exceRpt_tRNA_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
 write.table(exprs.piRNA.rpm, file=paste(output.dir, "exceRpt_piRNA_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
