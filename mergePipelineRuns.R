@@ -416,7 +416,9 @@ p
 ##
 ## plot distribution of clipped read lengths - fraction
 ##
-tmp = melt(t(t(read.lengths)/colSums(read.lengths))); colnames(tmp) = c("sample","length","fraction")
+
+
+tmp = melt(t(apply(read.lengths, 1, function(row){ row/sum(row) }))); colnames(tmp) = c("sample","length","fraction")
 tmp = tmp[1:max(which(tmp$fraction > 0)), ]
 p = ggplot(tmp, aes(x=length, y=fraction, colour=sample)) +geom_line(alpha=0.75) +xlab("read length (nt)") +ylab("fraction of reads") +ggtitle("read-length distributions") +xlim(14,min(c(75,max(tmp$length))))
 if(nrow(read.lengths) > 30){ p = p +guides(colour=FALSE) }
