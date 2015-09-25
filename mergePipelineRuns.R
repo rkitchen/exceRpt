@@ -48,7 +48,7 @@ if(length(args) >= 1){
   #data.dir = "~/WORK/YALE_offline/exRNA/exceRptLibraryAnalysis"
   #data.dir = "~/WORK/YALE_offline/exRNA/exceRptCombinatorialAnalysis"
   #data.dir = "~/WORK/YALE_offline/exRNA/TESTING"
-  #data.dir = "~/WORK/YALE_offline/exRNA/AmyBuck"
+  #data.dir = "~/WORK/YALE_offline/exRNA/AmyBuck/Results"
   #data.dir = "~/WORK/YALE_offline/BrainSpan/smallRNA_new/exceRpt_Results"
   output.dir = data.dir
 }
@@ -456,7 +456,7 @@ p
 ##
 ## Plot heatmap of mapping percentages through the pipeline
 ##
-toplot = melt(as.matrix(mapping.stats / mapping.stats$successfully_clipped)[,-1]); colnames(toplot) = c("Sample","Stage","ReadFraction")
+toplot = melt(as.matrix(mapping.stats / mapping.stats$successfully_clipped)[,-1,drop=F]); colnames(toplot) = c("Sample","Stage","ReadFraction")
 toplot$Stage = with(toplot, factor(Stage, levels = rev(levels(Stage))))
 toplot$Sample = factor(as.character(toplot$Sample), levels=rownames(mapping.stats)[sampleOrder])
 p = ggplot(toplot, aes(x=Sample, y=Stage, group=Sample, fill=ReadFraction, label=sprintf("%1.1f%%",ReadFraction*100))) +geom_tile() +scale_fill_gradient2(low="white",high="yellow",mid="steelblue", midpoint=0.5) +theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5)) +ggtitle("fraction aligned reads (normalised by # adapter-clipped reads)")
@@ -466,7 +466,7 @@ p
 ##
 ## Plot heatmap of mapping percentages through the pipeline
 ##
-toplot = melt(as.matrix(mapping.stats / mapping.stats$reads_used_for_alignment)[,-c(1:7)]); colnames(toplot) = c("Sample","Stage","ReadFraction")
+toplot = melt(as.matrix(mapping.stats / mapping.stats$reads_used_for_alignment)[,-c(1:7),drop=F]); colnames(toplot) = c("Sample","Stage","ReadFraction")
 toplot$Stage = with(toplot, factor(Stage, levels = rev(levels(Stage))))
 toplot$Sample = factor(as.character(toplot$Sample), levels=rownames(mapping.stats)[sampleOrder])
 p = ggplot(toplot, aes(x=Sample, y=Stage, group=Sample, fill=ReadFraction, label=sprintf("%1.1f%%",ReadFraction*100))) +geom_tile() +scale_fill_gradient2(low="white",high="yellow",mid="steelblue", midpoint=0.5) +theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5)) +ggtitle("fraction aligned reads (normalised by # non-contaminant reads)")
@@ -555,7 +555,7 @@ p
 ##
 ## Finally, plot exogenous if there are any
 ##
-if(nrow(exprs.exogenousGenomes_speciesSpecific) > 0){
+if(nrow(exprs.exogenousGenomes_speciesSpecific) > 0  &&  ncol(exprs.exogenousGenomes_speciesSpecific) > 1){
   par(oma=c(5,0,0,8))
   tmp.order = order(apply(t(t(exprs.exogenousGenomes_speciesSpecific)/colSums(exprs.exogenousGenomes_speciesSpecific)), 1, median), decreasing=T)
   heatmap.2(log10(exprs.exogenousGenomes_speciesSpecific[tmp.order, ][1:100,]+0.1),trace="none")
