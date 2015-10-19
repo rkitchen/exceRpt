@@ -12,10 +12,10 @@
 ##                                                                                   ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                        ##
 ##                                                                                   ##
-## Version 3.1.2 (2015-10-07)                                                        ##
+## Version 3.1.3 (2015-10-19)                                                        ##
 ##                                                                                   ##
 #######################################################################################
-EXCERPT_VERSION := 3.1.2
+EXCERPT_VERSION := 3.1.3
 
 
 ##
@@ -697,6 +697,7 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousUnaligned_ungapped_noLibs.fq: $(OUTPUT_DIR)
 	#rm $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_null.txt
 	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.sam
 	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.txt
+	gzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_LIBS.sam > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_LIBS.sam.gz
 	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_LIBS.sam
 
 
