@@ -144,7 +144,7 @@ endif
 ## Define current time
 ts := `/bin/date "+%Y-%m-%d--%H:%M:%S"`
 ## Define tool name for reporting
-SMRNAPIPELINE = exceRpt_smallRNA
+SMRNAPIPELINE := exceRpt_smallRNA
 
 
 ##
