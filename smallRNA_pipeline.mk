@@ -143,6 +143,9 @@ endif
 
 ## Define current time
 ts := `/bin/date "+%Y-%m-%d--%H:%M:%S"`
+## Define tool name for reporting
+SMRNAPIPELINE = exceRpt_smallRNA
+
 
 ##
 ## Initialise organism specific smallRNA library parameters
@@ -236,17 +239,17 @@ ifeq ($(ADAPTER_SEQ),NULL)
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.sam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err | grep "[[:space:]]$$(<$(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.txt)" 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err | awk '{getline len<"$(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.txt"; print substr($$4,len+1)}' 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err | sed 's/[A]*$$//' 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err | sort 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err | uniq -c 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err | sort -rnk 1 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err | awk '{if ($$1 > 75) print $$0}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).potentialAdapters.txt 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err;  \
 	head -n 1 $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).potentialAdapters.txt | awk '{print $$2}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).adapterSeq;  \
 	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.*
-	LOGENTRY_WRITE_ADAPTER := $(ts) SMRNAPIPELINE: Identifying unknown 3' adapter sequence. Removing 3' adapter sequence using fastX:\n
+	LOGENTRY_WRITE_ADAPTER := $(ts) $(SMRNAPIPELINE): Identifying unknown 3' adapter sequence. Removing 3' adapter sequence using fastX:\n
 else ifeq ($(ADAPTER_SEQ),guessKnown)
 	COMMAND_WRITE_ADAPTER_SEQ := $(COMMAND_CONVERT_SRA) 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err | $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) FindAdapter -n 10000 -m 1000000 -s 7 -a $(DATABASE_PATH)/adapters/adapters.fa - > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).adapterSeq 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	LOGENTRY_WRITE_ADAPTER := $(ts) SMRNAPIPELINE: Identifying 3' adapter from list of known sequences.  Removing 3' adapter sequence using fastX:\n
+	LOGENTRY_WRITE_ADAPTER := $(ts) $(SMRNAPIPELINE): Identifying 3' adapter from list of known sequences.  Removing 3' adapter sequence using fastX:\n
 else ifeq ($(ADAPTER_SEQ),none)
 	COMMAND_WRITE_ADAPTER_SEQ := echo 'no adapter' > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).adapterSeq;
 	COMMAND_CLIP_ADAPTER := $(COMMAND_CONVERT_SRA) | gzip -c > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.tmp.gz 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
 	LOGENTRY_WRITE_ADAPTER := Provided 3' adapter clipped input sequence file. No clipping necessary.\n 
 else
 	COMMAND_WRITE_ADAPTER_SEQ := echo $(ADAPTER_SEQ) > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).adapterSeq
-	LOGENTRY_WRITE_ADAPTER := $(ts) SMRNAPIPELINE: Provided 3' adapter sequence. Removing 3' adapter sequence using fastX:\n
+	LOGENTRY_WRITE_ADAPTER := $(ts) $(SMRNAPIPELINE): Provided 3' adapter sequence. Removing 3' adapter sequence using fastX:\n
 endif
 
 
@@ -282,8 +285,8 @@ else
 	
 	COMMAND_COUNT_CALIBRATOR := cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.calibratormapped.counts | awk '{sum+=$$1} END {print "calibrator\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	COMMAND_MAP_CALIBRATOR := $(BOWTIE2_EXE) -p $(N_THREADS) $(BOWTIE2_MAPPING_PARAMS_CALIBRATOR) --un-gz $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.noCalibrator.fastq.gz -x $(CALIBRATOR_LIBRARY) -U $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.fastq.gz 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '$$2 != 4 {print $$0}' | $(SAMTOOLS_EXE) view -Sb - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | tee $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.calibratormapped.bam | $(SAMTOOLS_EXE) view - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{print $$3}' | sort -k 2 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err | uniq --count > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.calibratormapped.counts 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
-	LOGENTRY_MAP_CALIBRATOR_1 := $(ts) SMRNAPIPELINE: Mapping reads to calibrator sequences using bowtie:\n
-	LOGENTRY_MAP_CALIBRATOR_2 := $(ts) SMRNAPIPELINE: Finished mapping to the calibrators\n
+	LOGENTRY_MAP_CALIBRATOR_1 := $(ts) $(SMRNAPIPELINE): Mapping reads to calibrator sequences using bowtie:\n
+	LOGENTRY_MAP_CALIBRATOR_2 := $(ts) $(SMRNAPIPELINE): Finished mapping to the calibrators\n
 	
 	FILE_TO_INPUT_TO_UNIVEC_ALIGNMENT := $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.noCalibrator.fastq.gz
 	
@@ -380,8 +383,8 @@ processSample: $(OUTPUT_DIR)/$(SAMPLE_ID)/$(PROCESS_SAMPLE_REQFILE)
 	tar -cvz -C $(OUTPUT_DIR) -T $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt -f $(OUTPUT_DIR)/$(SAMPLE_ID)_CORE_RESULTS_v$(EXCERPT_VERSION).tgz 2> /dev/null
 	rm $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt
 	## END PIPELINE
-	@echo -e "$(ts) SMRNAPIPELINE: END smallRNA-seq Pipeline for sample $(SAMPLE_ID)\n======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: END\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).err
+	@echo -e "$(ts) $(SMRNAPIPELINE): END smallRNA-seq Pipeline for sample $(SAMPLE_ID)\n======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): END\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).err
 	@echo -e "#END OF STATS from the exceRpt smallRNA-seq pipeline. Run completed at $(ts)" >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 
 
@@ -403,15 +406,15 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/Progress_1_FoundAdapter.dat:
 	#$(EXPORT_CMD)
 	@echo -e "$(USEAGE)"
 	mkdir -p $(OUTPUT_DIR)/$(SAMPLE_ID)
-	@echo -e "$(ts) SMRNAPIPELINE: BEGIN exceRpt smallRNA-seq pipeline v.$(EXCERPT_VERSION) for sample $(SAMPLE_ID)\n======================\n" > $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: BEGIN \n" > $(OUTPUT_DIR)/$(SAMPLE_ID).err
-	@echo -e "$(ts) SMRNAPIPELINE: Created results dir: $(OUTPUT_DIR)/$(SAMPLE_ID)\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): BEGIN exceRpt smallRNA-seq pipeline v.$(EXCERPT_VERSION) for sample $(SAMPLE_ID)\n======================\n" > $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): BEGIN \n" > $(OUTPUT_DIR)/$(SAMPLE_ID).err
+	@echo -e "$(ts) $(SMRNAPIPELINE): Created results dir: $(OUTPUT_DIR)/$(SAMPLE_ID)\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	#
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Processing adapter sequence:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 
-	@echo -e "$(ts) SMRNAPIPELINE: $(COMMAND_WRITE_ADAPTER_SEQ)\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
+	@echo -e "$(ts) $(SMRNAPIPELINE): Processing adapter sequence:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 
+	@echo -e "$(ts) $(SMRNAPIPELINE): $(COMMAND_WRITE_ADAPTER_SEQ)\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
 	$(COMMAND_WRITE_ADAPTER_SEQ)
-	@echo -e "$(ts) SMRNAPIPELINE: Progress_1_FoundAdapter" > $(OUTPUT_DIR)/$(SAMPLE_ID)/Progress_1_FoundAdapter.dat
+	@echo -e "$(ts) $(SMRNAPIPELINE): Progress_1_FoundAdapter" > $(OUTPUT_DIR)/$(SAMPLE_ID)/Progress_1_FoundAdapter.dat
 	#
 	@echo -e "#STATS from the exceRpt smallRNA-seq pipeline v.$(EXCERPT_VERSION) for sample $(SAMPLE_ID). Run started at $(ts)" > $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	@echo -e "Stage\tReadCount" >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
@@ -423,25 +426,25 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/Progress_1_FoundAdapter.dat:
 $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz: $(OUTPUT_DIR)/$(SAMPLE_ID)/Progress_1_FoundAdapter.dat
 	## Run the SW alignment of known adapters regardless of user preference
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Checking adapter against known sequences: $(COMMAND_CONVERT_SRA) 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err | $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) FindAdapter -n 1000 -m 100000 -s 7 -a $(DATABASE_PATH)/adapters/adapters.fa - > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).knownAdapterSeq 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Checking adapter against known sequences: $(COMMAND_CONVERT_SRA) 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err | $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) FindAdapter -n 1000 -m 100000 -s 7 -a $(DATABASE_PATH)/adapters/adapters.fa - > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).knownAdapterSeq 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	$(COMMAND_CONVERT_SRA) 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err | $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) FindAdapter -n 1000 -m 100000 -s 7 -a $(DATABASE_PATH)/adapters/adapters.fa - > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).knownAdapterSeq 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Known adapter sequence: $(shell cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).knownAdapterSeq)\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Known adapter sequence: $(shell cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).knownAdapterSeq)\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Carry on with the adapter provided / guessed
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Provided/guessed adapter sequence: $(shell cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).adapterSeq)" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: $(LOGENTRY_WRITE_ADAPTER)" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
-	@echo -e "$(ts) SMRNAPIPELINE: $(COMMAND_CLIP_ADAPTER)\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
+	@echo -e "$(ts) $(SMRNAPIPELINE): Provided/guessed adapter sequence: $(shell cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).adapterSeq)" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): $(LOGENTRY_WRITE_ADAPTER)" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
+	@echo -e "$(ts) $(SMRNAPIPELINE): $(COMMAND_CLIP_ADAPTER)\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
 	$(COMMAND_CLIP_ADAPTER)
-	@echo -e "$(ts) SMRNAPIPELINE: Finished removing adapters\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Finished removing adapters\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Count reads input to adapter clipping
 	grep "Input: " $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{print "input\t"$$2}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	## Count reads output following adapter clipping
 	grep "Output: " $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{print "successfully_clipped\t"$$2}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	## Remove random barcodes if there are any
-	@echo -e "$(ts) SMRNAPIPELINE: Removing $(RANDOM_BARCODE_LENGTH)N random barcode:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 
-	@echo -e "$(ts) SMRNAPIPELINE: $(COMMAND_REMOVE_RANDOM_BARCODE)\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
+	@echo -e "$(ts) $(SMRNAPIPELINE): Removing $(RANDOM_BARCODE_LENGTH)N random barcode:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 
+	@echo -e "$(ts) $(SMRNAPIPELINE): $(COMMAND_REMOVE_RANDOM_BARCODE)\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
 	$(COMMAND_REMOVE_RANDOM_BARCODE)
-	@echo -e "$(ts) SMRNAPIPELINE: Finished removing random barcode\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Finished removing random barcode\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 
 ##
@@ -449,12 +452,12 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz: $(OUTPUT_DIR)/$(SAMPLE
 ##
 $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).qualityEncoding: $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Guessing encoding of fastq read-qualities:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	#@echo -e "$(ts) SMRNAPIPELINE: $(COMMAND_CONVERT_SRA) | head -n 40000 | awk '{if(NR%4==0) printf("%s",$$0);}' | od -A n -t u1 | awk 'BEGIN{min=100;max=0;}{for(i=1;i<=NF;i++) {if($$i>max) max=$$i; if($$i<min) min=$$i;}}END{if(max<=74 && min<59) print "33"; else if(max>73 && min>=64) print "64"; else if(min>=59 && min<64 && max>73) print "64"; else print "64";}' > $@\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Guessing encoding of fastq read-qualities:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	#@echo -e "$(ts) $(SMRNAPIPELINE): $(COMMAND_CONVERT_SRA) | head -n 40000 | awk '{if(NR%4==0) printf("%s",$$0);}' | od -A n -t u1 | awk 'BEGIN{min=100;max=0;}{for(i=1;i<=NF;i++) {if($$i>max) max=$$i; if($$i<min) min=$$i;}}END{if(max<=74 && min<59) print "33"; else if(max>73 && min>=64) print "64"; else if(min>=59 && min<64 && max>73) print "64"; else print "64";}' > $@\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	#$(COMMAND_CONVERT_SRA) | head -n 40000 | awk '{if(NR%4==0) printf("%s",$$0);}' | od -A n -t u1 | awk 'BEGIN{min=100;max=0;}{for(i=1;i<=NF;i++) {if($$i>max) max=$$i; if($$i<min) min=$$i;}}END{if(max<=74 && min<59) print "33"; else if(max>73 && min>=64) print "64"; else if(min>=59 && min<64 && max>73) print "64"; else print "64";}' > $@
-	@echo -e "$(ts) SMRNAPIPELINE: $(COMMAND_CONVERT_SRA) | head -n 40000 | awk '{if(NR%4==0) printf("%s",$$0);}' | od -A n -t u1 | awk 'BEGIN{min=100;max=0;}{for(i=1;i<=NF;i++) {if($$i>max) max=$$i; if($$i<min) min=$$i;}}END{if(max<=74) print "33"; else if(max>74 && min>=64) print "64"; else if(min>=59 && min<64 && max>73) print "64"; else print "64";}' > $@\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): $(COMMAND_CONVERT_SRA) | head -n 40000 | awk '{if(NR%4==0) printf("%s",$$0);}' | od -A n -t u1 | awk 'BEGIN{min=100;max=0;}{for(i=1;i<=NF;i++) {if($$i>max) max=$$i; if($$i<min) min=$$i;}}END{if(max<=74) print "33"; else if(max>74 && min>=64) print "64"; else if(min>=59 && min<64 && max>73) print "64"; else print "64";}' > $@\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	$(COMMAND_CONVERT_SRA) | head -n 40000 | awk '{if(NR%4==0) printf("%s",$$0);}' | od -A n -t u1 | awk 'BEGIN{min=100;max=0;}{for(i=1;i<=NF;i++) {if($$i>max) max=$$i; if($$i<min) min=$$i;}}END{if(max<=74) print "33"; else if(max>74 && min>=64) print "64"; else if(min>=59 && min<64 && max>73) print "64"; else print "64";}' > $@
-	@echo -e "$(ts) SMRNAPIPELINE: Finished guessing encoding of fastq read-qualities:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Finished guessing encoding of fastq read-qualities:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 
 ##
@@ -462,22 +465,22 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).qualityEncoding: $(OUTPUT_DIR)/$(SAMPLE_
 ##
 $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.fastq.gz: $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).qualityEncoding
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Filtering reads by base quality:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	#@echo -e "$(ts) SMRNAPIPELINE: $(COMMAND_FILTER_BY_QUALITY)\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
+	@echo -e "$(ts) $(SMRNAPIPELINE): Filtering reads by base quality:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	#@echo -e "$(ts) $(SMRNAPIPELINE): $(COMMAND_FILTER_BY_QUALITY)\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
 	#$(COMMAND_FILTER_BY_QUALITY)
-	@echo -e "$(ts) SMRNAPIPELINE: gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz | $(FASTX_FILTER_EXE) -v -Q$(shell cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).qualityEncoding) -p $(QFILTER_MIN_READ_FRAC) -q $(QFILTER_MIN_QUAL) > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.tmp\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
+	@echo -e "$(ts) $(SMRNAPIPELINE): gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz | $(FASTX_FILTER_EXE) -v -Q$(shell cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).qualityEncoding) -p $(QFILTER_MIN_READ_FRAC) -q $(QFILTER_MIN_QUAL) > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.tmp\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
 	gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz | $(FASTX_FILTER_EXE) -v -Q$(shell cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).qualityEncoding) -p $(QFILTER_MIN_READ_FRAC) -q $(QFILTER_MIN_QUAL) > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.tmp 2>>$(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Finished filtering reads by base quality\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Finished filtering reads by base quality\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Count reads that failed the quality filter
 	grep "low-quality reads" $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{print "failed_quality_filter\t"$$2}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	#
 	# Filter homopolymer reads (those that have too many single nt repeats)
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Filtering homopolymer repeat reads:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) RemoveHomopolymerRepeats -m 0.66 -i $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.tmp -o $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.fastq\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
+	@echo -e "$(ts) $(SMRNAPIPELINE): Filtering homopolymer repeat reads:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) RemoveHomopolymerRepeats -m 0.66 -i $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.tmp -o $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.fastq\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
 	$(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) RemoveHomopolymerRepeats --verbose -m 0.66 -i $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.tmp -o $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.fastq >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.REMOVEDRepeatReads.fastq
 	gzip $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.fastq
-	@echo -e "$(ts) SMRNAPIPELINE: Finished filtering homopolymer repeat reads\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Finished filtering homopolymer repeat reads\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Count homopolymer repeat reads that failed the quality filter
 	grep "Done.  Sequences removed" $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk -F "=" '{print "failed_homopolymer_filter\t"$$2}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 
@@ -487,12 +490,12 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.fastq.gz: $(OUTPUT_DIR)
 ##
 $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.readLengths.txt: $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.fastq.gz
 	@echo -e "======================" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Calculating length distribution of clipped reads:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) GetSequenceLengths $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.fastq > $@ 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Calculating length distribution of clipped reads:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) GetSequenceLengths $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.fastq > $@ 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	gunzip -c $< > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.fastq
 	$(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) GetSequenceLengths $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.fastq > $@ 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
 	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.fastq
-	@echo -e "$(ts) SMRNAPIPELINE: Finished calculating read-lengths\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Finished calculating read-lengths\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 
 ##
@@ -500,10 +503,10 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.readLengths.txt: $(OUTP
 ##
 $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered_fastqc.zip: $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.fastq.gz
 	@echo -e "======================" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Running FastQC on clipped reads:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: $(FASTQC_EXE) -Xmx$(JAVA_RAM) -Dfastqc.threads=$(N_THREADS) -Dfastqc.unzip=false -Dfastqc.output_dir=$(OUTPUT_DIR)/$(SAMPLE_ID)/ uk/ac/bbsrc/babraham/FastQC/FastQCApplication $< >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Running FastQC on clipped reads:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): $(FASTQC_EXE) -Xmx$(JAVA_RAM) -Dfastqc.threads=$(N_THREADS) -Dfastqc.unzip=false -Dfastqc.output_dir=$(OUTPUT_DIR)/$(SAMPLE_ID)/ uk/ac/bbsrc/babraham/FastQC/FastQCApplication $< >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	$(FASTQC_EXE) -Xmx$(JAVA_RAM) -Dfastqc.threads=$(N_THREADS) -Dfastqc.unzip=false -Dfastqc.output_dir=$(OUTPUT_DIR)/$(SAMPLE_ID)/ uk/ac/babraham/FastQC/FastQCApplication $< >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
-	@echo -e "$(ts) SMRNAPIPELINE: Finished running FastQC\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Finished running FastQC\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 
 ##
@@ -511,18 +514,18 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered_fastqc.zip: $(OUTPUT_DI
 ##
 $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.noUniVecContaminants.fastq.gz: $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.fastq.gz $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.readLengths.txt $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered_fastqc.zip
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: $(LOGENTRY_MAP_CALIBRATOR_1)" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: $(COMMAND_MAP_CALIBRATOR)" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): $(LOGENTRY_MAP_CALIBRATOR_1)" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): $(COMMAND_MAP_CALIBRATOR)" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	$(COMMAND_MAP_CALIBRATOR)
-	@echo -e "$(ts) SMRNAPIPELINE: $(LOGENTRY_MAP_CALIBRATOR_2)" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): $(LOGENTRY_MAP_CALIBRATOR_2)" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Count calibrator oligo reads
 	$(COMMAND_COUNT_CALIBRATOR)
 	#
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Mapping reads to contaminant sequences in UniVec using Bowtie2:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: $(COMMAND_MAP_UNIVEC)\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Mapping reads to contaminant sequences in UniVec using Bowtie2:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): $(COMMAND_MAP_UNIVEC)\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	$(COMMAND_MAP_UNIVEC)
-	@echo -e "$(ts) SMRNAPIPELINE: Finished mapping to the UniVec contaminant DB\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Finished mapping to the UniVec contaminant DB\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Count UniVec contaminant reads
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.uniVecContaminants.readCount | awk '{print "UniVec_contaminants\t"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	
@@ -532,13 +535,13 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.noUniVecContaminants.fa
 ##
 $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.noRiboRNA.fastq.gz: $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.noUniVecContaminants.fastq.gz
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Mapping reads to ribosomal RNA sequences using Bowtie2:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: $(COMMAND_MAP_RRNAS)\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Mapping reads to ribosomal RNA sequences using Bowtie2:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): $(COMMAND_MAP_RRNAS)\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	$(COMMAND_MAP_RRNAS) 
 	$(SAMTOOLS_EXE) sort $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.rRNAmapped.bam $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.rRNAmapped.sorted
 	$(SAMTOOLS_EXE) index $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.rRNAmapped.sorted.bam
 	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.rRNAmapped.bam
-	@echo -e "$(ts) SMRNAPIPELINE: Finished mapping to the rRNAs\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Finished mapping to the rRNAs\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Count rRNA reads
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.rRNA.readCount | awk ' {print "rRNA\t"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 
@@ -548,10 +551,10 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.noRiboRNA.fastq.gz: $(O
 ##
 $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.noRiboRNA_fastqc.zip: $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.noRiboRNA.fastq.gz
 	@echo -e "======================" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Running FastQC on cleaned reads:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: $(FASTQC_EXE) -Xmx$(JAVA_RAM) -Dfastqc.threads=$(N_THREADS) -Dfastqc.unzip=false -Dfastqc.output_dir=$(OUTPUT_DIR)/$(SAMPLE_ID)/ uk/ac/bbsrc/babraham/FastQC/FastQCApplication $< >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Running FastQC on cleaned reads:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): $(FASTQC_EXE) -Xmx$(JAVA_RAM) -Dfastqc.threads=$(N_THREADS) -Dfastqc.unzip=false -Dfastqc.output_dir=$(OUTPUT_DIR)/$(SAMPLE_ID)/ uk/ac/bbsrc/babraham/FastQC/FastQCApplication $< >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	$(FASTQC_EXE) -Xmx$(JAVA_RAM) -Dfastqc.threads=$(N_THREADS) -Dfastqc.unzip=false -Dfastqc.output_dir=$(OUTPUT_DIR)/$(SAMPLE_ID)/ uk/ac/babraham/FastQC/FastQCApplication $< >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
-	@echo -e "$(ts) SMRNAPIPELINE: Finished running FastQC\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Finished running FastQC\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 
 
@@ -562,96 +565,96 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.noRiboRNA_fastqc.zip: $
 ## map ALL READS to the GENOME (bowtie 1 ungapped)
 $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_unspliced.bam: $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.noRiboRNA.fastq.gz $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.noRiboRNA_fastqc.zip
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Mapping reads to the genome of the primary organism ($(MAIN_ORGANISM_GENOME_ID)):\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.noRiboRNA.fastq.gz | $(BOWTIE1_EXE) -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l 19 -n $(MISMATCH_N_MIRNA) -k $(N_GENOME_MULTIMAPS_TO_REPORT) --sam --fullref --best --strata -e 2000 --al $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAligned_ungapped.fq --un $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousUnaligned_ungapped.fq $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/$(MAIN_ORGANISM_GENOME_ID) - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAligned_ungapped.bowtie1stats | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_unspliced.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 
+	@echo -e "$(ts) $(SMRNAPIPELINE): Mapping reads to the genome of the primary organism ($(MAIN_ORGANISM_GENOME_ID)):\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.noRiboRNA.fastq.gz | $(BOWTIE1_EXE) -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l 19 -n $(MISMATCH_N_MIRNA) -k $(N_GENOME_MULTIMAPS_TO_REPORT) --sam --fullref --best --strata -e 2000 --al $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAligned_ungapped.fq --un $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousUnaligned_ungapped.fq $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/$(MAIN_ORGANISM_GENOME_ID) - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAligned_ungapped.bowtie1stats | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_unspliced.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 
 	gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.noRiboRNA.fastq.gz | $(BOWTIE1_EXE) -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l 19 -n $(MISMATCH_N_MIRNA) -k $(N_GENOME_MULTIMAPS_TO_REPORT) --sam --fullref --best --strata -e 2000 --al $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAligned_ungapped.fq --un $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousUnaligned_ungapped.fq $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/$(MAIN_ORGANISM_GENOME_ID) - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAligned_ungapped.bowtie1stats | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_unspliced.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Count reads input to genome and transcriptome alignment
 	grep "# reads processed:" $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAligned_ungapped.bowtie1stats | awk -F ": " '{print "reads_used_for_alignment\t"$$2}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	## Count reads mapped to the genome
 	grep "# reads with at least one reported alignment:" $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAligned_ungapped.bowtie1stats | awk -F ": " '{print $$2}' | awk -F " " '{print "genome\t"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	@echo -e "$(ts) SMRNAPIPELINE: Finished mapping to the genome of the primary organism\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Finished mapping to the genome of the primary organism\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 ## sort genomic alignments
 ##$(OUTPUT_DIR)/$(SAMPLE_ID)/balls: $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_unspliced.bam
 #$(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_unspliced.bam: $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_unspliced.unsorted.bam
 #	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-#	@echo -e "$(ts) SMRNAPIPELINE: Sorting genomic alignments:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-#	@echo -e "$(ts) SMRNAPIPELINE: $(SAMTOOLS_EXE) sort -m 8G -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_unspliced.unsorted.bam > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_unspliced.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 
+#	@echo -e "$(ts) $(SMRNAPIPELINE): Sorting genomic alignments:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+#	@echo -e "$(ts) $(SMRNAPIPELINE): $(SAMTOOLS_EXE) sort -m 8G -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_unspliced.unsorted.bam > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_unspliced.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 
 #	$(SAMTOOLS_EXE) sort -m 8G -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_unspliced.unsorted.bam > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_unspliced.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-#	@echo -e "$(ts) SMRNAPIPELINE: Finished sorting genomic alignments\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+#	@echo -e "$(ts) $(SMRNAPIPELINE): Finished sorting genomic alignments\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 ## convert genomic alignments to wiggle file for display - CURRENTLY DISABLED - REQUIRES BAM TO BE SORTED!
 $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_unspliced.wig: $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_unspliced.bam
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Converting genomic alignments to .wig format:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: $(SAMTOOLS_EXE) view -h $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_unspliced.bam | $(SAMTOOLS_EXE) mpileup -t SP - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | perl -ne 'BEGIN{print "track type=wiggle_0 name=$(SAMPLE_ID) description=$(SAMPLE_ID)\n"};($$c, $$start, undef, $$depth) = split; if ($c ne $$lastC) { print "variableStep chrom=$$c\n"; };$$lastC=$$c;next unless $$. % 10 ==0;print "$$start\t$$depth\n" unless $$depth<3;' > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_unspliced.wig 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 
+	@echo -e "$(ts) $(SMRNAPIPELINE): Converting genomic alignments to .wig format:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): $(SAMTOOLS_EXE) view -h $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_unspliced.bam | $(SAMTOOLS_EXE) mpileup -t SP - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | perl -ne 'BEGIN{print "track type=wiggle_0 name=$(SAMPLE_ID) description=$(SAMPLE_ID)\n"};($$c, $$start, undef, $$depth) = split; if ($c ne $$lastC) { print "variableStep chrom=$$c\n"; };$$lastC=$$c;next unless $$. % 10 ==0;print "$$start\t$$depth\n" unless $$depth<3;' > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_unspliced.wig 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 
 	$(SAMTOOLS_EXE) view -h $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_unspliced.bam | $(SAMTOOLS_EXE) mpileup -t SP - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | perl -ne 'BEGIN{print "track type=wiggle_0 name=$(SAMPLE_ID) description=$(SAMPLE_ID)\n"};($$c, $$start, undef, $$depth) = split; if ($$c ne $$lastC) { print "variableStep chrom=$$c\n"; };$$lastC=$$c;next unless $$. % 10 ==0;print "$$start\t$$depth\n" unless $$depth<3;' > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_unspliced.wig 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Finished converting genomic alignments to .wig format\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Finished converting genomic alignments to .wig format\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 ## map ALL READS to the PRECURSORs (bowtie 1 ungapped)
 $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_miRNA_precursor.bam: $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_unspliced.bam
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Mapping reads to miRNA precursors of the primary organism:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Mapping reads to miRNA precursors of the primary organism:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Map reads that map to the genome to the miRNA library
-	@echo -e "$(ts) SMRNAPIPELINE: cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAligned_ungapped.fq | $(BOWTIE1_EXE) -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l 19 -n $(MISMATCH_N_MIRNA) --all --sam --fullref --best --strata $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRNA_precursors - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - | $(SAMTOOLS_EXE) sort -n -m $(SAMTOOLS_SORT_MEM) -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp - > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_miRNA_precursor.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAligned_ungapped.fq | $(BOWTIE1_EXE) -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l 19 -n $(MISMATCH_N_MIRNA) --all --sam --fullref --best --strata $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRNA_precursors - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - | $(SAMTOOLS_EXE) sort -n -m $(SAMTOOLS_SORT_MEM) -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp - > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_miRNA_precursor.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAligned_ungapped.fq | $(BOWTIE1_EXE) -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l 19 -n $(MISMATCH_N_MIRNA) --all --sam --fullref --best --strata $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRNA_precursors - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - | $(SAMTOOLS_EXE) sort -n -m $(SAMTOOLS_SORT_MEM) -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp - > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_miRNA_precursor.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Map reads that DO NOT map to the genome to the miRNA library
-	@echo -e "$(ts) SMRNAPIPELINE: cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousUnaligned_ungapped.fq | $(BOWTIE1_EXE) -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l 19 -n $(MISMATCH_N_MIRNA) --all --sam --fullref --best --strata $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRNA_precursors - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - | $(SAMTOOLS_EXE) sort -n -m $(SAMTOOLS_SORT_MEM) -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp - > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_miRNA_precursor.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousUnaligned_ungapped.fq | $(BOWTIE1_EXE) -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l 19 -n $(MISMATCH_N_MIRNA) --all --sam --fullref --best --strata $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRNA_precursors - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - | $(SAMTOOLS_EXE) sort -n -m $(SAMTOOLS_SORT_MEM) -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp - > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_miRNA_precursor.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousUnaligned_ungapped.fq | $(BOWTIE1_EXE) -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l 19 -n $(MISMATCH_N_MIRNA) --all --sam --fullref --best --strata $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRNA_precursors - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - | $(SAMTOOLS_EXE) sort -n -m $(SAMTOOLS_SORT_MEM) -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp - > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_miRNA_precursor.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Finished mapping to miRNA precursors of the primary organism\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Finished mapping to miRNA precursors of the primary organism\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 ## map ALL READS to tRNAs
 $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_tRNA.bam: $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_unspliced.bam
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Mapping reads to tRNAs of the primary organism:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Mapping reads to tRNAs of the primary organism:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Map reads that map to the genome to the tRNA library
-	@echo -e "$(ts) SMRNAPIPELINE: cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAligned_ungapped.fq | $(BOWTIE1_EXE) -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l 19 -n $(MISMATCH_N_MIRNA) --all --sam --fullref --best --strata $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/tRNAs - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - | $(SAMTOOLS_EXE) sort -n -m $(SAMTOOLS_SORT_MEM) -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp - > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_tRNA.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAligned_ungapped.fq | $(BOWTIE1_EXE) -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l 19 -n $(MISMATCH_N_MIRNA) --all --sam --fullref --best --strata $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/tRNAs - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - | $(SAMTOOLS_EXE) sort -n -m $(SAMTOOLS_SORT_MEM) -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp - > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_tRNA.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAligned_ungapped.fq | $(BOWTIE1_EXE) -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l 19 -n $(MISMATCH_N_MIRNA) --all --sam --fullref --best --strata $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/tRNAs - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - 2> /dev/null | $(SAMTOOLS_EXE) sort -n -m $(SAMTOOLS_SORT_MEM) -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp - > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_tRNA.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Map reads that DO NOT map to the genome to the tRNA library
-	@echo -e "$(ts) SMRNAPIPELINE: cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousUnaligned_ungapped.fq | $(BOWTIE1_EXE) -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l 19 -n $(MISMATCH_N_MIRNA) --all --sam --fullref --best --strata $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/tRNAs - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - | $(SAMTOOLS_EXE) sort -n -m $(SAMTOOLS_SORT_MEM) -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp - > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_tRNA.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousUnaligned_ungapped.fq | $(BOWTIE1_EXE) -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l 19 -n $(MISMATCH_N_MIRNA) --all --sam --fullref --best --strata $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/tRNAs - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - | $(SAMTOOLS_EXE) sort -n -m $(SAMTOOLS_SORT_MEM) -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp - > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_tRNA.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousUnaligned_ungapped.fq | $(BOWTIE1_EXE) -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l 19 -n $(MISMATCH_N_MIRNA) --all --sam --fullref --best --strata $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/tRNAs - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - 2> /dev/null | $(SAMTOOLS_EXE) sort -n -m $(SAMTOOLS_SORT_MEM) -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp - > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_tRNA.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Finished mapping to tRNAs of the primary organism\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Finished mapping to tRNAs of the primary organism\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 ## map ALL READS to piRNAs
 $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_piRNA.bam: $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_unspliced.bam
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Mapping reads to piRNAs of the primary organism:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Mapping reads to piRNAs of the primary organism:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Map reads that map to the genome to the piRNA library
-	@echo -e "$(ts) SMRNAPIPELINE: cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAligned_ungapped.fq | $(BOWTIE1_EXE) -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l 19 -n $(MISMATCH_N_MIRNA) --all --sam --fullref --best --strata $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/piRNAs - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - | $(SAMTOOLS_EXE) sort -n -m $(SAMTOOLS_SORT_MEM) -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp - > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_piRNA.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAligned_ungapped.fq | $(BOWTIE1_EXE) -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l 19 -n $(MISMATCH_N_MIRNA) --all --sam --fullref --best --strata $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/piRNAs - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - | $(SAMTOOLS_EXE) sort -n -m $(SAMTOOLS_SORT_MEM) -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp - > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_piRNA.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAligned_ungapped.fq | $(BOWTIE1_EXE) -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l 19 -n $(MISMATCH_N_MIRNA) --all --sam --fullref --best --strata $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/piRNAs - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - | $(SAMTOOLS_EXE) sort -n -m $(SAMTOOLS_SORT_MEM) -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp - > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_piRNA.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Map reads that DO NOT map to the genome to the piRNA library
-	@echo -e "$(ts) SMRNAPIPELINE: cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousUnaligned_ungapped.fq | $(BOWTIE1_EXE) -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l 19 -n $(MISMATCH_N_MIRNA) --all --sam --fullref --best --strata $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/piRNAs - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - | $(SAMTOOLS_EXE) sort -n -m $(SAMTOOLS_SORT_MEM) -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp - > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_piRNA.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousUnaligned_ungapped.fq | $(BOWTIE1_EXE) -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l 19 -n $(MISMATCH_N_MIRNA) --all --sam --fullref --best --strata $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/piRNAs - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - | $(SAMTOOLS_EXE) sort -n -m $(SAMTOOLS_SORT_MEM) -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp - > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_piRNA.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousUnaligned_ungapped.fq | $(BOWTIE1_EXE) -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l 19 -n $(MISMATCH_N_MIRNA) --all --sam --fullref --best --strata $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/piRNAs - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - | $(SAMTOOLS_EXE) sort -n -m $(SAMTOOLS_SORT_MEM) -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp - > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_piRNA.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Finished mapping to piRNAs of the primary organism\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Finished mapping to piRNAs of the primary organism\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 ## map ALL READS to gencode transcripts
 $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_gencode.bam: $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_unspliced.bam
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Mapping reads to all ensembl/gencode transcripts of the primary organism:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Mapping reads to all ensembl/gencode transcripts of the primary organism:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Map reads that map to the genome to the gencode library
-	@echo -e "$(ts) SMRNAPIPELINE: cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAligned_ungapped.fq | $(BOWTIE1_EXE) -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l 19 -n $(MISMATCH_N_MIRNA) --all --sam --fullref --best --strata $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/gencode - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - | $(SAMTOOLS_EXE) sort -n -m $(SAMTOOLS_SORT_MEM) -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp - > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_gencode.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAligned_ungapped.fq | $(BOWTIE1_EXE) -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l 19 -n $(MISMATCH_N_MIRNA) --all --sam --fullref --best --strata $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/gencode - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - | $(SAMTOOLS_EXE) sort -n -m $(SAMTOOLS_SORT_MEM) -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp - > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_gencode.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAligned_ungapped.fq | $(BOWTIE1_EXE) -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l 19 -n $(MISMATCH_N_MIRNA) --all --sam --fullref --best --strata $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/gencode - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - | $(SAMTOOLS_EXE) sort -n -m $(SAMTOOLS_SORT_MEM) -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp - > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_gencode.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Map reads that DO NOT map to the genome to the gencode library
-	@echo -e "$(ts) SMRNAPIPELINE: cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousUnaligned_ungapped.fq | $(BOWTIE1_EXE) -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l 19 -n $(MISMATCH_N_MIRNA) --all --sam --fullref --best --strata $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/gencode - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - | $(SAMTOOLS_EXE) sort -n -m $(SAMTOOLS_SORT_MEM) -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp - > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_gencode.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousUnaligned_ungapped.fq | $(BOWTIE1_EXE) -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l 19 -n $(MISMATCH_N_MIRNA) --all --sam --fullref --best --strata $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/gencode - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - | $(SAMTOOLS_EXE) sort -n -m $(SAMTOOLS_SORT_MEM) -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp - > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_gencode.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousUnaligned_ungapped.fq | $(BOWTIE1_EXE) -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l 19 -n $(MISMATCH_N_MIRNA) --all --sam --fullref --best --strata $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/gencode - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - | $(SAMTOOLS_EXE) sort -n -m $(SAMTOOLS_SORT_MEM) -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp - > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_gencode.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Finished mapping to all ensembl/gencode transcripts of the primary organism\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Finished mapping to all ensembl/gencode transcripts of the primary organism\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 ## map ALL READS to circular RNA junctions
 $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_circRNA.bam: $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_unspliced.bam
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Mapping reads to circular RNA junctions of the primary organism:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Mapping reads to circular RNA junctions of the primary organism:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Map reads that map to the genome to the circular RNAlibrary
-	@echo -e "$(ts) SMRNAPIPELINE: cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAligned_ungapped.fq | $(BOWTIE1_EXE) -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l 19 -n $(MISMATCH_N_MIRNA) --all --sam --fullref --best --strata $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/circularRNAs - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - | $(SAMTOOLS_EXE) sort -n -m $(SAMTOOLS_SORT_MEM) -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp - > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_circRNA.log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAligned_ungapped.fq | $(BOWTIE1_EXE) -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l 19 -n $(MISMATCH_N_MIRNA) --all --sam --fullref --best --strata $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/circularRNAs - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - | $(SAMTOOLS_EXE) sort -n -m $(SAMTOOLS_SORT_MEM) -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp - > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_circRNA.log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAligned_ungapped.fq | $(BOWTIE1_EXE) -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l 19 -n $(MISMATCH_N_MIRNA) --all --sam --fullref --best --strata $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/circularRNAs - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - | $(SAMTOOLS_EXE) sort -n -m $(SAMTOOLS_SORT_MEM) -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp - > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_circRNA.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Map reads that DO NOT map to the genome to the circular RNA library
-	@echo -e "$(ts) SMRNAPIPELINE: cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousUnaligned_ungapped.fq | $(BOWTIE1_EXE) -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l 19 -n $(MISMATCH_N_MIRNA) --all --sam --fullref --best --strata $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/circularRNAs - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - | $(SAMTOOLS_EXE) sort -n -m $(SAMTOOLS_SORT_MEM) -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp - > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_circRNA.log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousUnaligned_ungapped.fq | $(BOWTIE1_EXE) -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l 19 -n $(MISMATCH_N_MIRNA) --all --sam --fullref --best --strata $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/circularRNAs - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - | $(SAMTOOLS_EXE) sort -n -m $(SAMTOOLS_SORT_MEM) -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp - > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_circRNA.log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousUnaligned_ungapped.fq | $(BOWTIE1_EXE) -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l 19 -n $(MISMATCH_N_MIRNA) --all --sam --fullref --best --strata $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/circularRNAs - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - | $(SAMTOOLS_EXE) sort -n -m $(SAMTOOLS_SORT_MEM) -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp - > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_circRNA.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Finished mapping to circular RNA junctions of the primary organism\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Finished mapping to circular RNA junctions of the primary organism\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 ## process alignments
 $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousUnaligned_ungapped_noLibs.fq: $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_unspliced.bam $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_miRNA_precursor.bam $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_tRNA.bam $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_piRNA.bam $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_circRNA.bam $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_gencode.bam
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Collecting alignments...\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Collecting alignments...\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	#$(SAMTOOLS_EXE) view $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_unspliced.bam | awk -F "\t" '{print $$1"\t"$$2"\tunannotated:"$$3"\t"$$4"\t"$$5"\t"$$6"\t"$$7"\t"$$8"\t"$$9"\t"$$10"\t"$$11"\t"$$12"\t"$$13"\t"$$14}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.sam
 	$(SAMTOOLS_EXE) view -@ $(N_THREADS) $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_miRNA_precursor.bam | awk -F "\t" '{print $$1"\t"$$2"\tgenome:miRNA:"$$3"\t"$$4"\t"$$5"\t"$$6"\t"$$7"\t"$$8"\t"$$9"\t"$$10"\t"$$11"\t"$$12"\t"$$13"\t"$$14}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.sam
 	$(SAMTOOLS_EXE) view -@ $(N_THREADS) $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_miRNA_precursor.bam | awk -F "\t" '{print $$1"\t"$$2"\tnogenome:miRNA:"$$3"\t"$$4"\t"$$5"\t"$$6"\t"$$7"\t"$$8"\t"$$9"\t"$$10"\t"$$11"\t"$$12"\t"$$13"\t"$$14}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.sam
@@ -663,16 +666,16 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousUnaligned_ungapped_noLibs.fq: $(OUTPUT_DIR)
 	$(SAMTOOLS_EXE) view -@ $(N_THREADS) $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_gencode.bam | awk -F "\t" '{print $$1"\t"$$2"\tnogenome:gencode:"$$3"\t"$$4"\t"$$5"\t"$$6"\t"$$7"\t"$$8"\t"$$9"\t"$$10"\t"$$11"\t"$$12"\t"$$13"\t"$$14"\t"$$15}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.sam
 	$(SAMTOOLS_EXE) view -@ $(N_THREADS) $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_circRNA.bam | awk -F "\t" '{print $$1"\t"$$2"\tgenome:circRNA:"$$3"\t"$$4"\t"$$5"\t"$$6"\t"$$7"\t"$$8"\t"$$9"\t"$$10"\t"$$11"\t"$$12"\t"$$13"\t"$$14}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.sam
 	$(SAMTOOLS_EXE) view -@ $(N_THREADS) $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_circRNA.bam | awk -F "\t" '{print $$1"\t"$$2"\tnogenome:circRNA:"$$3"\t"$$4"\t"$$5"\t"$$6"\t"$$7"\t"$$8"\t"$$9"\t"$$10"\t"$$11"\t"$$12"\t"$$13"\t"$$14}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.sam
-	@echo -e "$(ts) SMRNAPIPELINE: Finished collecting alignments\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Finished collecting alignments\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Sort alignments
-	@echo -e "$(ts) SMRNAPIPELINE: Sorting alignments...\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Sorting alignments...\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.sam | sort -k 1,1 | sed 's/ /:/g' > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_LIBS.sam
-	@echo -e "$(ts) SMRNAPIPELINE: Finished sorting alignments\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Finished sorting alignments\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Assign reads
-	@echo -e "$(ts) SMRNAPIPELINE: Assigning reads:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) ProcessEndogenousAlignments --libPriority $(ENDOGENOUS_LIB_PRIORITY) --hairpin2genome $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRBase_v21_hairpin_hsa_hg19_aligned.sam --mature2hairpin $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRBase_v21_mature_hairpin_hsa_aligned.sam --reads2all $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_LIBS.sam --outputPath $(OUTPUT_DIR)/$(SAMPLE_ID) $(ENDOGENOUS_QUANT_RANDOM_BARCODE_STATS)\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Assigning reads:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) ProcessEndogenousAlignments --libPriority $(ENDOGENOUS_LIB_PRIORITY) --hairpin2genome $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRBase_v21_hairpin_hsa_hg19_aligned.sam --mature2hairpin $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRBase_v21_mature_hairpin_hsa_aligned.sam --reads2all $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_LIBS.sam --outputPath $(OUTPUT_DIR)/$(SAMPLE_ID) $(ENDOGENOUS_QUANT_RANDOM_BARCODE_STATS)\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	$(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) ProcessEndogenousAlignments --libPriority $(ENDOGENOUS_LIB_PRIORITY) --hairpin2genome $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRNA_precursor2genome.sam --mature2hairpin $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRNA_mature2precursor.sam --reads2all $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_LIBS.sam --outputPath $(OUTPUT_DIR)/$(SAMPLE_ID) $(ENDOGENOUS_QUANT_RANDOM_BARCODE_STATS) 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Finished assigning reads\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Finished assigning reads\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Summarise alignment statistics
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_miRNAmature_sense.txt | awk '{SUM+=$$4}END{printf "miRNA_sense\t%.0f\n",SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_miRNAmature_antisense.txt | awk '{SUM+=$$4}END{printf "miRNA_antisense\t%.0f\n",SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
@@ -687,12 +690,12 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousUnaligned_ungapped_noLibs.fq: $(OUTPUT_DIR)
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_circularRNA_sense.txt | awk '{SUM+=$$4}END{printf "circularRNA_sense\t%.0f\n",SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_circularRNA_antisense.txt | awk '{SUM+=$$4}END{printf "circularRNA_antisense\t%.0f\n",SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	## Count reads not mapping to the genome or to the libraries
-	@echo -e "$(ts) SMRNAPIPELINE: Outputting reads not aligned to either the genome or transcripts:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Outputting reads not aligned to either the genome or transcripts:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	grep "nogenome" $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.txt | awk '{print $$1}' | uniq > $(OUTPUT_DIR)/$(SAMPLE_ID)/readsMappedToLibs.tmp
 	gzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.txt > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.txt.gz
 	$(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) FilterFastxByIDList -b -p -IDs $(OUTPUT_DIR)/$(SAMPLE_ID)/readsMappedToLibs.tmp $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousUnaligned_ungapped.fq > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousUnaligned_ungapped_noLibs.fq 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	wc -l $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousUnaligned_ungapped_noLibs.fq | awk '{print "not_mapped_to_genome_or_libs\t"($$1)/4}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	@echo -e "$(ts) SMRNAPIPELINE: Finished outputting reads not aligned to either the genome or transcripts\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Finished outputting reads not aligned to either the genome or transcripts\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Tidy up
 	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/*.tmp
 	#rm $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_null.txt
@@ -708,10 +711,10 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousUnaligned_ungapped_noLibs.fq: $(OUTPUT_DIR)
 ##
 $(OUTPUT_DIR)/$(SAMPLE_ID)/reads_NotRepetitive.fq: $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousUnaligned_ungapped_noLibs.fq $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_unspliced.bam
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Mapping reads to repetitive elements in the host genome:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousUnaligned_ungapped_noLibs.fq | $(BOWTIE2_EXE) -p $(N_THREADS) --local -D 20 -R 3 -N 0 -L 19 -i S,1,0.50 -k $(N_GENOME_MULTIMAPS_TO_REPORT) --un $(OUTPUT_DIR)/$(SAMPLE_ID)/reads_NotEndogenous.fq -x $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/repetitiveElements -U - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b -  > $(OUTPUT_DIR)/$(SAMPLE_ID)/RepeatElementsMapped.bam\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Mapping reads to repetitive elements in the host genome:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousUnaligned_ungapped_noLibs.fq | $(BOWTIE2_EXE) -p $(N_THREADS) --local -D 20 -R 3 -N 0 -L 19 -i S,1,0.50 -k $(N_GENOME_MULTIMAPS_TO_REPORT) --un $(OUTPUT_DIR)/$(SAMPLE_ID)/reads_NotEndogenous.fq -x $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/repetitiveElements -U - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b -  > $(OUTPUT_DIR)/$(SAMPLE_ID)/RepeatElementsMapped.bam\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousUnaligned_ungapped_noLibs.fq | $(BOWTIE2_EXE) -p $(N_THREADS) --local -D 20 -R 3 -N 0 -L 19 -i S,1,0.50 -k $(N_GENOME_MULTIMAPS_TO_REPORT) --un $(OUTPUT_DIR)/$(SAMPLE_ID)/reads_NotRepetitive.fq -x $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/repetitiveElements -U - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - > $(OUTPUT_DIR)/$(SAMPLE_ID)/RepeatElementsMapped.bam
-	@echo -e "$(ts) SMRNAPIPELINE: Finished mapping to repetitive elements in the host genome\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Finished mapping to repetitive elements in the host genome\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Assigned non-redundantly to annotated REs	
 	$(SAMTOOLS_EXE) view $(OUTPUT_DIR)/$(SAMPLE_ID)/RepeatElementsMapped.bam | grep -v "^@" | awk '{print $$1}' | sort | uniq | wc -l | awk '{print "repetitiveElements\t"$$0}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 
@@ -722,10 +725,10 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/reads_NotRepetitive.fq: $(OUTPUT_DIR)/$(SAMPLE_ID)/en
 ##
 $(OUTPUT_DIR)/$(SAMPLE_ID)/reads_NotEndogenous.fq.gz: $(OUTPUT_DIR)/$(SAMPLE_ID)/reads_NotRepetitive.fq
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Aligning remaining reads to the genome allowing gaps \n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: cat $(OUTPUT_DIR)/$(SAMPLE_ID)/reads_NotRepetitive.fq | $(BOWTIE2_EXE) -p $(N_THREADS) --local -D 20 -R 3 -N 0 -L 19 -i S,1,0.50 -k $(N_GENOME_MULTIMAPS_TO_REPORT) --reorder --un-gz $(OUTPUT_DIR)/$(SAMPLE_ID)/reads_NotEndogenous.fq.gz -x $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/$(MAIN_ORGANISM_GENOME_ID) -U - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_gapped.bam\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Aligning remaining reads to the genome allowing gaps \n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): cat $(OUTPUT_DIR)/$(SAMPLE_ID)/reads_NotRepetitive.fq | $(BOWTIE2_EXE) -p $(N_THREADS) --local -D 20 -R 3 -N 0 -L 19 -i S,1,0.50 -k $(N_GENOME_MULTIMAPS_TO_REPORT) --reorder --un-gz $(OUTPUT_DIR)/$(SAMPLE_ID)/reads_NotEndogenous.fq.gz -x $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/$(MAIN_ORGANISM_GENOME_ID) -U - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_gapped.bam\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/reads_NotRepetitive.fq | $(BOWTIE2_EXE) -p $(N_THREADS) --local -D 20 -R 3 -N 0 -L 19 -i S,1,0.50 -k $(N_GENOME_MULTIMAPS_TO_REPORT) --reorder --un-gz $(OUTPUT_DIR)/$(SAMPLE_ID)/reads_NotEndogenous.fq.gz -x $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/$(MAIN_ORGANISM_GENOME_ID) -U - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_gapped.bam
-	@echo -e "$(ts) SMRNAPIPELINE: Finished aligning remaining reads to the genome allowing gaps\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Finished aligning remaining reads to the genome allowing gaps\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## mapped to the genome with gaps
 	$(SAMTOOLS_EXE) view $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_gapped.bam | grep -v "^@" | awk '{print $$1}' | sort | uniq | wc -l | awk '{print "endogenous_gapped\t"$$0}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 
@@ -737,16 +740,16 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/reads_NotEndogenous.fq.gz: $(OUTPUT_DIR)/$(SAMPLE_ID)
 $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/unaligned.fq.gz: $(OUTPUT_DIR)/$(SAMPLE_ID)/reads_NotEndogenous.fq.gz
 	mkdir -p $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Mapping reads to all miRNAs in miRBase:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/reads_NotEndogenous.fq.gz | $(BOWTIE1_EXE) -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l 19 -n $(MISMATCH_N_MIRNA) --all --sam --fullref --best --strata --un $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/unaligned.fq $(DATABASE_PATH)/miRBase/miRBase_precursors - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.bowtie1stats | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - | $(SAMTOOLS_EXE) sort -n -m $(SAMTOOLS_SORT_MEM) -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/tmp - > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Mapping reads to all miRNAs in miRBase:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/reads_NotEndogenous.fq.gz | $(BOWTIE1_EXE) -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l 19 -n $(MISMATCH_N_MIRNA) --all --sam --fullref --best --strata --un $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/unaligned.fq $(DATABASE_PATH)/miRBase/miRBase_precursors - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.bowtie1stats | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - | $(SAMTOOLS_EXE) sort -n -m $(SAMTOOLS_SORT_MEM) -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/tmp - > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/reads_NotEndogenous.fq.gz | $(BOWTIE1_EXE) -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l 19 -n $(MISMATCH_N_MIRNA) --all --sam --fullref --best --strata --un $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/unaligned.fq $(DATABASE_PATH)/miRBase/miRBase_precursors - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.bowtie1stats | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - | $(SAMTOOLS_EXE) sort -n -m $(SAMTOOLS_SORT_MEM) -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/tmp - > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	gzip $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/unaligned.fq
 	## quantify read alignments using a hack of the endogenous alignment engine (trick it into thinking these are tRNA alignments)
 	$(SAMTOOLS_EXE) view -@ $(N_THREADS) $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.bam | sort -k1,1 | sed 's/ /:/g' | awk -F "\t" '{print $$1"\t"$$2"\tnogenome:tRNA:"$$3"\t"$$4"\t"$$5"\t"$$6"\t"$$7"\t"$$8"\t"$$9"\t"$$10"\t"$$11"\t"$$12"\t"$$13"\t"$$14}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.sam
-	@echo -e "$(ts) SMRNAPIPELINE: Assigning reads:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) ProcessEndogenousAlignments --libPriority tRNA --hairpin2genome $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRBase_v21_hairpin_hsa_hg19_aligned.sam --mature2hairpin $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRBase_v21_mature_hairpin_hsa_aligned.sam --reads2all $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.sam --outputPath $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Assigning reads:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) ProcessEndogenousAlignments --libPriority tRNA --hairpin2genome $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRBase_v21_hairpin_hsa_hg19_aligned.sam --mature2hairpin $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRBase_v21_mature_hairpin_hsa_aligned.sam --reads2all $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.sam --outputPath $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	$(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) ProcessEndogenousAlignments --libPriority tRNA --hairpin2genome $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRNA_precursor2genome.sam --mature2hairpin $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRNA_mature2precursor.sam --reads2all $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.sam --outputPath $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Finished assigning reads\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Finished assigning reads\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Move tmp files to have more informative names!
 	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/endogenousAlignments_Accepted.txt
 	mv $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/readCounts_tRNA_sense.txt $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/readCounts_exogenous_miRNA_sense.txt
@@ -755,7 +758,7 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/unaligned.fq.gz: $(OUTPUT_DIR)/$(SAMP
 	grep "# reads processed:" $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.bowtie1stats | awk -F ": " '{print "input_to_exogenous_miRNA\t"$$2}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	## Assigned non-redundantly to annotated exogenous miRNAs
 	grep "# reads with at least one reported alignment:" $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.bowtie1stats | awk -F ": " '{print $$2}' | awk -F " " '{print "exogenous_miRNA\t"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	@echo -e "$(ts) SMRNAPIPELINE: Finished mapping to all miRNAs in miRBase\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Finished mapping to all miRNAs in miRBase\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 
 
@@ -765,8 +768,8 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/unaligned.fq.gz: $(OUTPUT_DIR)/$(SAMP
 $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/unaligned.fq.gz: $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/unaligned.fq.gz
 	mkdir -p $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Mapping reads to rRNA sequences in RDP (a.k.a. ribosome DB):\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: $(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_ --genomeDir $(DATABASE_PATH)/ribosomeDatabase/exogenous_rRNAs --readFilesIn $< --outReadsUnmapped Fastx --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Mapping reads to rRNA sequences in RDP (a.k.a. ribosome DB):\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): $(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_ --genomeDir $(DATABASE_PATH)/ribosomeDatabase/exogenous_rRNAs --readFilesIn $< --outReadsUnmapped Fastx --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_ --genomeDir $(DATABASE_PATH)/ribosomeDatabase/exogenous_rRNAs --readFilesIn $< --outReadsUnmapped Fastx --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Input to exogenous rRNA alignment
 	grep "Number of input reads" $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_Log.final.out | tr '[:blank:]' ' ' | awk -F " \\\| " '{print "input_to_exogenous_rRNA\t"$$2}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
@@ -778,7 +781,7 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/unaligned.fq.gz: $(OUTPUT_DIR)/$(SAMPL
 	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_Unmapped.out.mate1
 	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_Aligned.out.sam
 	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_Log.out
-	@echo -e "$(ts) SMRNAPIPELINE: Finished mapping to rRNA sequences in RDP\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Finished mapping to rRNA sequences in RDP\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 
 
@@ -789,68 +792,68 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/unaligned.fq.gz: $(OUTPUT_DIR)/$(SAMPL
 $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria10_Aligned.out.sam: $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/unaligned.fq.gz
 	mkdir -p $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Mapping reads to exogenous GENOMES of BACTERIA:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Bacteria1:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Mapping reads to exogenous GENOMES of BACTERIA:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Bacteria1:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria1_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA1 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "\n$(ts) SMRNAPIPELINE: Bacteria2:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) $(SMRNAPIPELINE): Bacteria2:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria2_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA2 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "\n$(ts) SMRNAPIPELINE: Bacteria3:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) $(SMRNAPIPELINE): Bacteria3:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria3_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA3 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "\n$(ts) SMRNAPIPELINE: Bacteria4:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) $(SMRNAPIPELINE): Bacteria4:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria4_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA4 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "\n$(ts) SMRNAPIPELINE: Bacteria5:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) $(SMRNAPIPELINE): Bacteria5:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria5_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA5 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "\n$(ts) SMRNAPIPELINE: Bacteria6:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) $(SMRNAPIPELINE): Bacteria6:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria6_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA6 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "\n$(ts) SMRNAPIPELINE: Bacteria7:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) $(SMRNAPIPELINE): Bacteria7:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria7_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA7 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "\n$(ts) SMRNAPIPELINE: Bacteria8:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) $(SMRNAPIPELINE): Bacteria8:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria8_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA8 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "\n$(ts) SMRNAPIPELINE: Bacteria9:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) $(SMRNAPIPELINE): Bacteria9:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria9_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA9 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "\n$(ts) SMRNAPIPELINE: Bacteria10:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) $(SMRNAPIPELINE): Bacteria10:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria10_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA10 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "\n$(ts) SMRNAPIPELINE: Finished mapping to exogenous GENOMES of BACTERIA\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) $(SMRNAPIPELINE): Finished mapping to exogenous GENOMES of BACTERIA\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 ## Plants
 $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Plants5_Aligned.out.sam: $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/unaligned.fq.gz
 	mkdir -p $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Mapping reads to exogenous GENOMES of PLANTS:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Plants1:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Mapping reads to exogenous GENOMES of PLANTS:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Plants1:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Plants1_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_PLANTS1 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "\n$(ts) SMRNAPIPELINE: Plants2:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) $(SMRNAPIPELINE): Plants2:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Plants2_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_PLANTS2 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "\n$(ts) SMRNAPIPELINE: Plants3:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) $(SMRNAPIPELINE): Plants3:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Plants3_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_PLANTS3 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "\n$(ts) SMRNAPIPELINE: Plants4:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) $(SMRNAPIPELINE): Plants4:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Plants4_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_PLANTS4 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "\n$(ts) SMRNAPIPELINE: Plants5:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) $(SMRNAPIPELINE): Plants5:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Plants5_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_PLANTS5 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "\n$(ts) SMRNAPIPELINE: Finished mapping to exogenous GENOMES of PLANTS\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) $(SMRNAPIPELINE): Finished mapping to exogenous GENOMES of PLANTS\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 ## Fungi, Protist, and Virus
 $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/FungiProtistVirus_Aligned.out.sam: $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/unaligned.fq.gz
 	mkdir -p $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Mapping reads to exogenous GENOMES of FUNGI, PROTISTS, and VIRUSES:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Mapping reads to exogenous GENOMES of FUNGI, PROTISTS, and VIRUSES:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/FungiProtistVirus_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_FUNGI_PROTIST_VIRUS --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "\n$(ts) SMRNAPIPELINE: Finished mapping to exogenous GENOMES of FUNGI, PROTISTS, and VIRUSES\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) $(SMRNAPIPELINE): Finished mapping to exogenous GENOMES of FUNGI, PROTISTS, and VIRUSES\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 ## Vertebrates
 $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Vertebrate4_Aligned.out.sam: $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/unaligned.fq.gz
 	mkdir -p $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Mapping reads to exogenous GENOMES of VERTEBRATES:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Vertebrate1:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Mapping reads to exogenous GENOMES of VERTEBRATES:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Vertebrate1:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Vertebrate1_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_VERTEBRATE1 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "\n$(ts) SMRNAPIPELINE: Vertebrate2:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) $(SMRNAPIPELINE): Vertebrate2:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Vertebrate2_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_VERTEBRATE2 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "\n$(ts) SMRNAPIPELINE: Vertebrate3:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) $(SMRNAPIPELINE): Vertebrate3:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Vertebrate3_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_VERTEBRATE3 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "\n$(ts) SMRNAPIPELINE: Vertebrate4:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) $(SMRNAPIPELINE): Vertebrate4:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Vertebrate4_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_VERTEBRATE4 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "\n$(ts) SMRNAPIPELINE: Finished mapping to exogenous GENOMES of VERTEBRATES\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) $(SMRNAPIPELINE): Finished mapping to exogenous GENOMES of VERTEBRATES\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 
 ##
@@ -858,7 +861,7 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Vertebrate4_Aligned.out.sam: $(OUTP
 ##
 $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.txt: $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria10_Aligned.out.sam $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Plants5_Aligned.out.sam $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/FungiProtistVirus_Aligned.out.sam $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Vertebrate4_Aligned.out.sam
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) SMRNAPIPELINE: Collecting all alignments to exogenous GENOMES:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Collecting all alignments to exogenous GENOMES:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	#
 	#cat $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria1_Aligned.out.sam | grep -v "^@" | awk '{print $$1,$$3,$$4,$$6,$$10}' | uniq | sed 's/[:$$]/ /g' | awk '{print $$1"\tBacteria\t"$$2"\t"$$7"\t"$$12"\t"$$13"\t"$$14}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria_Aligned.out.sam.summary
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria1_Aligned.out.sam | grep -v "^@" | awk '{print $$1,$$3,$$4,$$6,$$10}' | uniq | awk '{split($$2,a,"[$$:]");print $$1"\tBacteria\t"a[1]"\t"a[7]"\t"$$3"\t"$$4"\t"$$5}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria_Aligned.out.sam.summary
@@ -905,7 +908,7 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.t
 	#cat $@ | awk '{print $$1}' | uniq | awk -F "#" '{SUM += $$2} END {print "exogenous_genomes\t"SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	cat $@ | awk '{print $$1}' | uniq | wc -l | awk '{print "exogenous_genomes\t"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	#
-	@echo -e "\n$(ts) SMRNAPIPELINE: Finished mapping to exogenous GENOMES of VERTEBRATES\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) $(SMRNAPIPELINE): Finished mapping to exogenous GENOMES of VERTEBRATES\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 
 ##
