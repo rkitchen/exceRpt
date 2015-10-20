@@ -12,10 +12,10 @@
 ##                                                                                   ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                        ##
 ##                                                                                   ##
-## Version 3.1.4 (2015-10-19)                                                        ##
+## Version 3.1.5 (2015-10-20)                                                        ##
 ##                                                                                   ##
 #######################################################################################
-EXCERPT_VERSION := 3.1.4
+EXCERPT_VERSION := 3.1.5
 
 
 ##
@@ -744,16 +744,15 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/unaligned.fq.gz: $(OUTPUT_DIR)/$(SAMP
 	@echo -e "$(ts) $(SMRNAPIPELINE): gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/reads_NotEndogenous.fq.gz | $(BOWTIE1_EXE) -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l 19 -n $(MISMATCH_N_MIRNA) --all --sam --fullref --best --strata --un $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/unaligned.fq $(DATABASE_PATH)/miRBase/miRBase_precursors - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.bowtie1stats | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - | $(SAMTOOLS_EXE) sort -n -m $(SAMTOOLS_SORT_MEM) -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/tmp - > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/reads_NotEndogenous.fq.gz | $(BOWTIE1_EXE) -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l 19 -n $(MISMATCH_N_MIRNA) --all --sam --fullref --best --strata --un $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/unaligned.fq $(DATABASE_PATH)/miRBase/miRBase_precursors - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.bowtie1stats | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - | $(SAMTOOLS_EXE) sort -n -m $(SAMTOOLS_SORT_MEM) -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/tmp - > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	gzip $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/unaligned.fq
-	## quantify read alignments using a hack of the endogenous alignment engine (trick it into thinking these are tRNA alignments)
-	$(SAMTOOLS_EXE) view -@ $(N_THREADS) $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.bam | sort -k1,1 | sed 's/ /:/g' | awk -F "\t" '{print $$1"\t"$$2"\tnogenome:tRNA:"$$3"\t"$$4"\t"$$5"\t"$$6"\t"$$7"\t"$$8"\t"$$9"\t"$$10"\t"$$11"\t"$$12"\t"$$13"\t"$$14}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.sam
+	## quantify read alignments using a slight hack of the endogenous alignment engine
+	$(SAMTOOLS_EXE) view -@ $(N_THREADS) $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.bam | sort -k1,1 | awk -F "\t" '{print $$1"\t"$$2"\tnogenome:miRNA:"$$3"\t"$$4"\t"$$5"\t"$$6"\t"$$7"\t"$$8"\t"$$9"\t"$$10"\t"$$11"\t"$$12"\t"$$13"\t"$$14}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.sam
 	@echo -e "$(ts) $(SMRNAPIPELINE): Assigning reads:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) $(SMRNAPIPELINE): $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) ProcessEndogenousAlignments --libPriority tRNA --hairpin2genome $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRBase_v21_hairpin_hsa_hg19_aligned.sam --mature2hairpin $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRBase_v21_mature_hairpin_hsa_aligned.sam --reads2all $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.sam --outputPath $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	$(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) ProcessEndogenousAlignments --libPriority tRNA --hairpin2genome $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRNA_precursor2genome.sam --mature2hairpin $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRNA_mature2precursor.sam --reads2all $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.sam --outputPath $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) ProcessEndogenousAlignments --libPriority miRNA --hairpin2genome $(DATABASE_PATH)/miRBase/miRNA_precursor2genome.sam --mature2hairpin $(DATABASE_PATH)/miRBase/miRNA_mature2precursor.sam --reads2all $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.sam --outputPath $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) ProcessEndogenousAlignments --libPriority miRNA --hairpin2genome $(DATABASE_PATH)/miRBase/miRNA_precursor2genome.sam --mature2hairpin $(DATABASE_PATH)/miRBase/miRNA_mature2precursor.sam --reads2all $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.sam --outputPath $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): Finished assigning reads\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	## Move tmp files to have more informative names!
+	## Tidy up:
+	gzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/endogenousAlignments_Accepted.txt > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenousMiRNAAlignments_Accepted.txt.gz
 	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/endogenousAlignments_Accepted.txt
-	mv $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/readCounts_tRNA_sense.txt $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/readCounts_exogenous_miRNA_sense.txt
-	mv $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/readCounts_tRNA_antisense.txt $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/readCounts_exogenous_miRNA_antisense.txt
 	## Input to exogenous miRNA alignment
 	grep "# reads processed:" $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.bowtie1stats | awk -F ": " '{print "input_to_exogenous_miRNA\t"$$2}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	## Assigned non-redundantly to annotated exogenous miRNAs
