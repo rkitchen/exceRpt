@@ -395,6 +395,42 @@ if(nrow(mapping.stats) > 1){
 
 
 ##
+## Guess sample grouping based on their names
+##
+sampleNames = rownames(mapping.stats)
+tmp = adist(sampleNames,ignore.case=T)
+dimnames(tmp) = list(sampleNames,sampleNames)
+par(mfrow=c(1,1))
+plot(hclust(as.dist(tmp)))
+
+##
+## Calculate optimal number of sample groups
+##
+require(cluster)
+K.max=10
+B=200
+## Slightly faster way to use pam (see below)
+pam1 <- function(x,k) list(cluster = pam(x,k, cluster.only=TRUE))
+gs.kmeans <- clusGap(t(tmp), FUN=kmeans, nstart=3, K.max=K.max, B=B)
+gs.pam <- clusGap(t(tmp), FUN=pam1, K.max=K.max, B=B)
+# plot?
+#par(mfrow=c(2,1))
+#ylim=c(0.3,0.45)
+#ylim=NULL
+#plot(gs.kmeans, ylim=ylim, main="kmeans"); abline(h=0.398, col="darkgreen")
+#plot(gs.pam, ylim=ylim, main="pam"); abline(h=0.406, col="darkgreen")
+# find optimal cluster number
+nGroups.kmeans = as.numeric(names(sort(table(sapply(c(1/4, 1,2,4), function(SEf){ sapply(eval(formals(maxSE)$method), function(M){maxSE(gs.kmeans$Tab[,3], gs.kmeans$Tab[,4], method = M, SE.factor = SEf)}) })),decreasing=T)[1]))
+nGroups.pam = as.numeric(names(sort(table(sapply(c(1/4, 1,2,4), function(SEf){ sapply(eval(formals(maxSE)$method), function(M){maxSE(gs.pam$Tab[,3], gs.pam$Tab[,4], method=M, SE.factor=SEf)}) })),decreasing=T)[1]))
+as.numeric(names(sort(table(sapply(c(1/4, 1,2,4), function(SEf){ sapply(eval(formals(maxSE)$method), function(M){maxSE(gs.kmeans$Tab[,3], gs.kmeans$Tab[,4], method = M, SE.factor = SEf)}) })[3,]),decreasing=T)[1]))
+as.numeric(names(sort(table(sapply(c(1/4, 1,2,4), function(SEf){ sapply(eval(formals(maxSE)$method), function(M){maxSE(gs.pam$Tab[,3], gs.pam$Tab[,4], method = M, SE.factor = SEf)}) })[3,]),decreasing=T)[1]))
+#if(nGroups.pam <= 5){
+  ## 
+  #  
+#}
+
+
+##
 ## Open PDF for diagnostic plots
 ##
 pdf(paste(output.dir,"exceRpt_DiagnosticPlots.pdf",sep="/"), height=10, width=20)
