@@ -12,10 +12,10 @@
 ##                                                                                   ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                        ##
 ##                                                                                   ##
-## Version 3.1.7 (2015-10-23)                                                        ##
+## Version 3.1.8 (2015-10-26)                                                        ##
 ##                                                                                   ##
 #######################################################################################
-EXCERPT_VERSION := 3.1.7
+EXCERPT_VERSION := 3.1.8
 
 
 ##
@@ -54,6 +54,7 @@ REMOVE_LARGE_INTERMEDIATE_FILES := false
 SAMPLE_NAME             		:= NULL
 QFILTER_MIN_READ_FRAC           := 80
 QFILTER_MIN_QUAL                := 20
+STAR_PARAMS_FILE_PATH			:= $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in
 
 
 ##
@@ -768,8 +769,8 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/unaligned.fq.gz: $(OUTPUT_DIR)/$(SAMPL
 	mkdir -p $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): Mapping reads to rRNA sequences in RDP (a.k.a. ribosome DB):\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) $(SMRNAPIPELINE): $(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_ --genomeDir $(DATABASE_PATH)/ribosomeDatabase/exogenous_rRNAs --readFilesIn $< --outReadsUnmapped Fastx --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_ --genomeDir $(DATABASE_PATH)/ribosomeDatabase/exogenous_rRNAs --readFilesIn $< --outReadsUnmapped Fastx --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): $(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_ --genomeDir $(DATABASE_PATH)/ribosomeDatabase/exogenous_rRNAs --readFilesIn $< --outReadsUnmapped Fastx --parametersFiles $(STAR_PARAMS_FILE_PATH) >> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_ --genomeDir $(DATABASE_PATH)/ribosomeDatabase/exogenous_rRNAs --readFilesIn $< --outReadsUnmapped Fastx --parametersFiles $(STAR_PARAMS_FILE_PATH) >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Input to exogenous rRNA alignment
 	grep "Number of input reads" $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_Log.final.out | tr '[:blank:]' ' ' | awk -F " \\\| " '{print "input_to_exogenous_rRNA\t"$$2}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	## Assigned non-redundantly to annotated exogenous rRNAs
@@ -793,25 +794,25 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria10_Aligned.out.sam: $(OUTPU
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): Mapping reads to exogenous GENOMES of BACTERIA:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): Bacteria1:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria1_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA1 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria1_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA1 --readFilesIn $< --parametersFiles $(STAR_PARAMS_FILE_PATH) >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "\n$(ts) $(SMRNAPIPELINE): Bacteria2:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria2_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA2 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria2_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA2 --readFilesIn $< --parametersFiles $(STAR_PARAMS_FILE_PATH) >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "\n$(ts) $(SMRNAPIPELINE): Bacteria3:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria3_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA3 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria3_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA3 --readFilesIn $< --parametersFiles $(STAR_PARAMS_FILE_PATH) >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "\n$(ts) $(SMRNAPIPELINE): Bacteria4:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria4_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA4 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria4_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA4 --readFilesIn $< --parametersFiles $(STAR_PARAMS_FILE_PATH) >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "\n$(ts) $(SMRNAPIPELINE): Bacteria5:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria5_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA5 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria5_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA5 --readFilesIn $< --parametersFiles $(STAR_PARAMS_FILE_PATH) >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "\n$(ts) $(SMRNAPIPELINE): Bacteria6:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria6_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA6 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria6_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA6 --readFilesIn $< --parametersFiles $(STAR_PARAMS_FILE_PATH) >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "\n$(ts) $(SMRNAPIPELINE): Bacteria7:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria7_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA7 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria7_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA7 --readFilesIn $< --parametersFiles $(STAR_PARAMS_FILE_PATH) >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "\n$(ts) $(SMRNAPIPELINE): Bacteria8:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria8_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA8 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria8_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA8 --readFilesIn $< --parametersFiles $(STAR_PARAMS_FILE_PATH) >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "\n$(ts) $(SMRNAPIPELINE): Bacteria9:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria9_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA9 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria9_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA9 --readFilesIn $< --parametersFiles $(STAR_PARAMS_FILE_PATH) >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "\n$(ts) $(SMRNAPIPELINE): Bacteria10:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria10_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA10 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria10_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_BACTERIA10 --readFilesIn $< --parametersFiles $(STAR_PARAMS_FILE_PATH) >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "\n$(ts) $(SMRNAPIPELINE): Finished mapping to exogenous GENOMES of BACTERIA\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 ## Plants
@@ -820,15 +821,15 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Plants5_Aligned.out.sam: $(OUTPUT_D
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): Mapping reads to exogenous GENOMES of PLANTS:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): Plants1:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Plants1_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_PLANTS1 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Plants1_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_PLANTS1 --readFilesIn $< --parametersFiles $(STAR_PARAMS_FILE_PATH) >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "\n$(ts) $(SMRNAPIPELINE): Plants2:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Plants2_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_PLANTS2 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Plants2_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_PLANTS2 --readFilesIn $< --parametersFiles $(STAR_PARAMS_FILE_PATH) >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "\n$(ts) $(SMRNAPIPELINE): Plants3:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Plants3_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_PLANTS3 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Plants3_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_PLANTS3 --readFilesIn $< --parametersFiles $(STAR_PARAMS_FILE_PATH) >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "\n$(ts) $(SMRNAPIPELINE): Plants4:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Plants4_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_PLANTS4 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Plants4_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_PLANTS4 --readFilesIn $< --parametersFiles $(STAR_PARAMS_FILE_PATH) >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "\n$(ts) $(SMRNAPIPELINE): Plants5:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Plants5_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_PLANTS5 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Plants5_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_PLANTS5 --readFilesIn $< --parametersFiles $(STAR_PARAMS_FILE_PATH) >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "\n$(ts) $(SMRNAPIPELINE): Finished mapping to exogenous GENOMES of PLANTS\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 ## Fungi, Protist, and Virus
@@ -836,7 +837,7 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/FungiProtistVirus_Aligned.out.sam: 
 	mkdir -p $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): Mapping reads to exogenous GENOMES of FUNGI, PROTISTS, and VIRUSES:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/FungiProtistVirus_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_FUNGI_PROTIST_VIRUS --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/FungiProtistVirus_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_FUNGI_PROTIST_VIRUS --readFilesIn $< --parametersFiles $(STAR_PARAMS_FILE_PATH) >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "\n$(ts) $(SMRNAPIPELINE): Finished mapping to exogenous GENOMES of FUNGI, PROTISTS, and VIRUSES\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 ## Vertebrates
@@ -845,13 +846,13 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Vertebrate4_Aligned.out.sam: $(OUTP
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): Mapping reads to exogenous GENOMES of VERTEBRATES:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): Vertebrate1:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Vertebrate1_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_VERTEBRATE1 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Vertebrate1_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_VERTEBRATE1 --readFilesIn $< --parametersFiles $(STAR_PARAMS_FILE_PATH) >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "\n$(ts) $(SMRNAPIPELINE): Vertebrate2:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Vertebrate2_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_VERTEBRATE2 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Vertebrate2_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_VERTEBRATE2 --readFilesIn $< --parametersFiles $(STAR_PARAMS_FILE_PATH) >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "\n$(ts) $(SMRNAPIPELINE): Vertebrate3:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Vertebrate3_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_VERTEBRATE3 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Vertebrate3_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_VERTEBRATE3 --readFilesIn $< --parametersFiles $(STAR_PARAMS_FILE_PATH) >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "\n$(ts) $(SMRNAPIPELINE): Vertebrate4:" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Vertebrate4_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_VERTEBRATE4 --readFilesIn $< --parametersFiles $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Vertebrate4_ --genomeDir $(STAR_GENOMES_DIR)/STAR_GENOME_VERTEBRATE4 --readFilesIn $< --parametersFiles $(STAR_PARAMS_FILE_PATH) >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "\n$(ts) $(SMRNAPIPELINE): Finished mapping to exogenous GENOMES of VERTEBRATES\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 
