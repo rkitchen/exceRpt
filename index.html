@@ -54,6 +54,25 @@
 <p>This requires numerous dependences that require some familiarity with UNIX.  The software is installed on the Genboree Workbench (<a href="http://www.genboree.org">www.genboree.org</a>) which provides a graphical interface to the pipeline that is free for academic use.  Alternatively, development of a Docker image for this software is ongoing, if you are interested in this please feel free to get in touch using the email address below.</p>
 
 <h3>
+<a id="dependencies" class="anchor" href="#dependencies" aria-hidden="true"><span class="octicon octicon-link"></span></a>Dependencies</h3>
+
+<p><a href="https://java.com/en/download">Java v1.6+</a></p>
+
+<p><a href="http://hannonlab.cshl.edu/fastx_toolkit">fastx v0.0.14+</a></p>
+
+<p><a href="http://bowtie-bio.sourceforge.net/index.shtml">bowtie v1.1.1+</a></p>
+
+<p><a href="http://bowtie-bio.sourceforge.net/bowtie2/index.shtml">bowtie2 v2.2.4+</a></p>
+
+<p><a href="http://sourceforge.net/projects/samtools/files/samtools">samtools v1.1+</a></p>
+
+<p><a href="http://www.bioinformatics.babraham.ac.uk/projects/fastqc">fastQC v0.11.2+</a></p>
+
+<p><a href="https://github.com/ncbi/sra-tools">sratoolkit v2.5.1+</a></p>
+
+<p><a href="https://github.com/alexdobin/STAR/releases">STAR v2.4.2a+</a></p>
+
+<h3>
 <a id="mergepipelinerunsr-1" class="anchor" href="#mergepipelinerunsr-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>mergePipelineRuns.R</h3>
 
 <p>This script is comparatively much simpler to install.  Once the R software (<a href="http://cran.r-project.org/">http://cran.r-project.org/</a>) is set up on your system the script should automatically identify and install all required dependencies.  Again, this script is available on the Genboree Workbench (<a href="http://www.genboree.org">www.genboree.org</a>) and is also free for academic use.</p>
@@ -62,6 +81,14 @@
 
 <h2>
 <a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage</h2>
+
+<h3>
+<a id="genboree-workbench" class="anchor" href="#genboree-workbench" aria-hidden="true"><span class="octicon octicon-link"></span></a>Genboree Workbench</h3>
+
+<p>Set up a free account to use the <a href="http://genboree.org/java-bin/login.jsp">Genboree Workbench</a>, upload some data, and start using exceRpt, all via the browser (<a href="http://genboree.org/theCommons/projects/exrna-tools-may2014/wiki/Small%20RNA-seq%20Pipeline">instructions available here</a>).</p>
+
+<h3>
+<a id="local-installation" class="anchor" href="#local-installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Local installation</h3>
 
 <p>Once all dependencies are installed, the exceRpt pipeline can be run on a human sample (here an SRA binary file) using default parameters using the following skeleton command:</p>
 
