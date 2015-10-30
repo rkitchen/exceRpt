@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>exceRpt by gersteinlab</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">exceRpt</h1>
+      <h2 class="project-tagline">The extra-cellular RNA processing toolkit.  Including software for preprocessing, filtering, alignment, and reporting of smallRNA-seq datasets</h2>
+      <a href="https://github.com/gersteinlab/exceRpt" class="btn">View on GitHub</a>
+      <a href="https://github.com/gersteinlab/exceRpt/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/gersteinlab/exceRpt/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h2>
+<a id="software" class="anchor" href="#software" aria-hidden="true"><span class="octicon octicon-link"></span></a>Software</h2>
+
+<h3>
+<a id="smallrna_pipelinemk" class="anchor" href="#smallrna_pipelinemk" aria-hidden="true"><span class="octicon octicon-link"></span></a>smallRNA_pipeline.mk</h3>
+
+<p>This makefile choreographs the processing, filtering, and alignment of a single smallRNA-seq sample.</p>
+
+<h3>
+<a id="mergepipelinerunsr" class="anchor" href="#mergepipelinerunsr" aria-hidden="true"><span class="octicon octicon-link"></span></a>mergePipelineRuns.R</h3>
+
+<p>This script will take as input a directory containing 1 or more subdirectories or zipfiles containing output from the makefile above. In this way, results from 1 or more smallRNA-seq samples can be combined, several QC plots are generated, and the read-counts are normalised ready for downstream analysis by clustering and/or differential expression.</p>
+
+<h2>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h2>
+
+<h3>
+<a id="smallrna_pipelinemk-1" class="anchor" href="#smallrna_pipelinemk-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>smallRNA_pipeline.mk</h3>
+
+<p>This requires numerous dependences that require some familiarity with UNIX.  The software is installed on the Genboree Workbench (<a href="http://www.genboree.org">www.genboree.org</a>) which provides a graphical interface to the pipeline that is free for academic use.  Alternatively, development of a Docker image for this software is ongoing, if you are interested in this please feel free to get in touch using the email address above.</p>
+
+<h3>
+<a id="mergepipelinerunsr-1" class="anchor" href="#mergepipelinerunsr-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>mergePipelineRuns.R</h3>
+
+<p>This script is comparatively much simpler to install.  Once the R software (<a href="http://cran.r-project.org/">http://cran.r-project.org/</a>) is set up on your system the script should automatically identify and install all required dependencies.  Again, this script is available on the Genboree Workbench (<a href="http://www.genboree.org">www.genboree.org</a>) and is also free for academic use.</p>
+
+<h2>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage</h2>
+
+<p>Once all dependencies are installed, the exceRpt pipeline can be run on a human sample (here an SRA binary file) using the following skeleton command:</p>
+
+<pre><code>make -f smallRNA_pipeline.mk INPUT_FILE_PATH=./SRR026761.sra N_THREADS=8 OUTPUT_DIR=./output/ \
+                              MAIN_ORGANISM_GENOME_ID=hg38 MAP_EXOGENOUS=on
+</code></pre>
+
+<p>There are a number of options available for customising the analysis:</p>
+
+<pre><code>OUTPUT_DIR                  [default 'NULL']
+INPUT_FILE_PATH             [default 'NULL']
+CALIBRATOR_LIBRARY          [default 'NULL'] [path to bowtie2 index containing spiked-in sequences]
+RANDOM_BARCODE_LENGTH       [default '0'] [options: any integer. '0' disables random barcode removal]
+RANDOM_BARCODE_LOCATION     [default '-5p -3p'] [options: '-5p', '-3p', or '-5p -3p']
+ENDOGENOUS_LIB_PRIORITY     [default 'miRNA,tRNA,piRNA,gencode,circRNA']
+MAIN_ORGANISM_GENOME_ID     [default 'hg38'] [options: 'hg19', 'hg38', or 'mm10']
+ADAPTER_SEQ                 [default 'guessKnown'] [options: 'none', 'guessKnown', or the actual nucleotide sequence of the 3' adapter]
+</code></pre>
+
+<h2>
+<a id="support" class="anchor" href="#support" aria-hidden="true"><span class="octicon octicon-link"></span></a>Support</h2>
+
+<p>Rob Kitchen; rob [dot] kitchen [at] yale [dot] edu</p>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/gersteinlab/exceRpt">exceRpt</a> is maintained by <a href="https://github.com/gersteinlab">gersteinlab</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
