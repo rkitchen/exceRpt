@@ -4,7 +4,7 @@
 ##                                                                                   ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                        ##
 ##                                                                                   ##
-## Version 3.0.2 (2015-09-15)                                                        ##
+## Version 3.1.0 (2015-10-30)                                                        ##
 ##                                                                                   ##
 #######################################################################################
 
@@ -48,6 +48,7 @@ if(length(args) >= 1){
   #data.dir = "~/WORK/YALE_offline/exRNA/exceRptLibraryAnalysis"
   #data.dir = "~/WORK/YALE_offline/exRNA/exceRptCombinatorialAnalysis"
   #data.dir = "~/WORK/YALE_offline/exRNA/TESTING"
+  #data.dir = "~/WORK/YALE_offline/exRNA/TESTING/standardTests"
   #data.dir = "~/WORK/YALE_offline/exRNA/AmyBuck/Results"
   #data.dir = "~/WORK/YALE_offline/BrainSpan/smallRNA_new/exceRpt_Results"
   output.dir = data.dir
@@ -397,36 +398,36 @@ if(nrow(mapping.stats) > 1){
 ##
 ## Guess sample grouping based on their names
 ##
-sampleNames = rownames(mapping.stats)
-tmp = adist(sampleNames,ignore.case=T)
-dimnames(tmp) = list(sampleNames,sampleNames)
-par(mfrow=c(1,1))
-plot(hclust(as.dist(tmp)))
+#sampleNames = rownames(mapping.stats)
+#tmp = adist(sampleNames,ignore.case=T)
+#dimnames(tmp) = list(sampleNames,sampleNames)
+#par(mfrow=c(1,1))
+#plot(hclust(as.dist(tmp)))
 
 ##
 ## Calculate optimal number of sample groups
 ##
-require(cluster)
-K.max=10
-B=200
+#require(cluster)
+#K.max=10
+#B=200
 ## Slightly faster way to use pam (see below)
-pam1 <- function(x,k) list(cluster = pam(x,k, cluster.only=TRUE))
-gs.kmeans <- clusGap(t(tmp), FUN=kmeans, nstart=3, K.max=K.max, B=B)
-gs.pam <- clusGap(t(tmp), FUN=pam1, K.max=K.max, B=B)
-# plot?
-#par(mfrow=c(2,1))
-#ylim=c(0.3,0.45)
-#ylim=NULL
-#plot(gs.kmeans, ylim=ylim, main="kmeans"); abline(h=0.398, col="darkgreen")
-#plot(gs.pam, ylim=ylim, main="pam"); abline(h=0.406, col="darkgreen")
-# find optimal cluster number
-nGroups.kmeans = as.numeric(names(sort(table(sapply(c(1/4, 1,2,4), function(SEf){ sapply(eval(formals(maxSE)$method), function(M){maxSE(gs.kmeans$Tab[,3], gs.kmeans$Tab[,4], method = M, SE.factor = SEf)}) })),decreasing=T)[1]))
-nGroups.pam = as.numeric(names(sort(table(sapply(c(1/4, 1,2,4), function(SEf){ sapply(eval(formals(maxSE)$method), function(M){maxSE(gs.pam$Tab[,3], gs.pam$Tab[,4], method=M, SE.factor=SEf)}) })),decreasing=T)[1]))
-as.numeric(names(sort(table(sapply(c(1/4, 1,2,4), function(SEf){ sapply(eval(formals(maxSE)$method), function(M){maxSE(gs.kmeans$Tab[,3], gs.kmeans$Tab[,4], method = M, SE.factor = SEf)}) })[3,]),decreasing=T)[1]))
-as.numeric(names(sort(table(sapply(c(1/4, 1,2,4), function(SEf){ sapply(eval(formals(maxSE)$method), function(M){maxSE(gs.pam$Tab[,3], gs.pam$Tab[,4], method = M, SE.factor = SEf)}) })[3,]),decreasing=T)[1]))
-#if(nGroups.pam <= 5){
-  ## 
-  #  
+#pam1 <- function(x,k) list(cluster = pam(x,k, cluster.only=TRUE))
+#gs.kmeans <- clusGap(t(tmp), FUN=kmeans, nstart=3, K.max=K.max, B=B)
+#gs.pam <- clusGap(t(tmp), FUN=pam1, K.max=K.max, B=B)
+## plot?
+##par(mfrow=c(2,1))
+##ylim=c(0.3,0.45)
+##ylim=NULL
+##plot(gs.kmeans, ylim=ylim, main="kmeans"); abline(h=0.398, col="darkgreen")
+##plot(gs.pam, ylim=ylim, main="pam"); abline(h=0.406, col="darkgreen")
+## find optimal cluster number
+#nGroups.kmeans = as.numeric(names(sort(table(sapply(c(1/4, 1,2,4), function(SEf){ sapply(eval(formals(maxSE)$method), function(M){maxSE(gs.kmeans$Tab[,3], gs.kmeans$Tab[,4], method = M, SE.factor = SEf)}) })),decreasing=T)[1]))
+#nGroups.pam = as.numeric(names(sort(table(sapply(c(1/4, 1,2,4), function(SEf){ sapply(eval(formals(maxSE)$method), function(M){maxSE(gs.pam$Tab[,3], gs.pam$Tab[,4], method=M, SE.factor=SEf)}) })),decreasing=T)[1]))
+#as.numeric(names(sort(table(sapply(c(1/4, 1,2,4), function(SEf){ sapply(eval(formals(maxSE)$method), function(M){maxSE(gs.kmeans$Tab[,3], gs.kmeans$Tab[,4], method = M, SE.factor = SEf)}) })[3,]),decreasing=T)[1]))
+#as.numeric(names(sort(table(sapply(c(1/4, 1,2,4), function(SEf){ sapply(eval(formals(maxSE)$method), function(M){maxSE(gs.pam$Tab[,3], gs.pam$Tab[,4], method = M, SE.factor = SEf)}) })[3,]),decreasing=T)[1]))
+##if(nGroups.pam <= 5){
+## 
+#  
 #}
 
 
@@ -515,29 +516,46 @@ p
 ## Plot breakdown of counts in each biotype 
 ##
 require(plyr)
-sampleTotals = colSums(exprs.miRNA)
-sampleTotals = rbind(sampleTotals, colSums(exprs.tRNA))
-sampleTotals = rbind(sampleTotals, colSums(exprs.piRNA))
-#tmp = data.frame(biotype=sapply(rownames(exprs.gencode), function(id){ unlist(strsplit(id,":"))[2] }), exprs.gencode)
-tmp = data.frame(biotype=sapply(rownames(exprs.gencode), function(id){bits=unlist(strsplit(id,":")); bits[length(bits)]}), exprs.gencode)
-tmp = ddply(tmp, "biotype", function(mat){ colSums(mat[,-1,drop=F]) })
-rownames(tmp) = tmp[,1]; tmp = tmp[,-1,drop=F]
-colnames(tmp) = colnames(sampleTotals)
-sampleTotals = rbind(sampleTotals, tmp)
-sampleTotals = rbind(sampleTotals, colSums(exprs.circRNA))
-#sampleTotals = rbind(sampleTotals, colSums(exprs.repElements))
-#sampleTotals = rbind(sampleTotals, colSums(exprs.exogenous_miRNA))
-sampleTotals = rbind(sampleTotals, mapping.stats$exogenous_genomes)
-if("miRNA" %in% rownames(sampleTotals)){
-  i = which(rownames(sampleTotals) %in% "miRNA")
-  sampleTotals[i,] = colSums(sampleTotals[c(1,i),,drop=F])
-  sampleTotals = sampleTotals[-1,,drop=F]
-  rownames(sampleTotals)[1:2] = c("tRNA","piRNA")
-}else{
-  rownames(sampleTotals)[1:3] = c("miRNA","tRNA","piRNA")
+sampleTotals=matrix(NA,ncol=nrow(mapping.stats),nrow=0); colnames(sampleTotals) = rownames(mapping.stats)
+if(nrow(exprs.miRNA) > 0){
+  sampleTotals = rbind(sampleTotals, colSums(exprs.miRNA))
+  rownames(sampleTotals)[nrow(sampleTotals)] = "miRNA"
 }
-#rownames(sampleTotals)[(nrow(sampleTotals)-2):nrow(sampleTotals)] = c("circularRNA","exogenous_miRNA","exogenous_genomes")
-rownames(sampleTotals)[(nrow(sampleTotals)-1):nrow(sampleTotals)] = c("circularRNA","exogenous_genomes")
+if(nrow(exprs.tRNA) > 0){
+  sampleTotals = rbind(sampleTotals, colSums(exprs.tRNA))
+  rownames(sampleTotals)[nrow(sampleTotals)] = "tRNA"
+}
+if(nrow(exprs.piRNA) > 0){
+  sampleTotals = rbind(sampleTotals, colSums(exprs.piRNA))
+  rownames(sampleTotals)[nrow(sampleTotals)] = "piRNA"
+}
+if(nrow(exprs.gencode) > 0){
+  tmp = data.frame(biotype=sapply(rownames(exprs.gencode), function(id){bits=unlist(strsplit(id,":")); bits[length(bits)]}), exprs.gencode)
+  tmp = ddply(tmp, "biotype", function(mat){ colSums(mat[,-1,drop=F]) })
+  rownames(tmp) = tmp[,1]; tmp = tmp[,-1,drop=F]
+  colnames(tmp) = colnames(sampleTotals)
+  ## add gencode miRNA to the existing count...
+  if("miRNA" %in% rownames(tmp)  &&  "miRNA" %in% rownames(sampleTotals)){
+    i = which(rownames(tmp) %in% "miRNA")
+    j = which(rownames(sampleTotals) %in% "miRNA")
+    for(x in 1:ncol(sampleTotals)){
+      sampleTotals[j,x] = sampleTotals[j,x] + tmp[i,x]
+    }
+    tmp = tmp[-i,,drop=F]
+  }
+  sampleTotals = rbind(sampleTotals, tmp)
+}
+if(nrow(exprs.circRNA) > 0){
+  sampleTotals = rbind(sampleTotals, colSums(exprs.circRNA))
+  rownames(sampleTotals)[nrow(sampleTotals)] = "circularRNA"
+}
+sampleTotals = rbind(sampleTotals, mapping.stats$exogenous_miRNA)
+rownames(sampleTotals)[nrow(sampleTotals)] = "exogenous_miRNA"
+sampleTotals = rbind(sampleTotals, mapping.stats$exogenous_rRNA)
+rownames(sampleTotals)[nrow(sampleTotals)] = "exogenous_rRNA"
+sampleTotals = rbind(sampleTotals, mapping.stats$exogenous_genomes)
+rownames(sampleTotals)[nrow(sampleTotals)] = "exogenous_genomes"
+
 sampleTotals = sampleTotals[order(apply(sampleTotals, 1, median, na.rm=T), decreasing=F), ,drop=F]
 tmp = melt(as.matrix(sampleTotals))
 colnames(tmp) = c("biotype","sampleID","readCount")
@@ -567,25 +585,28 @@ exprs.exogenousGenomes_kingdomSpecific.rpm = t(10^6 * t(exprs.exogenousGenomes_k
 
 
 ## Plot miRNA expression distributions
-tmp = melt(exprs.miRNA)
-colnames(tmp) = c("miRNA","sample","abundance")
-p = ggplot(tmp, aes(y=abundance, x=sample, colour=sample)) +geom_violin() +geom_boxplot(alpha=0.2) +ylab("Read count") +ggtitle("miRNA abundance distributions (raw counts)") +theme(axis.ticks = element_blank(), axis.text.x = element_blank()) +scale_y_log10()
-if(ncol(exprs.miRNA.rpm) > 30){ p = p +guides(colour=FALSE) }
-p
+if(nrow(exprs.miRNA) > 0){
+  tmp = melt(exprs.miRNA)
+  colnames(tmp) = c("miRNA","sample","abundance")
+  p = ggplot(tmp, aes(y=abundance, x=sample, colour=sample)) +geom_violin() +geom_boxplot(alpha=0.2) +ylab("Read count") +ggtitle("miRNA abundance distributions (raw counts)") +theme(axis.ticks = element_blank(), axis.text.x = element_blank()) +scale_y_log10()
+  if(ncol(exprs.miRNA.rpm) > 30){ p = p +guides(colour=FALSE) }
+  p
+  
+  p = ggplot(tmp, aes(x=abundance, colour=sample)) +geom_density() +xlab("Read count") +ggtitle("miRNA abundance distributions (raw counts)") +scale_x_log10()
+  if(ncol(exprs.miRNA.rpm) > 30){ p = p +guides(colour=FALSE) }
+  p
+  
+  tmp = melt(exprs.miRNA.rpm)
+  colnames(tmp) = c("miRNA","sample","abundance")
+  p = ggplot(tmp, aes(y=abundance, x=sample, colour=sample)) +geom_violin() +geom_boxplot(alpha=0.2) +ylab("Reads per million (RPM)") +ggtitle("miRNA abundance distributions (RPM)") +theme(axis.ticks = element_blank(), axis.text.x = element_blank()) +scale_y_log10()
+  if(ncol(exprs.miRNA.rpm) > 30){ p = p +guides(colour=FALSE) }
+  p
+  
+  p = ggplot(tmp, aes(x=abundance, colour=sample)) +geom_density() +xlab("Reads per million (RPM)") +ggtitle("miRNA abundance distributions (RPM)") +scale_x_log10()
+  if(ncol(exprs.miRNA.rpm) > 30){ p = p +guides(colour=FALSE) }
+  p
+}
 
-p = ggplot(tmp, aes(x=abundance, colour=sample)) +geom_density() +xlab("Read count") +ggtitle("miRNA abundance distributions (raw counts)") +scale_x_log10()
-if(ncol(exprs.miRNA.rpm) > 30){ p = p +guides(colour=FALSE) }
-p
-
-tmp = melt(exprs.miRNA.rpm)
-colnames(tmp) = c("miRNA","sample","abundance")
-p = ggplot(tmp, aes(y=abundance, x=sample, colour=sample)) +geom_violin() +geom_boxplot(alpha=0.2) +ylab("Reads per million (RPM)") +ggtitle("miRNA abundance distributions (RPM)") +theme(axis.ticks = element_blank(), axis.text.x = element_blank()) +scale_y_log10()
-if(ncol(exprs.miRNA.rpm) > 30){ p = p +guides(colour=FALSE) }
-p
-
-p = ggplot(tmp, aes(x=abundance, colour=sample)) +geom_density() +xlab("Reads per million (RPM)") +ggtitle("miRNA abundance distributions (RPM)") +scale_x_log10()
-if(ncol(exprs.miRNA.rpm) > 30){ p = p +guides(colour=FALSE) }
-p
 
 
 ##
@@ -603,7 +624,6 @@ if(nrow(exprs.exogenousGenomes_speciesSpecific) > 0  &&  ncol(exprs.exogenousGen
   tmp.order = order(apply(t(t(exprs.exogenousGenomes_kingdomSpecific.rpm)/colSums(exprs.exogenousGenomes_kingdomSpecific.rpm)), 1, median), decreasing=T)
   heatmap.2(log10(exprs.exogenousGenomes_kingdomSpecific.rpm[tmp.order, ][1:100,]+0.1),trace="none") 
 }
-
 dev.off()
 
 
