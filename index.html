@@ -48,10 +48,9 @@
 <h2>
 <a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage</h2>
 
-<p>Once all dependencies are installed, the exceRpt pipeline can be run on a human sample (here an SRA binary file) using the following skeleton command:</p>
+<p>Once all dependencies are installed, the exceRpt pipeline can be run on a human sample (here an SRA binary file) using default parameters using the following skeleton command:</p>
 
-<pre><code>make -f smallRNA_pipeline.mk INPUT_FILE_PATH=./SRR026761.sra N_THREADS=8 OUTPUT_DIR=./output/ \
-                              MAIN_ORGANISM_GENOME_ID=hg38 MAP_EXOGENOUS=on
+<pre><code>make -f smallRNA_pipeline.mk INPUT_FILE_PATH=./SRR026761.sra OUTPUT_DIR=./output/
 </code></pre>
 
 <p>There are a number of options available for customising the analysis:</p>
@@ -64,6 +63,9 @@ RANDOM_BARCODE_LOCATION     [default '-5p -3p'] [options: '-5p', '-3p', or '-5p 
 ENDOGENOUS_LIB_PRIORITY     [default 'miRNA,tRNA,piRNA,gencode,circRNA']
 MAIN_ORGANISM_GENOME_ID     [default 'hg38'] [options: 'hg19', 'hg38', or 'mm10']
 ADAPTER_SEQ                 [default 'guessKnown'] [options: 'none', 'guessKnown', or the actual nucleotide sequence of the 3' adapter]
+MAP_EXOGENOUS               [default 'on'] [options: 'off', 'miRNA', or 'on']
+N_THREADS                   [default '8']
+EXE_DIR                     [location of the pipeline, database, and dependencies]
 </code></pre>
 
 <h2>
