@@ -1,4 +1,4 @@
-smallRNAseq-pipeline
+exceRpt small-RNAseq pipeline
 ====================
 
 Software for preprocessing, filtering, alignment, and reporting of smallRNA-seq datasets.
