@@ -32,18 +32,22 @@
 
 <p>This script will take as input a directory containing 1 or more subdirectories or zipfiles containing output from the makefile above. In this way, results from 1 or more smallRNA-seq samples can be combined, several QC plots are generated, and the read-counts are normalised ready for downstream analysis by clustering and/or differential expression.</p>
 
+<hr>
+
 <h2>
 <a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h2>
 
 <h3>
 <a id="smallrna_pipelinemk-1" class="anchor" href="#smallrna_pipelinemk-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>smallRNA_pipeline.mk</h3>
 
-<p>This requires numerous dependences that require some familiarity with UNIX.  The software is installed on the Genboree Workbench (<a href="http://www.genboree.org">www.genboree.org</a>) which provides a graphical interface to the pipeline that is free for academic use.  Alternatively, development of a Docker image for this software is ongoing, if you are interested in this please feel free to get in touch using the email address above.</p>
+<p>This requires numerous dependences that require some familiarity with UNIX.  The software is installed on the Genboree Workbench (<a href="http://www.genboree.org">www.genboree.org</a>) which provides a graphical interface to the pipeline that is free for academic use.  Alternatively, development of a Docker image for this software is ongoing, if you are interested in this please feel free to get in touch using the email address below.</p>
 
 <h3>
 <a id="mergepipelinerunsr-1" class="anchor" href="#mergepipelinerunsr-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>mergePipelineRuns.R</h3>
 
 <p>This script is comparatively much simpler to install.  Once the R software (<a href="http://cran.r-project.org/">http://cran.r-project.org/</a>) is set up on your system the script should automatically identify and install all required dependencies.  Again, this script is available on the Genboree Workbench (<a href="http://www.genboree.org">www.genboree.org</a>) and is also free for academic use.</p>
+
+<hr>
 
 <h2>
 <a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage</h2>
@@ -67,6 +71,8 @@ MAP_EXOGENOUS               [default 'on'] [options: 'off', 'miRNA', or 'on']
 N_THREADS                   [default '8']
 EXE_DIR                     [location of the pipeline, database, and dependencies]
 </code></pre>
+
+<hr>
 
 <h2>
 <a id="support" class="anchor" href="#support" aria-hidden="true"><span class="octicon octicon-link"></span></a>Support</h2>
