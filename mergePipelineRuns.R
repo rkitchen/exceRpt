@@ -508,7 +508,7 @@ tmp$colour[tmp$colour == 1] = "red"
 tmp$colour[tmp$colour == 2] = "green"
 tmp$colour[tmp$colour == 3] = "blue"
 ggplot(tmp, aes(x=sampleID,y=runDuration_seconds,fill=colour)) +geom_bar(stat="identity") +facet_grid(~category,scales="free_x",space="free_x") +guides(fill=FALSE)
-ggplot(tmp, aes(x=inputReadCount,y=runDuration_seconds,colour=colour)) +geom_point(size=10) +guides(colour=FALSE) +scale_x_log10() +scale_y_log10()
+ggplot(tmp, aes(x=inputReadCount,y=runDuration_seconds,colour=colour)) +geom_point(size=10) +guides(colour=FALSE) +scale_x_log10() +scale_y_log10(limits=c(1,10^ceiling(log10(max(tmp$runDuration_seconds)))), breaks=10^seq(1:ceiling(log10(max(tmp$runDuration_seconds)))))
 
 
 
