@@ -357,6 +357,9 @@ allIDs = list("miRNA_sense"=allIDs.miRNA, "tRNA_sense"=allIDs.tRNA, "piRNA_sense
 ##
 ## Convert sample data to large per-smallRNA expression matrices
 ##
+#run.duration = data.frame(runDuration_string=rep("",length(sample.data)), runDuration_secs=rep(0,length(sample.data)),stringsAsFactors = F)
+run.duration = data.frame(runDuration_secs=rep(0,length(sample.data)),stringsAsFactors = F)
+rownames(run.duration) = names(sample.data)
 exprs.miRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$miRNA_sense), dimnames=list(allIDs$miRNA_sense, names(sample.data)))
 exprs.tRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$tRNA_sense), dimnames=list(allIDs$tRNA_sense, names(sample.data)))
 exprs.piRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$piRNA_sense), dimnames=list(allIDs$piRNA_sense, names(sample.data)))
@@ -366,6 +369,7 @@ exprs.circRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$circRNA_sen
 exprs.exogenousGenomes_speciesSpecific = matrix(0,ncol=length(sample.data),nrow=length(allIDs$exogenous_genomes), dimnames=list(allIDs$exogenous_genomes, names(sample.data)))
 exprs.exogenousGenomes_kingdomSpecific = matrix(0,ncol=length(sample.data),nrow=length(allIDs$exogenous_genomes), dimnames=list(allIDs$exogenous_genomes, names(sample.data)))
 for(i in 1:length(sample.data)){
+  run.duration[i,] = sample.data[[i]]$runTiming[1,4,drop=F]
   exprs.miRNA[match(sample.data[[i]]$miRNA_sense$ID, rownames(exprs.miRNA)),i] = as.numeric(sample.data[[i]]$miRNA_sense$multimapAdjustedReadCount)
   exprs.tRNA[match(sample.data[[i]]$tRNA_sense$ID, rownames(exprs.tRNA)),i] = as.numeric(sample.data[[i]]$tRNA_sense$multimapAdjustedReadCount)
   exprs.piRNA[match(rownames(sample.data[[i]]$piRNA_sense), rownames(exprs.piRNA)),i] = as.numeric(sample.data[[i]]$piRNA_sense$multimapAdjustedReadCount)
@@ -487,6 +491,25 @@ tmp = tmp[1:max(which(tmp$fraction > 0)), ]
 p = ggplot(tmp, aes(x=length, y=fraction, colour=sample)) +geom_line(alpha=0.75) +xlab("read length (nt)") +ylab("fraction of reads") +ggtitle("read-length distributions") +xlim(14,min(c(75,max(tmp$length))))
 if(nrow(read.lengths) > 30){ p = p +guides(colour=FALSE) }
 p
+
+
+##
+## Plot run duration of each sample
+##
+tmp=melt(as.matrix(run.duration))
+colnames(tmp) = c("sampleID","stuff","runDuration_seconds")
+tmp = cbind(tmp, category=.bincode(tmp[,3], breaks=c(0,as.numeric(quantile(tmp[,3],probs=c(0.10,0.90,1))))))
+tmp = cbind(tmp, colour=tmp$category)
+tmp = cbind(tmp, inputReadCount=mapping.stats$input)
+tmp$category[tmp$category == 1] = "fast"
+tmp$category[tmp$category == 2] = "normal"
+tmp$category[tmp$category == 3] = "slow"
+tmp$colour[tmp$colour == 1] = "red"
+tmp$colour[tmp$colour == 2] = "green"
+tmp$colour[tmp$colour == 3] = "blue"
+ggplot(tmp, aes(x=sampleID,y=runDuration_seconds,fill=colour)) +geom_bar(stat="identity") +facet_grid(~category,scales="free_x",space="free_x") +guides(fill=FALSE)
+ggplot(tmp, aes(x=inputReadCount,y=runDuration_seconds,colour=colour)) +geom_point(size=10) +guides(colour=FALSE) +scale_x_log10() +scale_y_log10()
+
 
 
 ##
