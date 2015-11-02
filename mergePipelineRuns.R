@@ -4,58 +4,51 @@
 ##                                                                                   ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                        ##
 ##                                                                                   ##
-## Version 3.1.1 (2015-11-01)                                                        ##
+## Version 3.2.0 (2015-11-02)                                                        ##
 ##                                                                                   ##
 #######################################################################################
 
 
 ##
-## Define inputs:
-##
-args<-commandArgs(TRUE)
-
-##
 ## Check inputs
 ##
-#stopifnot(length(args) >= 1)
-if(length(args) >= 1){
+args<-commandArgs(TRUE)
+if(length(args) == 0){
+  
+  ## if no data directory is specified, throw an error message
+  cat("\nERROR: no input data directory specified!\n\n")
+  cat("Usage: Rscript mergePipelineRuns.R <data path> [output path]\n\n")
+
+}else{
+  
   data.dir = args[1]
   if(length(args) >= 2){
     output.dir = args[2]
     if(length(args) == 3){
       classifier.path = args[3]
-    }else{
-      #classifier.path = "/Users/robk/Box Sync/Work/miRNA/DataSets"
-      classifier.path = "/Users/robk/Box Sync/Work/exRNA/Pipeline/smallRNA_postprocessing_code/tissueClassifier.RData"      
     }
   }else{
     output.dir = data.dir
   }
-}else{ 
-  ## if no data directory is specified, throw an error message and try a hard coded path (for testing)
-  cat("ERROR: no input data directory specified!\n\n")
-  cat("Usage: Rscript mergePipelineRuns.R <data path> [output path]\n\n")
-  #data.dir = "~/Box Sync/Work for other people/FraminghamSmallRNA/Data"
-  #output.dir = "~/Box Sync/Work for other people/FraminghamSmallRNA"
-  #data.dir = "~/WORK/YALE_offline/miRNA/PipelineOutput"
-  #data.dir = "~/WORK/YALE_offline/exRNA/newPipelineTest"  
-  #data.dir = "~/WORK/YALE_offline/exRNA/DavidGalas"
-  #data.dir = "~/WORK/YALE_offline/exRNA/TomTuschl"
-  #data.dir = "~/WORK/YALE_offline/exRNA/TomTuschl_singleSample"
-  #data.dir = "~/WORK/YALE_offline/exRNA/AlCharest"	
-  #data.dir = "~/WORK/YALE_offline/exRNA/LouiseLaurent"
-  #data.dir = "~/WORK/YALE_offline/exRNA/YanAssman"
-  #data.dir = "~/WORK/YALE_offline/exRNA/exceRptLibraryAnalysis"
-  #data.dir = "~/WORK/YALE_offline/exRNA/exceRptCombinatorialAnalysis"
-  #data.dir = "~/WORK/YALE_offline/exRNA/TESTING"
-  #data.dir = "~/WORK/YALE_offline/exRNA/TESTING/standardTests"
-  #data.dir = "~/Downloads/JAMES_TEST"
-  #data.dir = "~/WORK/YALE_offline/exRNA/AmyBuck/Results"
-  #data.dir = "~/WORK/YALE_offline/BrainSpan/smallRNA_new/exceRpt_Results"
-  output.dir = data.dir
+  
+  
+  ##
+  ## Find the relative path to the script containing the required functions
+  ##
+  initial.options <- commandArgs(trailingOnly = FALSE)
+  file.arg.name <- "--file="
+  script.name <- sub(file.arg.name, "", initial.options[grep(file.arg.name, initial.options)])
+  script.basename <- dirname(script.name)
+  other.name <- paste(sep="/", script.basename, "mergePipelineRuns_functions.R")
+  print(paste("Sourcing",other.name,"from",script.name))
+  source(other.name)
+  cat("\n")
+  
+  
+  ##
+  ## Process all samples under this directory
+  ##
+  processSamplesInDir(data.dir, output.dir)
 }
 
 
-
-source('~/Box Sync/Work/exRNA/Pipeline/smallRNApipe/mergePipelineRuns_functions.R')
-processSamplesInDir(data.dir, output.dir)
