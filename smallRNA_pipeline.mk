@@ -12,10 +12,10 @@
 ##                                                                                   ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                        ##
 ##                                                                                   ##
-## Version 3.2.0 (2015-11-01)                                                        ##
+## Version 3.2.1 (2015-11-02)                                                        ##
 ##                                                                                   ##
 #######################################################################################
-EXCERPT_VERSION := 3.2.0
+EXCERPT_VERSION := 3.2.1
 
 
 ##
@@ -54,7 +54,7 @@ REMOVE_LARGE_INTERMEDIATE_FILES := false
 SAMPLE_NAME             		:= NULL
 QFILTER_MIN_READ_FRAC           := 80
 QFILTER_MIN_QUAL                := 20
-STAR_PARAMS_FILE_PATH			:= $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in
+
 
 
 ##
@@ -87,20 +87,21 @@ ifeq ($(LOCAL_EXECUTION),true)
 	##
 	## 6) Check that the paths to the required 3rd party executables work!
 	##
-	JAVA_EXE         := /usr/bin/java
-	FASTX_CLIP_EXE   := $(EXE_DIR)/fastx_0.0.14/bin/fastx_clipper
-	FASTX_FILTER_EXE := $(EXE_DIR)/fastx_0.0.14/bin/fastq_quality_filter
-	BOWTIE1_EXE      := $(EXE_DIR)/bowtie-1.1.1/bowtie
-	#VIENNA_PATH     := $(EXE_DIR)/ViennaRNA_2.1.5/bin
-	BOWTIE2_EXE      := $(EXE_DIR)/bowtie2-2.2.4/bowtie2
-	SAMTOOLS_EXE     := $(EXE_DIR)/samtools-1.1/samtools
-	FASTQC_EXE       := $(JAVA_EXE) -classpath $(EXE_DIR)/FastQC_0.11.2:$(EXE_DIR)/FastQC_0.11.2/sam-1.103.jar:$(EXE_DIR)/FastQC_0.11.2/jbzip2-0.9.jar
-	SRATOOLS_EXE     := $(EXE_DIR)/sratoolkit.2.5.1-centos_linux64/bin/fastq-dump
-	THUNDER_EXE      := $(EXE_DIR)/Thunder.jar
-	DATABASE_PATH    := $(EXE_DIR)/DATABASE
-	STAR_EXE         := $(EXE_DIR)/STAR_2.4.2a/bin/Linux_x86_64/STAR
-	STAR_GENOMES_DIR := /gpfs/scratch/fas/gerstein/rrk24/ANNOTATIONS/Genomes_BacteriaFungiMammalPlantProtistVirus
-	
+	JAVA_EXE              := /usr/bin/java
+	FASTX_CLIP_EXE        := $(EXE_DIR)/fastx_0.0.14/bin/fastx_clipper
+	FASTX_FILTER_EXE      := $(EXE_DIR)/fastx_0.0.14/bin/fastq_quality_filter
+	BOWTIE1_EXE           := $(EXE_DIR)/bowtie-1.1.1/bowtie
+	#VIENNA_PATH          := $(EXE_DIR)/ViennaRNA_2.1.5/bin
+	BOWTIE2_EXE           := $(EXE_DIR)/bowtie2-2.2.4/bowtie2
+	SAMTOOLS_EXE          := $(EXE_DIR)/samtools-1.1/samtools
+	FASTQC_EXE            := $(JAVA_EXE) -classpath $(EXE_DIR)/FastQC_0.11.2:$(EXE_DIR)/FastQC_0.11.2/sam-1.103.jar:$(EXE_DIR)/FastQC_0.11.2/jbzip2-0.9.jar
+	SRATOOLS_EXE          := $(EXE_DIR)/sratoolkit.2.5.1-centos_linux64/bin/fastq-dump
+	THUNDER_EXE           := $(EXE_DIR)/Thunder.jar
+	DATABASE_PATH         := $(EXE_DIR)/DATABASE
+	STAR_EXE              := $(EXE_DIR)/STAR_2.4.2a/bin/Linux_x86_64/STAR
+	STAR_GENOMES_DIR      := /gpfs/scratch/fas/gerstein/rrk24/ANNOTATIONS/Genomes_BacteriaFungiMammalPlantProtistVirus
+	STAR_PARAMS_FILE_PATH := $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in
+
 	##
 	## Use the input path to infer filetype and short name
 	##
@@ -135,6 +136,7 @@ else
 
 	STAR_EXE := STAR
 	STAR_GENOMES_DIR := $(STAR_GENOMES_DIR)
+	STAR_PARAMS_FILE_PATH := $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in
 	
 	INPUT_FILE_NAME := $(notdir $(INPUT_FILE_PATH))
     INPUT_FILE_ID := $(INPUT_FILE_ID)
