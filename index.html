@@ -94,7 +94,7 @@ wget ftp://ftp.ddbj.nig.ac.jp/ddbj_database/dra/sralite/ByExp/litesra/SRX/SRX010
 
 <p>Most of the Docker command is loading directories on your machine (the <code>-v</code> parameters) so that exceRpt can read from or write to them.  The directory to the left of each <code>:</code> can obviously be whatever you want, but it is important to make sure the right side of each <code>:</code> is written as above or exceRpt will not be able to find/write the data it needs.</p>
 
-<p>Finally, the last line of the <code>docker run</code> command (<code>INPUT_FILE_PATH=</code>) is a direct call to exceRpt itself.  As such, any customisable options should be specified this way.  For example we could re-order the priority of the transcriptome libraries (for example if we expected a sample to have more long-RNA fragments than miRNAs) using the following call to docker:</p>
+<p>The last line of the <code>docker run</code> command (<code>INPUT_FILE_PATH=</code>) is a direct call to exceRpt itself.  As such, any customisable options should be specified this way.  For example we could re-order the priority of the transcriptome libraries (for example if we expected a sample to have more long-RNA fragments than miRNAs) using the following call to docker:</p>
 
 <pre><code>docker run -v ~/DirectoryContainingMyInputSample:/exceRptInput \
            -v ~/DirectoryInWhichToPutMyResults:/exceRptOutput \
@@ -109,6 +109,16 @@ wget ftp://ftp.ddbj.nig.ac.jp/ddbj_database/dra/sralite/ByExp/litesra/SRX/SRX010
 <pre><code>docker run -v ~/DirectoryContainingMyInputSample:/exceRptInput \
            -v ~/DirectoryInWhichToPutMyResults:/exceRptOutput \
            -v ~/DirectoryContainingMyexceRptDatabase/mm10:/exceRpt_DB/mm10 \
+           -t rkitchen/excerpt \
+           INPUT_FILE_PATH=/exceRptInput/SRR026761.sra \
+           MAIN_ORGANISM_GENOME_ID=mm10
+</code></pre>
+
+<p>Finally, if you're lucky enough to have an abundance of available disk space, it is easier in the long run to pass Docker the directory containing all available exceRpt genome databases so that to change organism/genome only the <code>MAIN_ORGANISM_GENOME_ID</code> variable needs to be modified:</p>
+
+<pre><code>docker run -v ~/DirectoryContainingMyInputSample:/exceRptInput \
+           -v ~/DirectoryInWhichToPutMyResults:/exceRptOutput \
+           -v ~/DirectoryContainingMyexceRptDatabase:/exceRpt_DB \
            -t rkitchen/excerpt \
            INPUT_FILE_PATH=/exceRptInput/SRR026761.sra \
            MAIN_ORGANISM_GENOME_ID=mm10
