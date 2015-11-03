@@ -43,7 +43,13 @@
 
 <p>Slightly more effort to get set up than using Genboree, but using the <a href="https://www.docker.com">Docker</a> image is the best way to use exceRpt on your own machine/cluster.  The <a href="https://hub.docker.com/r/rkitchen/excerpt">exceRpt Docker image</a> is pre-baked with all required dependencies and should 'just work' with minimal installation.  Docker is native on Red Hat Enterprise Linux distributions (RHEL) and also available on Amazon, enabling exceRpt to be run in the cloud.  Instructions are available for installing Docker on <a href="http://docs.docker.com/mac/started">Mac OS X</a>, <a href="http://docs.docker.com/linux/started">Linux</a>, <a href="http://docs.docker.com/windows/started">Windows</a>, and <a href="http://docs.aws.amazon.com/AmazonECS/latest/developerguide/docker-basics.html">Amazon Web Services</a>. </p>
 
-<p>As with the manual installation described below, <strong>you will also need to download the pre-compiled genome and transcriptome indices</strong> for exceRpt to use.  These are too large to be included in the Docker image, but using these links you can download the human (<a href="http://homes.gersteinlab.org/people/rrk24/exceRpt/exceRptDB_hg19.tgz">hg19</a> and <a href="http://homes.gersteinlab.org/people/rrk24/exceRpt/exceRptDB_hg38.tgz">hg38</a>) and mouse (<a href="http://homes.gersteinlab.org/people/rrk24/exceRpt/exceRptDB_mm10.tgz">mm10</a>) exceRpt database files.</p>
+<p>As with the manual installation described below, <strong>you will also need to download the pre-compiled genome and transcriptome indices</strong> for exceRpt to use.  These are too large to be included in the Docker image, but using these links you can download the exceRpt database files:</p>
+
+<ul>
+<li>human (<a href="http://homes.gersteinlab.org/people/rrk24/exceRpt/exceRptDB_hg19.tgz">hg19</a>); </li>
+<li>human (<a href="http://homes.gersteinlab.org/people/rrk24/exceRpt/exceRptDB_hg38.tgz">hg38</a>);</li>
+<li>mouse (<a href="http://homes.gersteinlab.org/people/rrk24/exceRpt/exceRptDB_mm10.tgz">mm10</a>).</li>
+</ul>
 
 <p>Once you have downloaded the desired genome database and have successfully installed and started Docker on your machine/cluster/AWS-instance only a few commands are required to install and run exceRpt.  </p>
 
