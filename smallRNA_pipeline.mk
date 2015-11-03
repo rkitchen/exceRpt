@@ -12,10 +12,10 @@
 ##                                                                                   ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                        ##
 ##                                                                                   ##
-## Version 3.2.1 (2015-11-02)                                                        ##
+## Version 3.2.2 (2015-11-02)                                                        ##
 ##                                                                                   ##
 #######################################################################################
-EXCERPT_VERSION := 3.2.1
+EXCERPT_VERSION := 3.2.2
 
 
 ##
@@ -27,6 +27,7 @@ INPUT_FILE_PATH         	:= NULL
 CALIBRATOR_LIBRARY      	:= NULL
 RANDOM_BARCODE_LENGTH		:= 0
 RANDOM_BARCODE_LOCATION 	:= -5p -3p
+KEEP_RANDOM_BARCODE_STATS   := false
 ENDOGENOUS_LIB_PRIORITY		:= miRNA,tRNA,piRNA,gencode,circRNA
 
 
@@ -266,6 +267,11 @@ endif
 COMMAND_CLIP_ADAPTER ?= $(COMMAND_CONVERT_SRA) | $(FASTX_CLIP_EXE) -a $(shell cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).adapterSeq) -l 15 -v -n -M 7 -z -o $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.tmp.gz >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
 
 
+ifeq ($(KEEP_RANDOM_BARCODE_STATS),true)
+	BARCODE_STATS_COMMAND := -stats $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.barcodeStats 
+else
+	BARCODE_STATS_COMMAND := 
+endif
 
 ifeq ($(RANDOM_BARCODE_LENGTH),0)
 	COMMAND_REMOVE_RANDOM_BARCODE := mv $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.tmp.gz $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz
@@ -273,7 +279,7 @@ ifeq ($(RANDOM_BARCODE_LENGTH),0)
 else
 	#COMMAND_REMOVE_RANDOM_BARCODE := gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.tmp.gz | $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) ProcessFastqWithRandomBarcode -n $(RANDOM_BARCODE_LENGTH) $(RANDOM_BARCODE_LOCATION) -stats $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.barcodeStats - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | gzip -c > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz
 	#ENDOGENOUS_QUANT_RANDOM_BARCODE_STATS := -randombarcode $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.barcodeStats
-	COMMAND_REMOVE_RANDOM_BARCODE := gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.tmp.gz | $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) ProcessFastqWithRandomBarcode -n $(RANDOM_BARCODE_LENGTH) $(RANDOM_BARCODE_LOCATION) - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | gzip -c > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz
+	COMMAND_REMOVE_RANDOM_BARCODE := gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.tmp.gz | $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) ProcessFastqWithRandomBarcode -n $(RANDOM_BARCODE_LENGTH) $(RANDOM_BARCODE_LOCATION) $(BARCODE_STATS_COMMAND) - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | gzip -c > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz
 	ENDOGENOUS_QUANT_RANDOM_BARCODE_STATS := 
 endif
 
