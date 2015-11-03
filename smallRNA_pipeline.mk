@@ -63,9 +63,9 @@ QFILTER_MIN_QUAL                := 20
 ## 		- off 		: none
 ##		- miRNAs	: map only to exogenous miRNAs in miRbase
 ##		- on		: map to exogenous miRNAs in miRbase AND the genomes of all sequenced species in ensembl/NCBI
-#MAP_EXOGENOUS      := off
+MAP_EXOGENOUS      := off
 #MAP_EXOGENOUS      := miRNA
-MAP_EXOGENOUS      := on
+#MAP_EXOGENOUS      := on
 
 
 ##
@@ -76,10 +76,11 @@ ifeq ($(LOCAL_EXECUTION),true)
 	##
 	## 5) Modify installation-specific variables
 	##
-	N_THREADS 			:= 8
-	JAVA_RAM  			:= 64G
-	MAX_RAM   			:= 64000000000
-	BOWTIE_CHUNKMBS 	:= 8000
+	N_THREADS 			:= 4
+	JAVA_RAM  			:= 10G
+	#MAX_RAM   			:= 64000000000
+	MAX_RAM   			:= 10000000000
+	BOWTIE_CHUNKMBS 	:= 2000
 	SAMTOOLS_SORT_MEM 	:= 2G
 	## NB: The 'EXE_DIR' MUST be an ABSOLUTE PATH or sRNABench will fail!
 	EXE_DIR   := /gpfs/scratch/fas/gerstein/rrk24/bin/smallRNAPipeline
