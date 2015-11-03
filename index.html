@@ -43,6 +43,8 @@
 
 <p>Slightly more effort to get set up than using Genboree, but using the <a href="https://www.docker.com">Docker</a> image is the best way to use exceRpt on your own machine/cluster.  The <a href="https://hub.docker.com/r/rkitchen/excerpt">exceRpt Docker image</a> is pre-baked with all required dependencies and should 'just work' with minimal installation.  Docker is native on Red Hat Enterprise Linux distributions (RHEL) and also available on Amazon, enabling exceRpt to be run in the cloud.  Instructions are available for installing Docker on <a href="http://docs.docker.com/mac/started">Mac OS X</a>, <a href="http://docs.docker.com/linux/started">Linux</a>, <a href="http://docs.docker.com/windows/started">Windows</a>, and <a href="http://docs.aws.amazon.com/AmazonECS/latest/developerguide/docker-basics.html">Amazon Web Services</a>. </p>
 
+<p><strong>BEWARE</strong>, exceRpt requires about <strong>10GB of RAM</strong> in order to function properly, runs on machines with less than this amount of available memory will very likely fail.  If running Docker inside a virtual machine (such as via VirtualBox on Mac OS X) it is <strong>important to check that the VM has been initialised with at least 10GB of memory</strong>.  This is usually a setting that can be modified as long as the VM is not currently running.</p>
+
 <p>As with the manual installation described below, <strong>you will also need to download the pre-compiled genome and transcriptome indices</strong> for exceRpt to use.  These are too large to be included in the Docker image, but using these links you can download the exceRpt database files:</p>
 
 <ul>
@@ -69,16 +71,48 @@ wget http://homes.gersteinlab.org/people/rrk24/exceRpt/exceRptDB_hg38.tgz
 tar -xvf exceRptDB_hg38.tgz
 </code></pre>
 
-<p>To run a fastq sample (located in <code>~/DirectoryContainingMyInputSample/HUMAN_SRR822469.fastq</code>) through the exceRpt pipeline, aligning to the hg38 genome+transcriptome we just downloaded:</p>
+<p>To run a smallRNA-seq sample through the exceRpt pipeline we can grab a publicly-available dataset from the SRA:</p>
+
+<pre><code>mkdir ~/DirectoryContainingMyInputSample
+cd ~/DirectoryContainingMyInputSample
+wget ftp://ftp.ddbj.nig.ac.jp/ddbj_database/dra/sralite/ByExp/litesra/SRX/SRX010/SRX010851/SRR026761/SRR026761.sra
+</code></pre>
+
+<p>Almost done, just need to make sure there is a directory in which to put the exceRpt pipeline output:</p>
+
+<pre><code>mkdir ~/DirectoryInWhichToPutMyResults
+</code></pre>
+
+<p>Finally, we can input this sample to the exceRpt pipeline, aligning to the hg38 genome+transcriptome we just downloaded:</p>
 
 <pre><code>docker run -v ~/DirectoryContainingMyInputSample:/exceRptInput \
            -v ~/DirectoryInWhichToPutMyResults:/exceRptOutput \
            -v ~/DirectoryContainingMyexceRptDatabase/hg38:/exceRpt_DB/hg38 \
            -t rkitchen/excerpt \
-           INPUT_FILE_PATH=/exceRptInput/HUMAN_SRR822469.fastq
+           INPUT_FILE_PATH=/exceRptInput/SRR026761.sra
 </code></pre>
 
-<p><strong>BEWARE</strong>, exceRpt requires about <strong>10GB of RAM</strong> in order to function properly, runs on machines with less than this amount of available memory will very likely fail.</p>
+<p>Most of the Docker command is loading directories on your machine (the <code>-v</code> parameters) so that exceRpt can read from or write to them.  The directory to the left of each <code>:</code> can obviously be whatever you want, but it is important to make sure the right side of each <code>:</code> is written as above or exceRpt will not be able to find/write the data it needs.</p>
+
+<p>Finally, the last line of the <code>docker run</code> command (<code>INPUT_FILE_PATH=</code>) is a direct call to exceRpt itself.  As such, any customisable options should be specified this way.  For example we could re-order the priority of the transcriptome libraries (for example if we expected a sample to have more long-RNA fragments than miRNAs) using the following call to docker:</p>
+
+<pre><code>docker run -v ~/DirectoryContainingMyInputSample:/exceRptInput \
+           -v ~/DirectoryInWhichToPutMyResults:/exceRptOutput \
+           -v ~/DirectoryContainingMyexceRptDatabase/hg38:/exceRpt_DB/hg38 \
+           -t rkitchen/excerpt \
+           INPUT_FILE_PATH=/exceRptInput/SRR026761.sra \
+           ENDOGENOUS_LIB_PRIORITY=gencode,miRNA,tRNA,piRNA,circRNA
+</code></pre>
+
+<p>We can also use this approach to change the genome to which we are aligning (for example, change to mouse mm10) </p>
+
+<pre><code>docker run -v ~/DirectoryContainingMyInputSample:/exceRptInput \
+           -v ~/DirectoryInWhichToPutMyResults:/exceRptOutput \
+           -v ~/DirectoryContainingMyexceRptDatabase/mm10:/exceRpt_DB/mm10 \
+           -t rkitchen/excerpt \
+           INPUT_FILE_PATH=/exceRptInput/SRR026761.sra \
+           MAIN_ORGANISM_GENOME_ID=mm10
+</code></pre>
 
 <h2>
 <a id="analysis-customisation-options" class="anchor" href="#analysis-customisation-options" aria-hidden="true"><span class="octicon octicon-link"></span></a>Analysis customisation options</h2>
@@ -95,7 +129,6 @@ MAIN_ORGANISM_GENOME_ID     [default 'hg38'] [options: 'hg19', 'hg38', or 'mm10'
 ADAPTER_SEQ                 [default 'guessKnown'] [options: 'none', 'guessKnown', or the actual nucleotide sequence of the 3' adapter]
 MAP_EXOGENOUS               [default 'off'] [options: 'off', 'miRNA', or 'on']
 N_THREADS                   [default '4']
-EXE_DIR                     [location of the pipeline, database, and dependencies]
 </code></pre>
 
 <h2>
@@ -106,9 +139,11 @@ EXE_DIR                     [location of the pipeline, database, and dependencie
 <p>Once all dependencies are installed, the exceRpt pipeline can be run on a human sample (here an SRA binary file) using default parameters using the following skeleton command:</p>
 
 <pre><code>make -f smallRNA_pipeline.mk \
-    INPUT_FILE_PATH=~/DirectoryContainingMyInputSample/HUMAN_SRR822469.fastq \
+    INPUT_FILE_PATH=~/DirectoryContainingMyInputSample/SRR026761.sra \
     OUTPUT_DIR=~/DirectoryInWhichToPutMyResults
 </code></pre>
+
+<p>It is important to properly configure the makefile for this to work.  It is probably a good idea to get in touch with the maintainers using the email address listed at the bottom of the page before embarking on this yourself!</p>
 
 <hr>
 
@@ -288,7 +323,11 @@ EXE_DIR                     [location of the pipeline, database, and dependencie
 <ol>
 <li>Install dependencies</li>
 <li>Download exceRpt database(s)</li>
-<li>Configure the makefile</li>
+<li>
+<p>Configure the makefile, especially the following variable:</p>
+
+<p>EXE_DIR := [location of the pipeline, database, and dependencies]</p>
+</li>
 </ol>
 
 <hr>
