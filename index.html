@@ -22,9 +22,9 @@
       <h1>
 <a id="overview" class="anchor" href="#overview" aria-hidden="true"><span class="octicon octicon-link"></span></a>Overview</h1>
 
-<p>The <strong>ex</strong>tra-<strong>ce</strong>llular <strong>R</strong>NA <strong>p</strong>rocessing <strong>t</strong>oolkit (<strong>exceRpt</strong>) was designed to handle the variable contamination and often poor quality data obtained from low input smallRNA-seq samples such as those obtained from extra-cellular preparations.  However the tool is perfectly capable of processing data from more standard cellular preparations and, with minor modifications to the command-line call, is also capable of processing WGS/exome and long RNA-seq data.</p>
+<p>The <strong>ex</strong>tra-<strong>ce</strong>llular <strong>R</strong>NA <strong>p</strong>rocessing <strong>t</strong>oolkit (<strong>exceRpt</strong>) was designed to handle the variable contamination and often poor quality data obtained from low input <strong>smallRNA-seq</strong> samples such as those obtained from <strong>extra-cellular</strong> preparations.  However the tool is perfectly capable of processing data from more standard <strong>cellular</strong> preparations and, with minor modifications to the command-line call, is also capable of processing <strong>WGS/exome</strong> and <strong>long RNA-seq</strong> data.</p>
 
-<p>The schematic diagram below details the various stages of the exceRpt pipeline including pre-processing of the raw reads, removal of nuisance contamination, alignment to the endogenous (human/mouse) genome and annotated transcriptome, and finally alignment to a large number of exogenous sequences for detection of foreign nucleic acids.</p>
+<p>The schematic diagram below details the various stages of the exceRpt pipeline including <strong>pre-processing</strong> of the raw reads, <strong>contaminant removal</strong>, alignment to the <strong>endogenous</strong> (human/mouse) genome and annotated transcriptome, and finally alignment to a large number of <strong>exogenous</strong> sequences for detection of foreign nucleic acids.</p>
 
 <p><img src="https://dl.dropboxusercontent.com/u/2696693/exceRpt_workflow.png" alt="exceRpt workflow diagram"></p>
 
@@ -46,9 +46,12 @@
 <p>As with the manual installation described below, <strong>you will also need to download the pre-compiled genome and transcriptome indices</strong> for exceRpt to use.  These are too large to be included in the Docker image, but using these links you can download the exceRpt database files:</p>
 
 <ul>
-<li>human (<a href="http://homes.gersteinlab.org/people/rrk24/exceRpt/exceRptDB_hg19.tgz">hg19</a>); </li>
-<li>human (<a href="http://homes.gersteinlab.org/people/rrk24/exceRpt/exceRptDB_hg38.tgz">hg38</a>);</li>
-<li>mouse (<a href="http://homes.gersteinlab.org/people/rrk24/exceRpt/exceRptDB_mm10.tgz">mm10</a>).</li>
+<li>
+<a href="http://homes.gersteinlab.org/people/rrk24/exceRpt/exceRptDB_hg19.tgz">human hg19</a>; </li>
+<li>
+<a href="http://homes.gersteinlab.org/people/rrk24/exceRpt/exceRptDB_hg38.tgz">human hg38</a>;</li>
+<li>
+<a href="http://homes.gersteinlab.org/people/rrk24/exceRpt/exceRptDB_mm10.tgz">mouse mm10</a>.</li>
 </ul>
 
 <p>Once you have downloaded the desired genome database and have successfully installed and started Docker on your machine/cluster/AWS-instance only a few commands are required to install and run exceRpt.  </p>
