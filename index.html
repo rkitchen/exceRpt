@@ -19,8 +19,8 @@
     </section>
 
     <section class="main-content">
-      <h2>
-<a id="overview" class="anchor" href="#overview" aria-hidden="true"><span class="octicon octicon-link"></span></a>Overview</h2>
+      <h1>
+<a id="overview" class="anchor" href="#overview" aria-hidden="true"><span class="octicon octicon-link"></span></a>Overview</h1>
 
 <p>The <strong>ex</strong>tra-<strong>ce</strong>llular <strong>R</strong>NA <strong>p</strong>rocessing <strong>t</strong>oolkit (<strong>exceRpt</strong>) was designed to handle the variable contamination and often poor quality data obtained from low input smallRNA-seq samples such as those obtained from extra-cellular preparations.  However the tool is perfectly capable of processing data from cellular sources and, with minor modifications to the command-line call, is also capable of processing WGS/exome and long RNA-seq data too.</p>
 
@@ -30,78 +30,51 @@
 
 <hr>
 
-<h2>
-<a id="software" class="anchor" href="#software" aria-hidden="true"><span class="octicon octicon-link"></span></a>Software</h2>
-
-<h3>
-<a id="smallrna_pipelinemk" class="anchor" href="#smallrna_pipelinemk" aria-hidden="true"><span class="octicon octicon-link"></span></a>smallRNA_pipeline.mk</h3>
-
-<p>This makefile choreographs the processing, filtering, and alignment of a single smallRNA-seq sample.</p>
-
-<h3>
-<a id="mergepipelinerunsr" class="anchor" href="#mergepipelinerunsr" aria-hidden="true"><span class="octicon octicon-link"></span></a>mergePipelineRuns.R</h3>
-
-<p>This script will take as input a directory containing 1 or more subdirectories or zipfiles containing output from the makefile above. In this way, results from 1 or more smallRNA-seq samples can be combined, several QC plots are generated, and the read-counts are normalised ready for downstream analysis by clustering and/or differential expression.</p>
-
-<hr>
+<h1>
+<a id="how-to-use-excerpt" class="anchor" href="#how-to-use-excerpt" aria-hidden="true"><span class="octicon octicon-link"></span></a>How to use exceRpt</h1>
 
 <h2>
-<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h2>
+<a id="genboreeorg" class="anchor" href="#genboreeorg" aria-hidden="true"><span class="octicon octicon-link"></span></a>Genboree.org</h2>
 
-<h3>
-<a id="smallrna_pipelinemk-1" class="anchor" href="#smallrna_pipelinemk-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>smallRNA_pipeline.mk</h3>
-
-<p>This requires numerous dependences that require some familiarity with UNIX.  The software is installed on the Genboree Workbench (<a href="http://www.genboree.org">www.genboree.org</a>) which provides a graphical interface to the pipeline that is free for academic use.  Alternatively, development of a Docker image for this software is ongoing, if you are interested in this please feel free to get in touch using the email address below.</p>
-
-<h3>
-<a id="dependencies" class="anchor" href="#dependencies" aria-hidden="true"><span class="octicon octicon-link"></span></a>Dependencies</h3>
-
-<h4>
-<a id="core-dependencies" class="anchor" href="#core-dependencies" aria-hidden="true"><span class="octicon octicon-link"></span></a>Core dependencies</h4>
-
-<p><a href="https://java.com/en/download">Java v1.6+</a></p>
-
-<p><a href="http://hannonlab.cshl.edu/fastx_toolkit">fastx v0.0.14+</a></p>
-
-<p><a href="http://bowtie-bio.sourceforge.net/index.shtml">bowtie v1.1.1+</a></p>
-
-<p><a href="http://bowtie-bio.sourceforge.net/bowtie2/index.shtml">bowtie2 v2.2.4+</a></p>
-
-<p><a href="http://sourceforge.net/projects/samtools/files/samtools">samtools v1.1+</a></p>
-
-<p><a href="http://www.bioinformatics.babraham.ac.uk/projects/fastqc">fastQC v0.11.2+</a></p>
-
-<h4>
-<a id="optional-dependencies" class="anchor" href="#optional-dependencies" aria-hidden="true"><span class="octicon octicon-link"></span></a>Optional dependencies</h4>
-
-<p><a href="https://github.com/ncbi/sra-tools">sratoolkit v2.5.1+</a> - required for processing .sra files from NCBI archival data</p>
-
-<p><a href="https://github.com/alexdobin/STAR/releases">STAR v2.4.2a+</a> - required for most exogenous alignments</p>
-
-<h3>
-<a id="mergepipelinerunsr-1" class="anchor" href="#mergepipelinerunsr-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>mergePipelineRuns.R</h3>
-
-<p>This script is comparatively much simpler to install.  Once the R software (<a href="http://cran.r-project.org/">http://cran.r-project.org/</a>) is set up on your system the script should automatically identify and install all required dependencies.  Again, this script is available on the Genboree Workbench (<a href="http://www.genboree.org">www.genboree.org</a>) and is also free for academic use.</p>
-
-<hr>
+<p>Signing up for an account on <a href="http://genboree.org">Genboree.org</a> is by far the fastest way to start using exceRpt.  The Genboree Workbench provides a graphical interface to exceRpt that is free for academic use.  Set up a free account to use the <a href="http://genboree.org/java-bin/login.jsp">Genboree Workbench</a>, upload some data, and start using exceRpt, all via the browser (<a href="http://genboree.org/theCommons/projects/exrna-tools-may2014/wiki/Small%20RNA-seq%20Pipeline">instructions available here</a>).</p>
 
 <h2>
-<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage</h2>
+<a id="docker" class="anchor" href="#docker" aria-hidden="true"><span class="octicon octicon-link"></span></a>Docker</h2>
 
-<h3>
-<a id="genboree-workbench" class="anchor" href="#genboree-workbench" aria-hidden="true"><span class="octicon octicon-link"></span></a>Genboree Workbench</h3>
+<p>Slightly more effort to get set up than using Genboree, but using the <a href="https://www.docker.com">Docker</a> image is the best way to use exceRpt on your own machine/cluster.  The <a href="https://hub.docker.com/r/rkitchen/excerpt">exceRpt Docker image</a> is pre-baked with all required dependencies and should 'just work' with minimal installation.  Docker is native on Red Hat Enterprise Linux distributions (RHEL) and also available on Amazon, enabling exceRpt to be run in the cloud.  Instructions are available for installing Docker on <a href="http://docs.docker.com/mac/started">Mac OS X</a>, <a href="http://docs.docker.com/linux/started">Linux</a>, <a href="http://docs.docker.com/windows/started">Windows</a>, and <a href="http://docs.aws.amazon.com/AmazonECS/latest/developerguide/docker-basics.html">Amazon Web Services</a>. </p>
 
-<p>Set up a free account to use the <a href="http://genboree.org/java-bin/login.jsp">Genboree Workbench</a>, upload some data, and start using exceRpt, all via the browser (<a href="http://genboree.org/theCommons/projects/exrna-tools-may2014/wiki/Small%20RNA-seq%20Pipeline">instructions available here</a>).</p>
+<p>As with the manual installation described below, <strong>you will also need to download the pre-compiled genome and transcriptome indices</strong> for exceRpt to use.  These are too large to be included in the Docker image, but using these links you can download the human (<a href="http://homes.gersteinlab.org/people/rrk24/exceRpt/exceRptDB_hg19.tgz">hg19</a> and <a href="http://homes.gersteinlab.org/people/rrk24/exceRpt/exceRptDB_hg38.tgz">hg38</a>) and mouse (<a href="http://homes.gersteinlab.org/people/rrk24/exceRpt/exceRptDB_mm10.tgz">mm10</a>) exceRpt database files.</p>
 
-<h3>
-<a id="local-installation" class="anchor" href="#local-installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Local installation</h3>
+<p>Once you have downloaded the desired genome database and have successfully installed and started Docker on your machine/cluster/AWS-instance only a few commands are required to install and run exceRpt.  </p>
 
-<p>Once all dependencies are installed, the exceRpt pipeline can be run on a human sample (here an SRA binary file) using default parameters using the following skeleton command:</p>
+<p>To download the exceRpt Docker image, type:</p>
 
-<pre><code>make -f smallRNA_pipeline.mk INPUT_FILE_PATH=./SRR026761.sra OUTPUT_DIR=./output/
+<pre><code>docker pull rkitchen/excerpt
 </code></pre>
 
-<p>There are a number of options available for customising the analysis:</p>
+<p>To download the exceRpt database for your genome/species of interest (currently one of hg19, hg39, or mm10) use the following commands.  Here we'll download the latest build of the human genome and transcriptome (hg38):</p>
+
+<pre><code>mkdir ~/DirectoryContainingMyexceRptDatabase
+cd ~/DirectoryContainingMyexceRptDatabase
+wget http://homes.gersteinlab.org/people/rrk24/exceRpt/exceRptDB_hg38.tgz
+tar -xvf exceRptDB_hg38.tgz
+</code></pre>
+
+<p>To run a fastq sample (located in <code>~/DirectoryContainingMyInputSample/HUMAN_SRR822469.fastq</code>) through the exceRpt pipeline, aligning to the hg38 genome+transcriptome we just downloaded:</p>
+
+<pre><code>docker run -v ~/DirectoryContainingMyInputSample:/exceRptInput \
+           -v ~/DirectoryInWhichToPutMyResults:/exceRptOutput \
+           -v ~/DirectoryContainingMyexceRptDatabase/hg38:/exceRpt_DB/hg38 \
+           -t rkitchen/excerpt \
+           INPUT_FILE_PATH=/exceRptInput/HUMAN_SRR822469.fastq
+</code></pre>
+
+<p><strong>BEWARE</strong>, exceRpt requires about <strong>10GB of RAM</strong> in order to function properly, runs on machines with less than this amount of available memory will very likely fail.</p>
+
+<h2>
+<a id="analysis-customisation-options" class="anchor" href="#analysis-customisation-options" aria-hidden="true"><span class="octicon octicon-link"></span></a>Analysis customisation options</h2>
+
+<p>There are a number of options available for customising the analysis that are specified using the command-line.  These are a list of the most commonly-modified options and their default values.</p>
 
 <pre><code>OUTPUT_DIR                  [default 'NULL']
 INPUT_FILE_PATH             [default 'NULL']
@@ -111,15 +84,202 @@ RANDOM_BARCODE_LOCATION     [default '-5p -3p'] [options: '-5p', '-3p', or '-5p 
 ENDOGENOUS_LIB_PRIORITY     [default 'miRNA,tRNA,piRNA,gencode,circRNA']
 MAIN_ORGANISM_GENOME_ID     [default 'hg38'] [options: 'hg19', 'hg38', or 'mm10']
 ADAPTER_SEQ                 [default 'guessKnown'] [options: 'none', 'guessKnown', or the actual nucleotide sequence of the 3' adapter]
-MAP_EXOGENOUS               [default 'on'] [options: 'off', 'miRNA', or 'on']
-N_THREADS                   [default '8']
+MAP_EXOGENOUS               [default 'off'] [options: 'off', 'miRNA', or 'on']
+N_THREADS                   [default '4']
 EXE_DIR                     [location of the pipeline, database, and dependencies]
+</code></pre>
+
+<h2>
+<a id="manual-installation" class="anchor" href="#manual-installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Manual installation</h2>
+
+<p>This is the most labour-intensive mode of using exceRpt, but it offers the most flexibility.  Generally not recommended unless you are very familiar with the *NIX environment, shell scripting, and makefile syntax.  Detailed instructions on how to install exceRpt and its various dependencies will [one day] be listed toward the bottom of this page.</p>
+
+<p>Once all dependencies are installed, the exceRpt pipeline can be run on a human sample (here an SRA binary file) using default parameters using the following skeleton command:</p>
+
+<pre><code>make -f smallRNA_pipeline.mk \
+    INPUT_FILE_PATH=~/DirectoryContainingMyInputSample/HUMAN_SRR822469.fastq \
+    OUTPUT_DIR=~/DirectoryInWhichToPutMyResults
 </code></pre>
 
 <hr>
 
+<h1>
+<a id="processing-excerpt-output-from-multiple-samples" class="anchor" href="#processing-excerpt-output-from-multiple-samples" aria-hidden="true"><span class="octicon octicon-link"></span></a>Processing exceRpt output from multiple samples</h1>
+
+<p>Also provided is a script to combine output from multiple samples run through the exceRpt pipeline.  The script (<code>mergePipelineRuns.R</code>) will take as input a directory containing 1 or more subdirectories or zipfiles containing output from the makefile above. In this way, results from 1 or more smallRNA-seq samples can be combined, several QC plots are generated, and the read-counts are normalised ready for downstream analysis by clustering and/or differential expression.</p>
+
 <h2>
-<a id="support" class="anchor" href="#support" aria-hidden="true"><span class="octicon octicon-link"></span></a>Support</h2>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h2>
+
+<p>This script is comparatively much simpler to install.  Once the R software (<a href="http://cran.r-project.org/">http://cran.r-project.org/</a>) is set up on your system the script should automatically identify and install all required dependencies.  Again, this script is available on the Genboree Workbench (<a href="http://www.genboree.org">www.genboree.org</a>) and is also free for academic use.</p>
+
+<h2>
+<a id="using-the-script" class="anchor" href="#using-the-script" aria-hidden="true"><span class="octicon octicon-link"></span></a>Using the script</h2>
+
+<h3>
+<a id="on-the-command-line" class="anchor" href="#on-the-command-line" aria-hidden="true"><span class="octicon octicon-link"></span></a>On the command line</h3>
+
+<p>The Rscript application provides a neat means of running the script:</p>
+
+<pre><code>Rscript mergePipelineRuns.R ~/DirectoryContainingMyexceRptRuns
+</code></pre>
+
+<p>Here, the directory in which the script will search for valid exceRpt output (<code>~/DirectoryContainingMyexceRptRuns</code>) should be the same as the (<code>~/DirectoryInWhichToPutMyResults</code>) specific when running each sample through exceRpt.</p>
+
+<h3>
+<a id="interactively-in-r" class="anchor" href="#interactively-in-r" aria-hidden="true"><span class="octicon octicon-link"></span></a>Interactively in R</h3>
+
+<p>Alternatively in an interactive R session, the merge can be performed using the following two commands:</p>
+
+<pre><code>&gt; source("mergePipelineRuns_functions.R")
+&gt; processSamplesInDir(data.dir, output.dir)
+</code></pre>
+
+<p>Apart from some status messages, warnings, or possibly errors, no R objects are output from this function.  Instead several files are created that are described immediately below...</p>
+
+<h2>
+<a id="script-output" class="anchor" href="#script-output" aria-hidden="true"><span class="octicon octicon-link"></span></a>Script output</h2>
+
+<p>Several files are output by the script in the location of the input exceRpt results (or somewhere else if explicitly specified).  All output files are prefixed with 'exceRpt_' and contain a variety of information regarding all samples input:</p>
+
+<table>
+<thead>
+<tr>
+<th>File Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>QC data:</strong></td>
+<td></td>
+</tr>
+<tr>
+<td><code>exceRpt_DiagnosticPlots.pdf</code></td>
+<td>All <strong>diagnostic plots</strong> automatically generated by the merge script</td>
+</tr>
+<tr>
+<td><code>exceRpt_readMappingSummary.txt</code></td>
+<td>
+<strong>Read-alignment summary</strong> including total counts for each library</td>
+</tr>
+<tr>
+<td><code>exceRpt_ReadLengths.txt</code></td>
+<td>
+<strong>Read-lengths</strong> (after 3' adapters/barcodes are removed)</td>
+</tr>
+<tr>
+<td><strong>Transcriptome quantifications:</strong></td>
+<td></td>
+</tr>
+<tr>
+<td><code>exceRpt_miRNA_ReadCounts.txt</code></td>
+<td>
+<strong>Raw miRNA</strong> read-counts</td>
+</tr>
+<tr>
+<td><code>exceRpt_miRNA_ReadsPerMillion.txt</code></td>
+<td>
+<strong>Normalised miRNA</strong> quantifications</td>
+</tr>
+<tr>
+<td><code>exceRpt_tRNA_ReadCounts.txt</code></td>
+<td>
+<strong>Raw tRNA</strong> read-counts</td>
+</tr>
+<tr>
+<td><code>exceRpt_tRNA_ReadsPerMillion.txt</code></td>
+<td>
+<strong>Normalised tRNA</strong> quantifications</td>
+</tr>
+<tr>
+<td><code>exceRpt_piRNA_ReadCounts.txt</code></td>
+<td>
+<strong>Raw piRNA</strong> read-counts</td>
+</tr>
+<tr>
+<td><code>exceRpt_piRNA_ReadsPerMillion.txt</code></td>
+<td>
+<strong>Normalised piRNA</strong> quantifications</td>
+</tr>
+<tr>
+<td><code>exceRpt_gencode_ReadCounts.txt</code></td>
+<td>
+<strong>Raw gencode</strong> read-counts</td>
+</tr>
+<tr>
+<td><code>exceRpt_gencode_ReadsPerMillion.txt</code></td>
+<td>
+<strong>Normalised gencode</strong> quantifications</td>
+</tr>
+<tr>
+<td><code>exceRpt_circularRNA_ReadCounts.txt</code></td>
+<td>
+<strong>Raw circularRNA</strong> read-counts</td>
+</tr>
+<tr>
+<td><code>exceRpt_circularRNA_ReadsPerMillion.txt</code></td>
+<td>
+<strong>Normalised circularRNA</strong> quantifications</td>
+</tr>
+<tr>
+<td><strong>R objects:</strong></td>
+<td></td>
+</tr>
+<tr>
+<td><code>exceRpt_smallRNAQuants_ReadCounts.RData</code></td>
+<td><strong>All raw data (binary R object)</strong></td>
+</tr>
+<tr>
+<td><code>exceRpt_smallRNAQuants_ReadsPerMillion.RData</code></td>
+<td><strong>All normalised data (binary R object)</strong></td>
+</tr>
+</tbody>
+</table>
+
+<hr>
+
+<h1>
+<a id="manual-installation-1" class="anchor" href="#manual-installation-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>Manual Installation</h1>
+
+<h2>
+<a id="dependencies" class="anchor" href="#dependencies" aria-hidden="true"><span class="octicon octicon-link"></span></a>Dependencies</h2>
+
+<h3>
+<a id="core-dependencies" class="anchor" href="#core-dependencies" aria-hidden="true"><span class="octicon octicon-link"></span></a>Core dependencies</h3>
+
+<ul>
+<li><a href="https://java.com/en/download">Java v1.6+</a></li>
+<li><a href="http://hannonlab.cshl.edu/fastx_toolkit">fastx v0.0.14+</a></li>
+<li><a href="http://bowtie-bio.sourceforge.net/index.shtml">bowtie v1.1.1+</a></li>
+<li><a href="http://bowtie-bio.sourceforge.net/bowtie2/index.shtml">bowtie2 v2.2.4+</a></li>
+<li><a href="http://sourceforge.net/projects/samtools/files/samtools">samtools v1.1+</a></li>
+<li><a href="http://www.bioinformatics.babraham.ac.uk/projects/fastqc">fastQC v0.11.2+</a></li>
+</ul>
+
+<h3>
+<a id="optional-dependencies" class="anchor" href="#optional-dependencies" aria-hidden="true"><span class="octicon octicon-link"></span></a>Optional dependencies</h3>
+
+<ul>
+<li>
+<a href="https://github.com/ncbi/sra-tools">sratoolkit v2.5.1+</a> - required for processing .sra files from NCBI archival data</li>
+<li>
+<a href="https://github.com/alexdobin/STAR/releases">STAR v2.4.2a+</a> - required for most exogenous alignments</li>
+</ul>
+
+<h2>
+<a id="installation-steps-incomplete" class="anchor" href="#installation-steps-incomplete" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation steps (incomplete)</h2>
+
+<ol>
+<li>Install dependencies</li>
+<li>Download exceRpt database(s)</li>
+<li>Configure the makefile</li>
+</ol>
+
+<hr>
+
+<h1>
+<a id="support" class="anchor" href="#support" aria-hidden="true"><span class="octicon octicon-link"></span></a>Support</h1>
 
 <p>Rob Kitchen; rob [dot] kitchen [at] yale [dot] edu</p>
 
