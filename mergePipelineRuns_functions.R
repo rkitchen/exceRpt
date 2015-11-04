@@ -4,7 +4,7 @@
 ##                                                                                      ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                           ##
 ##                                                                                      ##
-## Version 3.2.0 (2015-11-02)                                                           ##
+## Version 3.2.1 (2015-11-03)                                                           ##
 ##                                                                                      ##
 ##########################################################################################
 
@@ -87,17 +87,28 @@ SearchForSampleData = function(base.dir, directory=""){
 }
 
 
+##
+## Prints the given message with a timestamp
+##
+printMessage = function(message=""){
+  cat(as.character(Sys.time()),":  ",paste(message,sep=""),"\n",sep="")
+}
 
 
+
+##
+##
+##
 processSamplesInDir = function(data.dir, output.dir=data.dir){
-  ##
+  
   ##  -- Kill script if we do not have any samples to process
-  ##
+  printMessage("Searching for valid exceRpt pipeline output...")
   samplePathList = SearchForSampleData(data.dir,"")
   NumberOfCompatibleSamples = length(samplePathList)
   stopifnot(NumberOfCompatibleSamples > 0)
-  
+  printMessage(c("Found ",NumberOfCompatibleSamples," valid samples"))
 
+  
   ##
   ## Create objects to contain the data
   ##
@@ -117,6 +128,7 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   ##
   ## Loop through all samples and read the pipeline output
   ##
+  printMessage(c("Reading sample data..."))
   removeSamples = NULL
   for(i in 1:length(samplePathList)){
     ## Parse the sampleID from the path:
@@ -135,7 +147,7 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
     }else{
       continue = F
       removeSamples = c(removeSamples, i)
-      cat("[",i,"/",length(samplePathList),"] WARNING: Incomplete run for sample \'",thisSampleID,"\', ignoring\n",sep="")
+      printMessage(c("[",i,"/",length(samplePathList),"] WARNING: Incomplete run for sample \'",thisSampleID,"\', ignoring"))
     }
     
     if(continue == T){
@@ -272,16 +284,21 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
           allIDs.exogenous_genomes = unique(c(allIDs.exogenous_genomes, as.character(rownames(sample.data[[i]]$exogenous_genomes))))
         }
       }
-      cat("[",i,"/",length(samplePathList),"] Added sample \'",thisSampleID,"\'\n",sep="")
+      printMessage(c("[",i,"/",length(samplePathList),"] Added sample \'",thisSampleID,"\'"))
     }
   }
+  
+  
   
   ##
   ## Remove failed/incomplete samples
   ##
-  read.lengths = read.lengths[-removeSamples, ]
-  sample.data = sample.data[-removeSamples]
-  mapping.stats = mapping.stats[-removeSamples,]
+  stopifnot(length(removeSamples) < length(sample.data))
+  if(length(removeSamples) > 0){
+    read.lengths = read.lengths[-removeSamples, ]
+    sample.data = sample.data[-removeSamples]
+    mapping.stats = mapping.stats[-removeSamples,]
+  }
   
   
   
@@ -301,6 +318,7 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   ##
   ## Convert sample data to large per-smallRNA expression matrices
   ##
+  printMessage("Creating raw read-count matrices for available libraries")
   #run.duration = data.frame(runDuration_string=rep("",length(sample.data)), runDuration_secs=rep(0,length(sample.data)),stringsAsFactors = F)
   run.duration = data.frame(runDuration_secs=rep(0,length(sample.data)),stringsAsFactors = F)
   rownames(run.duration) = names(sample.data)
@@ -342,6 +360,7 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   ##
   ## Save the raw count data
   ##
+  printMessage("Saving raw data to disk")
   #save(exprs.miRNA, exprs.tRNA, exprs.piRNA, exprs.gencode, exprs.circRNA, exprs.exogenous_miRNA, exprs.exogenous_genomes, mapping.stats, libSizes, read.lengths, file=paste(output.dir, "exceRpt_smallRNAQuants_ReadCounts.RData", sep="/"))
   save(exprs.miRNA, exprs.tRNA, exprs.piRNA, exprs.gencode, exprs.circRNA, exprs.exogenousGenomes_speciesSpecific, exprs.exogenousGenomes_kingdomSpecific, mapping.stats, libSizes, read.lengths, file=paste(output.dir, "exceRpt_smallRNAQuants_ReadCounts.RData", sep="/"))
   write.table(exprs.miRNA, file=paste(output.dir, "exceRpt_miRNA_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
@@ -409,6 +428,7 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   ##
   ## Open PDF for diagnostic plots
   ##
+  printMessage("Creating QC plots")
   pdf(paste(output.dir,"exceRpt_DiagnosticPlots.pdf",sep="/"), height=10, width=20)
   #tiff(paste(output.dir,"DiagnosticPlots.tiff",sep="/"))
   
@@ -420,7 +440,7 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   tmp = tmp[1:max(which(tmp$count > 0)), ]
   p = ggplot(tmp, aes(x=length, y=count, colour=sample)) +geom_line(alpha=0.75) +xlab("read length (nt)") +ylab("# reads") +ggtitle("read-length distributions") +xlim(14,min(c(75,max(tmp$length))))
   if(nrow(read.lengths) > 30){ p = p +guides(colour=FALSE) }
-  p
+  print(p)
   #ggplot(tmp, aes(x=as.factor(length), y=count)) +geom_violin()
   #ggplot(tmp, aes(x=as.factor(length), y=count)) +geom_boxplot()
   
@@ -428,13 +448,11 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   ##
   ## plot distribution of clipped read lengths - fraction
   ##
-  
-  
   tmp = melt(t(apply(read.lengths, 1, function(row){ row/sum(row) }))); colnames(tmp) = c("sample","length","fraction")
   tmp = tmp[1:max(which(tmp$fraction > 0)), ]
   p = ggplot(tmp, aes(x=length, y=fraction, colour=sample)) +geom_line(alpha=0.75) +xlab("read length (nt)") +ylab("fraction of reads") +ggtitle("read-length distributions") +xlim(14,min(c(75,max(tmp$length))))
   if(nrow(read.lengths) > 30){ p = p +guides(colour=FALSE) }
-  p
+  print(p)
   
   
   ##
@@ -451,9 +469,11 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   tmp$colour[tmp$colour == 1] = "red"
   tmp$colour[tmp$colour == 2] = "green"
   tmp$colour[tmp$colour == 3] = "blue"
-  ggplot(tmp, aes(x=sampleID,y=runDuration_seconds,fill=colour)) +geom_bar(stat="identity") +facet_grid(~category,scales="free_x",space="free_x") +guides(fill=FALSE)
-  ggplot(tmp, aes(x=inputReadCount,y=runDuration_seconds,colour=colour)) +geom_point(size=10) +guides(colour=FALSE) +scale_x_log10() +scale_y_log10(limits=c(1,10^ceiling(log10(max(tmp$runDuration_seconds)))), breaks=10^seq(1:ceiling(log10(max(tmp$runDuration_seconds)))))
+  p = ggplot(tmp, aes(x=sampleID,y=runDuration_seconds,fill=colour)) +geom_bar(stat="identity") +facet_grid(~category,scales="free_x",space="free_x") +guides(fill=FALSE) +theme(axis.text.x=element_text(angle=90, hjust=1,vjust=0.5))
+  print(p)
   
+  p = ggplot(tmp, aes(x=inputReadCount,y=runDuration_seconds,colour=colour)) +geom_point(size=10) +guides(colour=FALSE) +scale_y_log10(limits=c(1,10^ceiling(log10(max(tmp$runDuration_seconds)))), breaks=10^seq(1:ceiling(log10(max(tmp$runDuration_seconds))))) +scale_x_log10(limits=c(min(c(100000,10^floor(log10(min(tmp$inputReadCount))))),10^ceiling(log10(max(tmp$inputReadCount)))), breaks=10^seq(min(c(100000,floor(log10(min(tmp$inputReadCount))))),ceiling(log10(max(tmp$inputReadCount)))))
+  print(p)
   
   
   ##
@@ -482,7 +502,7 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   toplot$Sample = factor(as.character(toplot$Sample), levels=rownames(mapping.stats)[sampleOrder])
   p = ggplot(toplot, aes(x=Sample, y=Stage, group=Sample, fill=ReadFraction, label=sprintf("%1.1f%%",ReadFraction*100))) +geom_tile() +scale_fill_gradient2(low="white",high="yellow",mid="steelblue", midpoint=0.5) +theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5)) +ggtitle("fraction aligned reads (normalised by # input reads)")
   if(nrow(mapping.stats) < 50){ p = p +geom_text(size=3) }
-  p
+  print(p)
   
   ##
   ## Plot heatmap of mapping percentages through the pipeline
@@ -492,7 +512,7 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   toplot$Sample = factor(as.character(toplot$Sample), levels=rownames(mapping.stats)[sampleOrder])
   p = ggplot(toplot, aes(x=Sample, y=Stage, group=Sample, fill=ReadFraction, label=sprintf("%1.1f%%",ReadFraction*100))) +geom_tile() +scale_fill_gradient2(low="white",high="yellow",mid="steelblue", midpoint=0.5) +theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5)) +ggtitle("fraction aligned reads (normalised by # adapter-clipped reads)")
   if(nrow(mapping.stats) < 50){ p = p +geom_text(size=3) }
-  p
+  print(p)
   
   ##
   ## Plot heatmap of mapping percentages through the pipeline
@@ -502,7 +522,7 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   toplot$Sample = factor(as.character(toplot$Sample), levels=rownames(mapping.stats)[sampleOrder])
   p = ggplot(toplot, aes(x=Sample, y=Stage, group=Sample, fill=ReadFraction, label=sprintf("%1.1f%%",ReadFraction*100))) +geom_tile() +scale_fill_gradient2(low="white",high="yellow",mid="steelblue", midpoint=0.5) +theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5)) +ggtitle("fraction aligned reads (normalised by # non-contaminant reads)")
   if(nrow(mapping.stats) < 50){ p = p +geom_text(size=3) }
-  p
+  print(p)
   
   
   
@@ -553,8 +573,8 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   sampleTotals = sampleTotals[order(apply(sampleTotals, 1, median, na.rm=T), decreasing=F), ,drop=F]
   tmp = melt(as.matrix(sampleTotals))
   colnames(tmp) = c("biotype","sampleID","readCount")
-  ggplot(na.omit(tmp), aes(y=readCount,x=biotype, colour=biotype)) +geom_hline(y=1,linetype="dashed") +geom_boxplot() +scale_y_log10(breaks=c(0.01,0.1,1,10,100,1000,10000,100000,1000000,10000000,100000000)) +guides(colour=FALSE) +coord_flip()
-  
+  p = ggplot(na.omit(tmp), aes(y=readCount,x=biotype, colour=biotype)) +geom_hline(y=1,linetype="dashed") +geom_boxplot() +scale_y_log10(breaks=c(0.01,0.1,1,10,100,1000,10000,100000,1000000,10000000,100000000)) +guides(colour=FALSE) +coord_flip()
+  print(p)
   
   
   
@@ -584,21 +604,21 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
     colnames(tmp) = c("miRNA","sample","abundance")
     p = ggplot(tmp, aes(y=abundance, x=sample, colour=sample)) +geom_violin() +geom_boxplot(alpha=0.2) +ylab("Read count") +ggtitle("miRNA abundance distributions (raw counts)") +theme(axis.ticks = element_blank(), axis.text.x = element_blank()) +scale_y_log10()
     if(ncol(exprs.miRNA.rpm) > 30){ p = p +guides(colour=FALSE) }
-    p
+    print(p)
     
     p = ggplot(tmp, aes(x=abundance, colour=sample)) +geom_density() +xlab("Read count") +ggtitle("miRNA abundance distributions (raw counts)") +scale_x_log10()
     if(ncol(exprs.miRNA.rpm) > 30){ p = p +guides(colour=FALSE) }
-    p
+    print(p)
     
     tmp = melt(exprs.miRNA.rpm)
     colnames(tmp) = c("miRNA","sample","abundance")
     p = ggplot(tmp, aes(y=abundance, x=sample, colour=sample)) +geom_violin() +geom_boxplot(alpha=0.2) +ylab("Reads per million (RPM)") +ggtitle("miRNA abundance distributions (RPM)") +theme(axis.ticks = element_blank(), axis.text.x = element_blank()) +scale_y_log10()
     if(ncol(exprs.miRNA.rpm) > 30){ p = p +guides(colour=FALSE) }
-    p
+    print(p)
     
     p = ggplot(tmp, aes(x=abundance, colour=sample)) +geom_density() +xlab("Reads per million (RPM)") +ggtitle("miRNA abundance distributions (RPM)") +scale_x_log10()
     if(ncol(exprs.miRNA.rpm) > 30){ p = p +guides(colour=FALSE) }
-    p
+    print(p)
   }
   
   
@@ -624,6 +644,7 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   ##
   ## Save the RPM normalised data
   ##
+  printMessage("Saving normalised data to disk")
   #save(exprs.miRNA.rpm, exprs.tRNA.rpm, exprs.piRNA.rpm, exprs.gencode.rpm, exprs.exogenous_miRNA.rpm, exprs.exogenous_genomes.rpm, file=paste(output.dir, "exceRpt_smallRNAQuants_ReadsPerMillion.RData", sep="/"))
   save(exprs.miRNA.rpm, exprs.tRNA.rpm, exprs.piRNA.rpm, exprs.gencode.rpm, exprs.exogenousGenomes_speciesSpecific.rpm, exprs.exogenousGenomes_kingdomSpecific.rpm, file=paste(output.dir, "exceRpt_smallRNAQuants_ReadsPerMillion.RData", sep="/"))
   write.table(exprs.miRNA.rpm, file=paste(output.dir, "exceRpt_miRNA_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
@@ -633,4 +654,5 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   write.table(exprs.exogenousGenomes_speciesSpecific.rpm, file=paste(output.dir, "exceRpt_exogenousGenomes_speciesSpecific_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
   write.table(exprs.exogenousGenomes_kingdomSpecific.rpm, file=paste(output.dir, "exceRpt_exogenousGenomes_kingdomSpecific_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
   
+  printMessage("All done!")
 }
