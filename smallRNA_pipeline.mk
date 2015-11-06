@@ -98,7 +98,8 @@ ifeq ($(LOCAL_EXECUTION),true)
 	SAMTOOLS_EXE          := $(EXE_DIR)/samtools-1.1/samtools
 	FASTQC_EXE            := $(JAVA_EXE) -classpath $(EXE_DIR)/FastQC_0.11.2:$(EXE_DIR)/FastQC_0.11.2/sam-1.103.jar:$(EXE_DIR)/FastQC_0.11.2/jbzip2-0.9.jar
 	SRATOOLS_EXE          := $(EXE_DIR)/sratoolkit.2.5.1-centos_linux64/bin/fastq-dump
-	THUNDER_EXE           := $(EXE_DIR)/Thunder.jar
+	#THUNDER_EXE           := $(EXE_DIR)/Thunder.jar
+	EXCERPT_TOOLS_EXE     := $(EXE_DIR)/exceRpt_Tools.jar
 	DATABASE_PATH         := $(EXE_DIR)/DATABASE
 	STAR_EXE              := $(EXE_DIR)/STAR_2.4.2a/bin/Linux_x86_64/STAR
 	STAR_GENOMES_DIR      := /gpfs/scratch/fas/gerstein/rrk24/ANNOTATIONS/Genomes_BacteriaFungiMammalPlantProtistVirus
@@ -130,7 +131,7 @@ else
 	FASTQC_EXE := $(JAVA_EXE) -classpath $(FASTQC_EXE_DIR):$(FASTQC_EXE_DIR)/sam-1.103.jar:$(FASTQC_EXE_DIR)/jbzip2-0.9.jar
 	SRATOOLS_EXE := fastq-dump
 	SRNABENCH_EXE := $(SRNABENCH_EXE)
-	THUNDER_EXE := $(THUNDER_EXE)
+	EXCERPT_TOOLS_EXE := $(EXCERPT_TOOLS_EXE)
 	DATABASE_PATH := $(EXCERPT_DATABASE)
 	
 	## Path to sRNABench libraries
@@ -252,7 +253,7 @@ ifeq ($(ADAPTER_SEQ),NULL)
 	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.*
 	LOGENTRY_WRITE_ADAPTER := $(ts) $(SMRNAPIPELINE): Identifying unknown 3' adapter sequence. Removing 3' adapter sequence using fastX:\n
 else ifeq ($(ADAPTER_SEQ),guessKnown)
-	COMMAND_WRITE_ADAPTER_SEQ := $(COMMAND_CONVERT_SRA) 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err | $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) FindAdapter -n 10000 -m 1000000 -s 7 -a $(DATABASE_PATH)/adapters/adapters.fa - > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).adapterSeq 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	COMMAND_WRITE_ADAPTER_SEQ := $(COMMAND_CONVERT_SRA) 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err | $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) FindAdapter -n 10000 -m 1000000 -s 7 -a $(DATABASE_PATH)/adapters/adapters.fa - > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).adapterSeq 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	LOGENTRY_WRITE_ADAPTER := $(ts) $(SMRNAPIPELINE): Identifying 3' adapter from list of known sequences.  Removing 3' adapter sequence using fastX:\n
 else ifeq ($(ADAPTER_SEQ),none)
 	COMMAND_WRITE_ADAPTER_SEQ := echo 'no adapter' > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).adapterSeq;
@@ -278,9 +279,9 @@ ifeq ($(RANDOM_BARCODE_LENGTH),0)
 	COMMAND_REMOVE_RANDOM_BARCODE := mv $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.tmp.gz $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz
 	ENDOGENOUS_QUANT_RANDOM_BARCODE_STATS := 
 else
-	#COMMAND_REMOVE_RANDOM_BARCODE := gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.tmp.gz | $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) ProcessFastqWithRandomBarcode -n $(RANDOM_BARCODE_LENGTH) $(RANDOM_BARCODE_LOCATION) -stats $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.barcodeStats - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | gzip -c > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz
+	#COMMAND_REMOVE_RANDOM_BARCODE := gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.tmp.gz | $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) ProcessFastqWithRandomBarcode -n $(RANDOM_BARCODE_LENGTH) $(RANDOM_BARCODE_LOCATION) -stats $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.barcodeStats - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | gzip -c > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz
 	#ENDOGENOUS_QUANT_RANDOM_BARCODE_STATS := -randombarcode $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.barcodeStats
-	COMMAND_REMOVE_RANDOM_BARCODE := gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.tmp.gz | $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) ProcessFastqWithRandomBarcode -n $(RANDOM_BARCODE_LENGTH) $(RANDOM_BARCODE_LOCATION) $(BARCODE_STATS_COMMAND) - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | gzip -c > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz
+	COMMAND_REMOVE_RANDOM_BARCODE := gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.tmp.gz | $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) ProcessFastqWithRandomBarcode -n $(RANDOM_BARCODE_LENGTH) $(RANDOM_BARCODE_LOCATION) $(BARCODE_STATS_COMMAND) - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | gzip -c > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz
 	ENDOGENOUS_QUANT_RANDOM_BARCODE_STATS := 
 endif
 
@@ -441,8 +442,8 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/Progress_1_FoundAdapter.dat:
 $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz: $(OUTPUT_DIR)/$(SAMPLE_ID)/Progress_1_FoundAdapter.dat
 	## Run the SW alignment of known adapters regardless of user preference
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) $(SMRNAPIPELINE): Checking adapter against known sequences: $(COMMAND_CONVERT_SRA) 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err | $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) FindAdapter -n 1000 -m 100000 -s 7 -a $(DATABASE_PATH)/adapters/adapters.fa - > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).knownAdapterSeq 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	$(COMMAND_CONVERT_SRA) 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err | $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) FindAdapter -n 1000 -m 100000 -s 7 -a $(DATABASE_PATH)/adapters/adapters.fa - > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).knownAdapterSeq 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Checking adapter against known sequences: $(COMMAND_CONVERT_SRA) 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err | $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) FindAdapter -n 1000 -m 100000 -s 7 -a $(DATABASE_PATH)/adapters/adapters.fa - > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).knownAdapterSeq 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(COMMAND_CONVERT_SRA) 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err | $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) FindAdapter -n 1000 -m 100000 -s 7 -a $(DATABASE_PATH)/adapters/adapters.fa - > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).knownAdapterSeq 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): Known adapter sequence: $(shell cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).knownAdapterSeq)\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Carry on with the adapter provided / guessed
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
@@ -492,8 +493,8 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.fastq.gz: $(OUTPUT_DIR)
 	# Filter homopolymer reads (those that have too many single nt repeats)
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): Filtering homopolymer repeat reads:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) $(SMRNAPIPELINE): $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) RemoveHomopolymerRepeats -m 0.66 -i $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.tmp -o $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.fastq\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
-	$(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) RemoveHomopolymerRepeats --verbose -m 0.66 -i $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.tmp -o $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.fastq >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.REMOVEDRepeatReads.fastq
+	@echo -e "$(ts) $(SMRNAPIPELINE): $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) RemoveHomopolymerRepeats -m 0.66 -i $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.tmp -o $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.fastq\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
+	$(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) RemoveHomopolymerRepeats --verbose -m 0.66 -i $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.tmp -o $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.fastq >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.REMOVEDRepeatReads.fastq
 	gzip $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.fastq
 	@echo -e "$(ts) $(SMRNAPIPELINE): Finished filtering homopolymer repeat reads\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Count homopolymer repeat reads that failed the quality filter
@@ -506,9 +507,9 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.fastq.gz: $(OUTPUT_DIR)
 $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.readLengths.txt: $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.fastq.gz
 	@echo -e "======================" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): Calculating length distribution of clipped reads:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) $(SMRNAPIPELINE): $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) GetSequenceLengths $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.fastq > $@ 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) GetSequenceLengths $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.fastq > $@ 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	gunzip -c $< > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.fastq
-	$(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) GetSequenceLengths $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.fastq > $@ 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
+	$(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) GetSequenceLengths $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.fastq > $@ 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
 	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.fastq
 	@echo -e "$(ts) $(SMRNAPIPELINE): Finished calculating read-lengths\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
@@ -688,8 +689,8 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousUnaligned_ungapped_noLibs.fq: $(OUTPUT_DIR)
 	@echo -e "$(ts) $(SMRNAPIPELINE): Finished sorting alignments\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Assign reads
 	@echo -e "$(ts) $(SMRNAPIPELINE): Assigning reads:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) $(SMRNAPIPELINE): $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) ProcessEndogenousAlignments --libPriority $(ENDOGENOUS_LIB_PRIORITY) --hairpin2genome $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRBase_v21_hairpin_hsa_hg19_aligned.sam --mature2hairpin $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRBase_v21_mature_hairpin_hsa_aligned.sam --reads2all $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_LIBS.sam --outputPath $(OUTPUT_DIR)/$(SAMPLE_ID) $(ENDOGENOUS_QUANT_RANDOM_BARCODE_STATS)\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	$(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) ProcessEndogenousAlignments --libPriority $(ENDOGENOUS_LIB_PRIORITY) --hairpin2genome $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRNA_precursor2genome.sam --mature2hairpin $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRNA_mature2precursor.sam --reads2all $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_LIBS.sam --outputPath $(OUTPUT_DIR)/$(SAMPLE_ID) $(ENDOGENOUS_QUANT_RANDOM_BARCODE_STATS) 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) ProcessEndogenousAlignments --libPriority $(ENDOGENOUS_LIB_PRIORITY) --hairpin2genome $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRBase_v21_hairpin_hsa_hg19_aligned.sam --mature2hairpin $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRBase_v21_mature_hairpin_hsa_aligned.sam --reads2all $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_LIBS.sam --outputPath $(OUTPUT_DIR)/$(SAMPLE_ID) $(ENDOGENOUS_QUANT_RANDOM_BARCODE_STATS)\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) ProcessEndogenousAlignments --libPriority $(ENDOGENOUS_LIB_PRIORITY) --hairpin2genome $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRNA_precursor2genome.sam --mature2hairpin $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRNA_mature2precursor.sam --reads2all $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_LIBS.sam --outputPath $(OUTPUT_DIR)/$(SAMPLE_ID) $(ENDOGENOUS_QUANT_RANDOM_BARCODE_STATS) 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): Finished assigning reads\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Summarise alignment statistics
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_miRNAmature_sense.txt | awk '{SUM+=$$4}END{printf "miRNA_sense\t%.0f\n",SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
@@ -708,7 +709,7 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousUnaligned_ungapped_noLibs.fq: $(OUTPUT_DIR)
 	@echo -e "$(ts) $(SMRNAPIPELINE): Outputting reads not aligned to either the genome or transcripts:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	grep "nogenome" $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.txt | awk '{print $$1}' | uniq > $(OUTPUT_DIR)/$(SAMPLE_ID)/readsMappedToLibs.tmp
 	gzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.txt > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.txt.gz
-	$(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) FilterFastxByIDList -b -p -IDs $(OUTPUT_DIR)/$(SAMPLE_ID)/readsMappedToLibs.tmp $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousUnaligned_ungapped.fq > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousUnaligned_ungapped_noLibs.fq 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) FilterFastxByIDList -b -p -IDs $(OUTPUT_DIR)/$(SAMPLE_ID)/readsMappedToLibs.tmp $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousUnaligned_ungapped.fq > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousUnaligned_ungapped_noLibs.fq 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	wc -l $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousUnaligned_ungapped_noLibs.fq | awk '{print "not_mapped_to_genome_or_libs\t"($$1)/4}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	@echo -e "$(ts) $(SMRNAPIPELINE): Finished outputting reads not aligned to either the genome or transcripts\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Tidy up
@@ -762,8 +763,8 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/unaligned.fq.gz: $(OUTPUT_DIR)/$(SAMP
 	## quantify read alignments using a slight hack of the endogenous alignment engine
 	$(SAMTOOLS_EXE) view -@ $(N_THREADS) $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.bam | sort -k1,1 | awk -F "\t" '{print $$1"\t"$$2"\tnogenome:miRNA:"$$3"\t"$$4"\t"$$5"\t"$$6"\t"$$7"\t"$$8"\t"$$9"\t"$$10"\t"$$11"\t"$$12"\t"$$13"\t"$$14}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.sam
 	@echo -e "$(ts) $(SMRNAPIPELINE): Assigning reads:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) $(SMRNAPIPELINE): $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) ProcessEndogenousAlignments --libPriority miRNA --hairpin2genome $(DATABASE_PATH)/miRBase/miRNA_precursor2genome.sam --mature2hairpin $(DATABASE_PATH)/miRBase/miRNA_mature2precursor.sam --reads2all $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.sam --outputPath $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	$(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(THUNDER_EXE) ProcessEndogenousAlignments --libPriority miRNA --hairpin2genome $(DATABASE_PATH)/miRBase/miRNA_precursor2genome.sam --mature2hairpin $(DATABASE_PATH)/miRBase/miRNA_mature2precursor.sam --reads2all $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.sam --outputPath $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) ProcessEndogenousAlignments --libPriority miRNA --hairpin2genome $(DATABASE_PATH)/miRBase/miRNA_precursor2genome.sam --mature2hairpin $(DATABASE_PATH)/miRBase/miRNA_mature2precursor.sam --reads2all $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.sam --outputPath $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) ProcessEndogenousAlignments --libPriority miRNA --hairpin2genome $(DATABASE_PATH)/miRBase/miRNA_precursor2genome.sam --mature2hairpin $(DATABASE_PATH)/miRBase/miRNA_mature2precursor.sam --reads2all $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.sam --outputPath $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): Finished assigning reads\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Tidy up:
 	gzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/endogenousAlignments_Accepted.txt > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenousMiRNAAlignments_Accepted.txt.gz
