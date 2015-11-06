@@ -7,6 +7,7 @@ MAINTAINER Rob Kitchen <rob.kitchen@yale.edu>
 ADD smallRNA_pipeline.mk /exceRpt_bin/smallRNA_pipeline
 ADD mergePipelineRuns.R /exceRpt_bin/mergePipelineRuns.R
 ADD mergePipelineRuns_functions.R /exceRpt_bin/mergePipelineRuns_functions.R
+ADD exceRpt_Tools.jar /exceRpt_bin/exceRpt_Tools.jar
 ADD LICENSE /exceRpt_bin/LICENSE
 ADD README.md /exceRpt_bin/README.md
 
