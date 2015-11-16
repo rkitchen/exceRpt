@@ -8,14 +8,18 @@
 ##                           |_|                                                     ##
 ##                                                                                   ##
 ##                                                                                   ##
-## SmallRNA-seq pipeline - processes a single sequence file from a single sample     ##
+## The extra-cellular RNA processing toolkit (exceRpt)                               ##
+##                                                                                   ##
+## This pipeline processes a single sequence file from a single sample               ##
 ##                                                                                   ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                        ##
 ##                                                                                   ##
-## Version 3.2.5 (2015-11-11)                                                        ##
+## Learn more at github.gersteinlab.org/exceRpt                                      ##
 ##                                                                                   ##
-######################################################################################
-EXCERPT_VERSION := 3.2.5
+## Version 3.2.6 (2015-11-15)                                                        ##
+##                                                                                   ##
+#######################################################################################
+EXCERPT_VERSION := 3.2.6
 
 
 ##
@@ -42,7 +46,7 @@ MAIN_ORGANISM_GENOME_ID := hg38
 
 
 ##
-## 3) Select whether pipeline is run locally, should be 'true' unless this is the Genboree implementation!
+## 3) Select whether pipeline is run locally, should be 'true' unless this is the Genboree.org implementation!
 ##
 LOCAL_EXECUTION := true
 
@@ -763,8 +767,8 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/unaligned.fq.gz: $(OUTPUT_DIR)/$(SAMP
 	mkdir -p $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): Mapping reads to all miRNAs in miRBase:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) $(SMRNAPIPELINE): gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/reads_NotEndogenous.fq.gz | $(BOWTIE1_EXE) --phred(shell cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).qualityEncoding)-quals -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l $(BOWTIE_SEED_LENGTH) -n $(BOWTIE1_MAX_MISMATCHES) --all --sam --fullref --best --strata --un $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/unaligned.fq $(DATABASE_PATH)/miRBase/miRBase_precursors - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.bowtie1stats | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - | $(SAMTOOLS_EXE) sort -n -m $(SAMTOOLS_SORT_MEM) -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/tmp - > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/reads_NotEndogenous.fq.gz | $(BOWTIE1_EXE) --phred(shell cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).qualityEncoding)-quals -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l $(BOWTIE_SEED_LENGTH) -n $(BOWTIE1_MAX_MISMATCHES) --all --sam --fullref --best --strata --un $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/unaligned.fq $(DATABASE_PATH)/miRBase/miRBase_precursors - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.bowtie1stats | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - | $(SAMTOOLS_EXE) sort -n -m $(SAMTOOLS_SORT_MEM) -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/tmp - > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/reads_NotEndogenous.fq.gz | $(BOWTIE1_EXE) --phred$(shell cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).qualityEncoding)-quals -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l $(BOWTIE_SEED_LENGTH) -n $(BOWTIE1_MAX_MISMATCHES) --all --sam --fullref --best --strata --un $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/unaligned.fq $(DATABASE_PATH)/miRBase/miRBase_precursors - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.bowtie1stats | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - | $(SAMTOOLS_EXE) sort -n -m $(SAMTOOLS_SORT_MEM) -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/tmp - > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/reads_NotEndogenous.fq.gz | $(BOWTIE1_EXE) --phred$(shell cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).qualityEncoding)-quals -p $(N_THREADS) --chunkmbs $(BOWTIE_CHUNKMBS) -l $(BOWTIE_SEED_LENGTH) -n $(BOWTIE1_MAX_MISMATCHES) --all --sam --fullref --best --strata --un $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/unaligned.fq $(DATABASE_PATH)/miRBase/miRBase_precursors - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.bowtie1stats | awk '{if($$1 ~ /^@/ || $$2 != 4){print $$0}}' | $(SAMTOOLS_EXE) view -@ $(N_THREADS) -b - | $(SAMTOOLS_EXE) sort -n -m $(SAMTOOLS_SORT_MEM) -@ $(N_THREADS) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/tmp - > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.bam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	gzip $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/unaligned.fq
 	## quantify read alignments using a slight hack of the endogenous alignment engine
 	$(SAMTOOLS_EXE) view -@ $(N_THREADS) $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.bam | sort -k1,1 | awk -F "\t" '{print $$1"\t"$$2"\tnogenome:miRNA:"$$3"\t"$$4"\t"$$5"\t"$$6"\t"$$7"\t"$$8"\t"$$9"\t"$$10"\t"$$11"\t"$$12"\t"$$13"\t"$$14}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_mapped.sam
