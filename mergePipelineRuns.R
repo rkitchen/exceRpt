@@ -39,7 +39,11 @@ if(length(args) == 0){
   file.arg.name <- "--file="
   script.name <- sub(file.arg.name, "", initial.options[grep(file.arg.name, initial.options)])
   script.basename <- dirname(script.name)
-  other.name <- paste(sep="/", script.basename, "mergePipelineRuns_functions.R")
+  if(length(script.basename) > 0){
+	  other.name <- paste(sep="/", script.basename, "mergePipelineRuns_functions.R")
+  }else{
+	  other.name = "mergePipelineRuns_functions.R"
+  }
   print(paste("Sourcing",other.name,"from",script.name))
   source(other.name)
   cat("\n")

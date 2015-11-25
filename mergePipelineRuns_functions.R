@@ -433,6 +433,7 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   #tiff(paste(output.dir,"DiagnosticPlots.tiff",sep="/"))
   
   
+  if(ncol(read.lengths) > 1){
   ##
   ## plot distribution of clipped read lengths - read count
   ##
@@ -453,7 +454,7 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   p = ggplot(tmp, aes(x=length, y=fraction, colour=sample)) +geom_line(alpha=0.75) +xlab("read length (nt)") +ylab("fraction of reads") +ggtitle("read-length distributions") +xlim(14,min(c(75,max(tmp$length))))
   if(nrow(read.lengths) > 30){ p = p +guides(colour=FALSE) }
   print(p)
-  
+  }
   
   ##
   ## Plot run duration of each sample
@@ -507,12 +508,14 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   ##
   ## Plot heatmap of mapping percentages through the pipeline
   ##
+  if(max(mapping.stats$successfully_clipped) > 0){
   toplot = melt(as.matrix(mapping.stats / mapping.stats$successfully_clipped)[,-1,drop=F]); colnames(toplot) = c("Sample","Stage","ReadFraction")
   toplot$Stage = with(toplot, factor(Stage, levels = rev(levels(Stage))))
   toplot$Sample = factor(as.character(toplot$Sample), levels=rownames(mapping.stats)[sampleOrder])
   p = ggplot(toplot, aes(x=Sample, y=Stage, group=Sample, fill=ReadFraction, label=sprintf("%1.1f%%",ReadFraction*100))) +geom_tile() +scale_fill_gradient2(low="white",high="yellow",mid="steelblue", midpoint=0.5) +theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5)) +ggtitle("fraction aligned reads (normalised by # adapter-clipped reads)")
   if(nrow(mapping.stats) < 50){ p = p +geom_text(size=3) }
   print(p)
+  }
   
   ##
   ## Plot heatmap of mapping percentages through the pipeline
