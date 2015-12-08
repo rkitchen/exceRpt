@@ -16,10 +16,10 @@
 ##                                                                                   ##
 ## Learn more at github.gersteinlab.org/exceRpt                                      ##
 ##                                                                                   ##
-## Version 3.2.6 (2015-11-15)                                                        ##
+## Version 3.3.0 (2015-12-08)                                                        ##
 ##                                                                                   ##
 #######################################################################################
-EXCERPT_VERSION := 3.2.6
+EXCERPT_VERSION := 3.3.0
 
 
 ##
@@ -175,6 +175,11 @@ STAR_outFilterMismatchNoverLmax := 0.05
 #BOWTIE_LIB_PATH := $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)
 
 
+##
+## For sample quality control (QC)
+##
+MIN_TRANSCRIPTOME_MAPPED := 100000
+MIN_GENOME_TRANSCRIPTOME_RATIO := 0.5
 
 
 
@@ -358,6 +363,7 @@ endif
 COMPRESS_COMMAND := ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID) | awk '{print $$9}' | grep "readCounts_\|.readLengths.txt\|_fastqc.zip\|.counts\|.adapterSeq\|.qualityEncoding" | awk '{print "$(SAMPLE_ID)/"$$1}' > $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt; \
 echo $(SAMPLE_ID).log >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt; \
 echo $(SAMPLE_ID).stats >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt; \
+echo $(SAMPLE_ID).qcResult >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt; \
 ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID) | awk '{print $$9}' | grep "calibratormapped.counts" | awk '{print "$(SAMPLE_ID)/"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt; \
 ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes | awk '{print $$9}' | grep "ExogenousGenomicAlignments.result.txt" | awk '{print "$(SAMPLE_ID)/EXOGENOUS_genomes/"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt
 
@@ -407,6 +413,13 @@ processSample: $(OUTPUT_DIR)/$(SAMPLE_ID)/$(PROCESS_SAMPLE_REQFILE)
 	@echo -e "$(ts) $(SMRNAPIPELINE): END smallRNA-seq Pipeline for sample $(SAMPLE_ID)\n======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): END\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).err
 	@echo -e "#END OF STATS from the exceRpt smallRNA-seq pipeline. Run completed at $(ts)" >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	#
+	## Calculate QC result
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID).stats | grep "^genome" | awk '{print $$2}' > $(OUTPUT_DIR)/tmp.txt
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID).stats | grep "sense" | awk '{SUM+=$$2}END{print SUM}' >> $(OUTPUT_DIR)/tmp.txt
+	cat $(OUTPUT_DIR)/tmp.txt | tr '\n' '\t' | awk '{result="FAIL"; ratio=$$2/$$1; if(ratio>$(MIN_GENOME_TRANSCRIPTOME_RATIO) && $$2>$(MIN_TRANSCRIPTOME_MAPPED))result="PASS"}END{print "QC_result: "result"\nGenomeReads: "$$1"\nTranscriptomeReads: "$$2"\nTranscriptomeGenomeRatio: "ratio}' > $(OUTPUT_DIR)/$(SAMPLE_ID).qcResult
+	rm $(OUTPUT_DIR)/tmp.txt
+	#
 	## Compress core results files automatically
 	$(COMPRESS_COMMAND)
 	#tar -cvz -C $(OUTPUT_DIR) -T $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt -f $(OUTPUT_DIR)/$(SAMPLE_ID)_results.tgz 2> /dev/null
