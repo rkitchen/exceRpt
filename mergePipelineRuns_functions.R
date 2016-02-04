@@ -101,13 +101,19 @@ printMessage = function(message=""){
 ##
 processSamplesInDir = function(data.dir, output.dir=data.dir){
   
-  ##  -- Kill script if we do not have any samples to process
+  ##  Look for samples to merge
   printMessage("Searching for valid exceRpt pipeline output...")
-  samplePathList = SearchForSampleData(data.dir,"")
+  samplePathList = unique(SearchForSampleData(data.dir,""))
+  
+  ## get sample names and remove duplicates:
+  sampleIDs = sapply(samplePathList, function(path){ tmp=unlist(strsplit(path,"/")); tmp[length(tmp)] })
+  samplePathList = samplePathList[!duplicated(sampleIDs)]
+  
+  ## -- Kill script if we do not have any samples to process
   NumberOfCompatibleSamples = length(samplePathList)
   stopifnot(NumberOfCompatibleSamples > 0)
   printMessage(c("Found ",NumberOfCompatibleSamples," valid samples"))
-
+  
   
   ##
   ## Create objects to contain the data
@@ -434,27 +440,29 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   
   
   if(ncol(read.lengths) > 1){
-  ##
-  ## plot distribution of clipped read lengths - read count
-  ##
-  tmp = melt(read.lengths); colnames(tmp) = c("sample","length","count")
-  tmp = tmp[1:max(which(tmp$count > 0)), ]
-  p = ggplot(tmp, aes(x=length, y=count, colour=sample)) +geom_line(alpha=0.75) +xlab("read length (nt)") +ylab("# reads") +ggtitle("read-length distributions") +xlim(14,min(c(75,max(tmp$length))))
-  if(nrow(read.lengths) > 30){ p = p +guides(colour=FALSE) }
-  print(p)
-  #ggplot(tmp, aes(x=as.factor(length), y=count)) +geom_violin()
-  #ggplot(tmp, aes(x=as.factor(length), y=count)) +geom_boxplot()
-  
-  
-  ##
-  ## plot distribution of clipped read lengths - fraction
-  ##
-  tmp = melt(t(apply(read.lengths, 1, function(row){ row/sum(row) }))); colnames(tmp) = c("sample","length","fraction")
-  tmp = tmp[1:max(which(tmp$fraction > 0)), ]
-  p = ggplot(tmp, aes(x=length, y=fraction, colour=sample)) +geom_line(alpha=0.75) +xlab("read length (nt)") +ylab("fraction of reads") +ggtitle("read-length distributions") +xlim(14,min(c(75,max(tmp$length))))
-  if(nrow(read.lengths) > 30){ p = p +guides(colour=FALSE) }
-  print(p)
+    ##
+    ## plot distribution of clipped read lengths - read count
+    ##
+    tmp = melt(read.lengths); colnames(tmp) = c("sample","length","count")
+    tmp = tmp[1:max(which(tmp$count > 0)), ]
+    p = ggplot(tmp, aes(x=length, y=count, colour=sample)) +geom_line(alpha=0.75) +xlab("read length (nt)") +ylab("# reads") +ggtitle("read-length distributions") +xlim(14,min(c(75,max(tmp$length))))
+    if(nrow(read.lengths) > 30){ p = p +guides(colour=FALSE) }
+    print(p)
+    #ggplot(tmp, aes(x=as.factor(length), y=count)) +geom_violin()
+    #ggplot(tmp, aes(x=as.factor(length), y=count)) +geom_boxplot()
+    
+    
+    ##
+    ## plot distribution of clipped read lengths - fraction
+    ##
+    tmp = melt(t(apply(read.lengths, 1, function(row){ row/sum(row) }))); colnames(tmp) = c("sample","length","fraction")
+    tmp = tmp[1:max(which(tmp$fraction > 0)), ]
+    p = ggplot(tmp, aes(x=length, y=fraction, colour=sample)) +geom_line(alpha=0.75) +xlab("read length (nt)") +ylab("fraction of reads") +ggtitle("read-length distributions") +xlim(14,min(c(75,max(tmp$length))))
+    if(nrow(read.lengths) > 30){ p = p +guides(colour=FALSE) }
+    print(p)
   }
+  
+  
   
   ##
   ## Plot run duration of each sample
@@ -495,6 +503,9 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   
   mapping.stats.orig = mapping.stats
   mapping.stats = mapping.stats[,-grep("input_to_",colnames(mapping.stats))]
+  
+  
+  
   ##
   ## Plot heatmap of mapping percentages through the pipeline
   ##
@@ -509,12 +520,12 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   ## Plot heatmap of mapping percentages through the pipeline
   ##
   if(max(mapping.stats$successfully_clipped) > 0){
-  toplot = melt(as.matrix(mapping.stats / mapping.stats$successfully_clipped)[,-1,drop=F]); colnames(toplot) = c("Sample","Stage","ReadFraction")
-  toplot$Stage = with(toplot, factor(Stage, levels = rev(levels(Stage))))
-  toplot$Sample = factor(as.character(toplot$Sample), levels=rownames(mapping.stats)[sampleOrder])
-  p = ggplot(toplot, aes(x=Sample, y=Stage, group=Sample, fill=ReadFraction, label=sprintf("%1.1f%%",ReadFraction*100))) +geom_tile() +scale_fill_gradient2(low="white",high="yellow",mid="steelblue", midpoint=0.5) +theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5)) +ggtitle("fraction aligned reads (normalised by # adapter-clipped reads)")
-  if(nrow(mapping.stats) < 50){ p = p +geom_text(size=3) }
-  print(p)
+    toplot = melt(as.matrix(mapping.stats / mapping.stats$successfully_clipped)[,-1,drop=F]); colnames(toplot) = c("Sample","Stage","ReadFraction")
+    toplot$Stage = with(toplot, factor(Stage, levels = rev(levels(Stage))))
+    toplot$Sample = factor(as.character(toplot$Sample), levels=rownames(mapping.stats)[sampleOrder])
+    p = ggplot(toplot, aes(x=Sample, y=Stage, group=Sample, fill=ReadFraction, label=sprintf("%1.1f%%",ReadFraction*100))) +geom_tile() +scale_fill_gradient2(low="white",high="yellow",mid="steelblue", midpoint=0.5) +theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5)) +ggtitle("fraction aligned reads (normalised by # adapter-clipped reads)")
+    if(nrow(mapping.stats) < 50){ p = p +geom_text(size=3) }
+    print(p)
   }
   
   ##

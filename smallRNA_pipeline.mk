@@ -16,10 +16,10 @@
 ##                                                                                   ##
 ## Learn more at github.gersteinlab.org/exceRpt                                      ##
 ##                                                                                   ##
-## Version 3.3.0 (2015-12-08)                                                        ##
+## Version 3.4.0 (2016-02-04)                                                        ##
 ##                                                                                   ##
 #######################################################################################
-EXCERPT_VERSION := 3.3.0
+EXCERPT_VERSION := 3.4.0
 
 
 ##
@@ -199,7 +199,8 @@ ifeq ($(MAP_EXOGENOUS),miRNA)		## ALIGNMENT TO ONLY EXOGENOUS MIRNA
 	PROCESS_SAMPLE_REQFILE := EXOGENOUS_miRNA/unaligned.fq.gz
 	#PROCESS_SAMPLE_REQFILE := EXOGENOUS_rRNA/unaligned.fq.gz
 else ifeq ($(MAP_EXOGENOUS),on)	## COMPLETE EXOGENOUS GENOME ALIGNMENT
-	PROCESS_SAMPLE_REQFILE := EXOGENOUS_genomes/ExogenousGenomicAlignments.result.txt
+	#PROCESS_SAMPLE_REQFILE := EXOGENOUS_genomes/ExogenousGenomicAlignments.result.txt
+	PROCESS_SAMPLE_REQFILE := EXOGENOUS_genomes/ExogenousGenomicAlignments.result.taxaAnnotated.txt
 else
 	PROCESS_SAMPLE_REQFILE := endogenousUnaligned_ungapped_noLibs.fq
 endif
@@ -365,7 +366,11 @@ echo $(SAMPLE_ID).log >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt; \
 echo $(SAMPLE_ID).stats >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt; \
 echo $(SAMPLE_ID).qcResult >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt; \
 ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID) | awk '{print $$9}' | grep "calibratormapped.counts" | awk '{print "$(SAMPLE_ID)/"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt; \
-ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes | awk '{print $$9}' | grep "ExogenousGenomicAlignments.result.txt" | awk '{print "$(SAMPLE_ID)/EXOGENOUS_genomes/"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt
+ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA | awk '{print $$9}' | grep "readCounts_" | awk '{print "$(SAMPLE_ID)/EXOGENOUS_miRNA/"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt; \
+ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes | awk '{print $$9}' | grep "ExogenousGenomicAlignments.result.txt\|ExogenousGenomicAlignments.result.taxaAnnotated.txt" | awk '{print "$(SAMPLE_ID)/EXOGENOUS_genomes/"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt
+
+#ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA | awk '{print $$9}' | grep "readCounts_" | awk '{print "$(SAMPLE_ID)/EXOGENOUS_rRNA/"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt; \
+
 
 #ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA | awk '{print $$9}' | grep "exogenous_miRBase_mapped" | awk '{print "$(SAMPLE_ID)/EXOGENOUS_miRNA/"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt
 #ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA | awk '{print $$9}' | grep "exogenous_miRBase_mapped" | awk '{print "$(SAMPLE_ID)/EXOGENOUS_rRNA/"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt
@@ -980,6 +985,11 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.result.t
 	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/tmp*
 
 
+##
+## Create exogenous alignment result matrix:
+##
+$(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.result.taxaAnnotated.txt: $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.txt
+	$(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) ProcessExogenousAlignments -taxonomyPath $(DATABASE_PATH)/NCBI_taxonomy_taxdump -frac 0.95 -alignments $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.txt > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.result.taxaAnnotated.txt
 
 
 ##
