@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.TreeMap;
+import java.util.TreeSet;
 
 import net.sf.samtools.Cigar;
 import net.sf.samtools.SAMFileReader;
@@ -27,165 +27,34 @@ import org.apache.commons.cli.ParseException;
 import sequenceTools.Sequence;
 
 
-/**
- * Holds random barcode info for each unique insert sequence.
- * Also used to hold the accepted alignment info for these reads   
- * @author robk
- *
- */
-class Insert{
-	private String _insertSequence;
-	private int _nInsertSequences;
-	//private int _nUniqueBarcodes_5p, _nUniqueBarcodes_3p, _nUniqueBarcodes_5p3p;
-	//private double _KLdivergence_5p, _KLdivergence_3p, _KLdivergence_5p3p;
-
-	Insert(String insertSequence, int nInsertSequences){
-		_insertSequence = insertSequence;
-		_nInsertSequences = nInsertSequences;
-	}
-	/*void addRandomBarcode5p(int nUniqueBarcodes_5p, double KLdivergence_5p){
-		_nUniqueBarcodes_5p = nUniqueBarcodes_5p;
-		_KLdivergence_5p = KLdivergence_5p;
-		_has5p = true;
-	}
-	void addRandomBarcode3p(int nUniqueBarcodes_3p, double KLdivergence_3p){
-		_nUniqueBarcodes_3p = nUniqueBarcodes_3p;
-		_KLdivergence_3p = KLdivergence_3p;
-		_has3p = true;
-	}
-	void addRandomBarcode5p3p(int nUniqueBarcodes_5p3p, double KLdivergence_5p3p){
-		_nUniqueBarcodes_5p3p = nUniqueBarcodes_5p3p;
-		_KLdivergence_5p3p = KLdivergence_5p3p;
-		_has5p3p = true;
-	}*/
-
-	private HashMap <String, Integer> _barcodeCounts = new HashMap <String, Integer>(); 
-	void addRead(String readID){ 
-		_nInsertSequences++;
-
-		String barcode_5p="", barcode_3p="";//, barcode_5p3p="";
-		String barcode = "";
-		// Check for 5' barcode
-		String[] bits = readID.split("\\{5p");
-		if(bits.length == 2){
-			barcode_5p = bits[1].split("\\}")[0];
-			barcode = barcode_5p;
-			_has5p = true;
-		}
-		// Check for 3' barcode
-		bits = readID.split("\\{3p");
-		if(bits.length == 2){
-			barcode_3p = bits[1].split("\\}")[0];
-			barcode += barcode_3p;
-			_has3p = true;
-		}
-		// Check for 5' AND 3' barcodes
-		if(_has5p && _has3p){
-			_has5p3p = true;
-			//barcode_5p3p = barcode_5p+barcode_3p;
-		}
-
-		// add this random barcode to the list
-		if(_has5p || _has3p){
-			if(!_barcodeCounts.containsKey(barcode))
-				_barcodeCounts.put(barcode, 1);
-			else
-				_barcodeCounts.put(barcode, _barcodeCounts.get(barcode)+1);
-		}
-
-	}
-
-	public int getNumberOfRandomBarcodes(){
-		return _barcodeCounts.size();
-	}
-
-
-	private boolean _has5p=false, _has3p=false, _has5p3p=false;
-	boolean hasRandomBarcode5p(){ return _has5p; }
-	boolean hasRandomBarcode3p(){ return _has3p; }
-	boolean hasRandomBarcode5p3p(){ return _has5p3p; }
-
-	String getInsertSequence(){ return _insertSequence; }
-	int getInsertSequenceCount(){ return _nInsertSequences; }
-	//int getBarcodeCount_5p(){ return _nUniqueBarcodes_5p; }
-	//int getBarcodeCount_3p(){ return _nUniqueBarcodes_3p; }
-	//int getBarcodeCount_5p3p(){ return _nUniqueBarcodes_5p3p; }
-	//double getKL_5p(){ return _KLdivergence_5p; }
-	//double getKL_3p(){ return _KLdivergence_3p; }
-	//double getKL_5p3p(){ return _KLdivergence_5p3p; }
-
-	int getBarcodeCount(){
-		/*if(_has5p3p)
-			return _nUniqueBarcodes_5p3p;
-		else if(_has5p)
-			return _nUniqueBarcodes_5p;
-		else if(_has3p)
-			return _nUniqueBarcodes_3p;
-		else
-			return 0;*/
-		return _barcodeCounts.size();
-	}
-	/*double getKL(){
-		if(_has5p3p)
-			return _KLdivergence_5p3p;
-		else if(_has5p)
-			return _KLdivergence_5p;
-		else if(_has3p)
-			return _KLdivergence_3p;
-		else
-			return 0;
-	}*/
-
-	//
-	//
-	//
-
-	private String _mapsToLib;
-	void setMapsToLib(String library){ _mapsToLib = library; }
-	String mapsToLib(){ return _mapsToLib; }
-
-	private ArrayList<String> _mapsToReferences = new ArrayList<String>();
-	void addReferenceAlignment(String referenceID){
-		if(!_mapsToReferences.contains(referenceID))
-			_mapsToReferences.add(referenceID);
-	}
-	ArrayList<String> getReferenceAlignments(){ return _mapsToReferences; }
-
-}
-
 public class ProcessEndogenousAlignments {
 
-	private BufferedWriter _optimalAlignmentWriter;
+	//private BufferedWriter _optimalAlignmentWriter;
 	HashMap <String, Hairpin> miRNAprecursors = new HashMap <String, Hairpin>();
 
 
-	public ProcessEndogenousAlignments(String pathForOptimalAlignments) throws IOException{
+	/*public ProcessEndogenousAlignments(String pathForOptimalAlignments) throws IOException{
 		_optimalAlignmentWriter = new BufferedWriter(new FileWriter(pathForOptimalAlignments+"/endogenousAlignments_Accepted.txt"));
-	}
+	}*/
+	public ProcessEndogenousAlignments(){}
 
-	//public ProcessEndogenousAlignments(String pathForOptimalAlignments, String pathToRandomBarcodeStats) throws IOException{
-	//	_optimalAlignmentWriter = new BufferedWriter(new FileWriter(pathForOptimalAlignments+"/endogenousAlignments_Accepted.txt"));
-	//	readRandomBarcodeInfo(pathToRandomBarcodeStats);
-	//}
-
-	private boolean _hasBarcodeStats = false;
-	private HashMap<String, Insert> _allInserts = new HashMap<String, Insert>(); 
-
-	
-	
 
 	private ArrayList<String> _libraryPriority;
 	private final String _libraryPriorityOptions = "miRNA, tRNA, piRNA, gencode, circRNA";
 	private String _libraryPriorityString_default = "miRNA,tRNA,piRNA,gencode,circRNA";
 	private String _libraryPriorityString = "";
-	
+
+
+
 	/**
 	 * Set the default library priority (miRNA,tRNA,piRNA,gencode,circRNA)
 	 */
 	private void setLibraryPriority(){
 		setLibraryPriority(_libraryPriorityString_default);
 	}
-	
+
+
+
 	/**
 	 * Specify a new library priority
 	 * @param priorityString new library string of the form miRNA,tRNA,piRNA,gencode,circRNA
@@ -204,15 +73,17 @@ public class ProcessEndogenousAlignments {
 			}else
 				ExceRpt_Tools.printLineErr("WARNING: Ignoring unrecognised library \'"+bits[i].trim()+"\'. Must be one of "+_libraryPriorityOptions);
 		}
-		
+
 		if(_libraryPriorityString.equals(_libraryPriorityString_default)){
 			ExceRpt_Tools.printLineErr("Using default library priorities: "+_libraryPriorityString_default.replace(","," > "));
 		}else{
 			ExceRpt_Tools.printLineErr("Overriding default library priorities: "+_libraryPriorityString.replace(","," > "));
 		}
-		
+
 	}
-	
+
+
+
 	/**
 	 *  checks input library string against valid options (case insensitive)
 	 * @param lib library name to test
@@ -220,7 +91,7 @@ public class ProcessEndogenousAlignments {
 	 */
 	private String validateLibrary(String lib){
 		String validLibString = "";
-		
+
 		/* requires Java 1.7
 		switch(lib.toLowerCase()){
 		case "mirna": validLibString = "validLibString"; break;
@@ -230,7 +101,7 @@ public class ProcessEndogenousAlignments {
 		case "circrna": validLibString = "circRNA"; break;
 		default: validLibString = null;
 		}*/
-		
+
 		String libLower = lib.toLowerCase();
 		if(libLower.equalsIgnoreCase("miRNA"))
 			validLibString = "miRNA";
@@ -242,74 +113,56 @@ public class ProcessEndogenousAlignments {
 			validLibString = "gencode";
 		else if(libLower.equalsIgnoreCase("circRNA"))
 			validLibString = "circRNA";
-		
+
 		return validLibString;
 	}
-	
 
 
-	/**
-	 * Read summary info from the random barcodes (if they are present)
-	 * 
-	 * @param path
-	 * @throws IOException
-	 */
-	/*private void readRandomBarcodeInfo(String path) throws IOException{
-		_hasBarcodeStats = true;
 
-		BufferedReader barcodeStatsReader = new BufferedReader(new FileReader(path));
-		String line;
-		String[] bits, header;
 
-		// Look at stats file header row to determine the arrangement of barcodes (5' and/or 3')
-		header = barcodeStatsReader.readLine().split("\t");
-		int index_5p=-1, index_3p=-1, index_5p3p=-1;
-		for(int i=0;i<header.length;i++){
-			if(header[i].equalsIgnoreCase("nUniqueBarcodes_5p"))
-				index_5p = i;
-			else if(header[i].equalsIgnoreCase("nUniqueBarcodes_3p"))
-				index_3p = i;
-			else if(header[i].equalsIgnoreCase("nUniqueBarcodes_5p3p"))
-				index_5p3p = i;
-		}
-
-		// read the rest of the stats file
-		while((line=barcodeStatsReader.readLine()) != null){
-			// InsertSequence	nInsertSequences	nUniqueBarcodes_5p	KLdivergence_5p	topBarcode_5p	secondBarcode_5p	thirdBarcode_5p	nUniqueBarcodes_3p	KLdivergence_3p	topBarcode_3p	secondBarcode_3p	thirdBarcode_3p	nUniqueBarcodes_5p3p	KLdivergence_5p3p	topBarcode_5p3p	secondBarcode_5p3p	thirdBarcode_5p3p	PWM_A	PWM_C	PWM_G	PWM_T
-			bits = line.split("\t");
-			Insert tmp = new Insert(bits[0], Integer.valueOf(bits[1]).intValue());
-			if(index_5p != -1)
-				tmp.addRandomBarcode5p(Integer.valueOf(bits[index_5p]).intValue(), Double.valueOf(bits[index_5p+1]).doubleValue());
-			if(index_3p != -1)
-				tmp.addRandomBarcode3p(Integer.valueOf(bits[index_3p]).intValue(), Double.valueOf(bits[index_3p+1]).doubleValue());
-			if(index_5p3p != -1)
-				tmp.addRandomBarcode5p3p(Integer.valueOf(bits[index_5p3p]).intValue(), Double.valueOf(bits[index_5p3p+1]).doubleValue());
-			_allInserts.put(bits[0], tmp);
-		}
-		barcodeStatsReader.close();
-	}*/
 
 
 	/*
 	 * 
 	 */
-	public void tidyUp() throws IOException{
+	/*public void tidyUp() throws IOException{
 		_optimalAlignmentWriter.flush();
 		_optimalAlignmentWriter.close();
+	}*/
+
+
+
+
+	/**
+	 * 
+	 * @param readsByLibrary
+	 * @param refType
+	 * @param alignment
+	 * @return
+	 */
+	private HashMap<String, ArrayList<SAMRecord>> addReadAssignment(HashMap<String, ArrayList<SAMRecord>> readsByLibrary, String refType, SAMRecord alignment){
+		if(!readsByLibrary.containsKey(refType))
+			readsByLibrary.put(refType, new ArrayList<SAMRecord>());
+
+		readsByLibrary.get(refType).add(alignment);
+		return readsByLibrary;
 	}
 
 
+	
+	
+	private HashMap<String, Integer> _referenceID2index = new HashMap<String, Integer>();
+	private int _indexCount = 1;
 
 	/**
 	 * Processes the current read:
 	 *  1- parses the alignments 
 	 *  2- prioritises the alignment based on miRNA>tRNA>piRNA>gencode>circularRNA
 	 *  3- writes accepted alignment(s)
-	 *  4- [optional] looks at random barcode over-representation to moderate the read count TODO!
-	 *  5- outputs the expression estimates
 	 * @param thisRead
+	 * @throws IOException 
 	 */
-	public void assignRead(HashMap<SAMRecord, String> thisRead){
+	public void assignRead(HashMap<SAMRecord, String> thisRead) throws IOException{
 		Iterator<Entry<SAMRecord,String>> it = thisRead.entrySet().iterator();
 		Entry<SAMRecord,String> tmp;
 
@@ -321,7 +174,7 @@ public class ProcessEndogenousAlignments {
 		/*
 		 * Loop through alignments and count libraries that capture alignments
 		 */
-		int count = 0;
+		//int count = 0;
 		while(it.hasNext()){
 			tmp = it.next();
 			boolean readNegativeStrand = tmp.getKey().getReadNegativeStrandFlag();
@@ -331,25 +184,6 @@ public class ProcessEndogenousAlignments {
 			// if this read is antisense, reverse complement it
 			if(readNegativeStrand)
 				tmp.getKey().setReadString(Sequence.reverseComplement(tmp.getKey().getReadString()));
-
-			// add this read to the list of Insert sequences (only if it is the first in the alignment list)
-			if(count == 0){
-				String insertSeq = tmp.getKey().getReadString();
-				String readID = tmp.getKey().getReadName();
-
-				// Only add to the insert count if these have not already been counted by the random barcode summary!
-				if(!_hasBarcodeStats){
-					if(!_allInserts.containsKey(insertSeq))
-						_allInserts.put(insertSeq, new Insert(insertSeq, 0));
-
-					_allInserts.get(insertSeq).addRead(readID);
-				}
-
-				count++;
-			}
-
-
-
 
 			if(tmp.getValue().equals("miRNA")){
 				if(!readNegativeStrand)
@@ -420,10 +254,16 @@ public class ProcessEndogenousAlignments {
 		/*
 		 * If this is a miRNA aligned read, check to see if it overlaps any known mature sequences
 		 */
-		Iterator<SAMRecord> it2 = keepAlignments.iterator();
+		Iterator<SAMRecord> it2;
 		SAMRecord tmp2;
 		if(keptLibrary.startsWith("miRNA_")){
+			ArrayList<SAMRecord> precursorAlignments = new ArrayList<SAMRecord>();
+			int index = 0;
+			it2 = keepAlignments.iterator();
+			
+			// if this is a miRNA alignment, run through all alignments and check for a hit to a mature miRNA 
 			while(it2.hasNext()){
+				index ++;
 				tmp2 = it2.next();
 				String[] refIDbits = tmp2.getReferenceName().split(":");
 				String mapsTo = refIDbits[2];
@@ -437,11 +277,18 @@ public class ProcessEndogenousAlignments {
 					else
 						keptLibrary = "miRNAmature_antisense";
 					break;
+				}else{
+					precursorAlignments.add(tmp2);
 				}
 			}
-
-			// if no mature sequence explains this read, explicitly assign it to the precursor library 
-			if(keptLibrary.startsWith("miRNA_")){
+			
+			if(keptLibrary.startsWith("miRNAmature_")){ // if there are mature alignments, loop through them again and remove non-mature alignments
+				Iterator<SAMRecord> it3 = precursorAlignments.iterator();
+				while(it3.hasNext()){
+					keepAlignments.remove(it3.next());
+				}
+				
+			}else if(keptLibrary.startsWith("miRNA_")){ // if no mature sequence explains this read, explicitly assign it to the precursor library
 				if(keptLibrary.endsWith("_sense"))
 					keptLibrary = "miRNAprecursor_sense";
 				else
@@ -455,12 +302,17 @@ public class ProcessEndogenousAlignments {
 		 */
 		it2 = keepAlignments.iterator();
 		//String lastLib = "";
-		//int counter = 0;
+		int counter = 0;
+		
+		//String referenceIDs = "";
+		TreeSet<String> refIDs = new TreeSet<String>();
+		
 		while(it2.hasNext()){
-
+			counter ++;
 			tmp2 = it2.next();
 			//System.out.println(tmp2.getReferenceName());
-			String insertSequence = tmp2.getReadString();
+			//String insertSequence = tmp2.getReadString();
+
 
 			/*
 			 * Parse the SAM reference string:
@@ -475,196 +327,66 @@ public class ProcessEndogenousAlignments {
 				mapsTo = mapsTo.concat(":"+refIDbits[i]);
 
 
+
+			/*
+			 *  For the FIRST alignment, print the read info:
+			 */
+			if(counter == 1)
+				System.out.print(tmp2.getReadName()+"\t"+tmp2.getReadString()+"\t"+keptLibrary+"\t"+isGenomeMapped+"\t");
+			//else
+				//System.out.print(" | ");
+				//referenceIDs = referenceIDs.concat(" | ");
+
+
 			/*
 			 * If this is a miRNA aligned read that HAS an overlap with a mature sequence, change the library and reference it to that of the mature
+			 * 
+			 * -- Suppress this stuff, save allocating reads for counting until we read the accepted alignments
 			 */
-			boolean writeThisAlignment = true;
+			//boolean writtenThisAlignment = false;
 			String matureID = "NA";
 			if(keptLibrary.startsWith("miRNAmature_")){
 				matureID = miRNAprecursors.get(mapsTo).getMatureOverlapForRead(tmp2.getReadName(), tmp2.getAlignmentStart(), tmp2.getAlignmentEnd(), keptLibrary.endsWith("_antisense"));
-				// if this read maps to a mature miRNA:
 				if(matureID.length() > 0){
-					_allInserts.get(insertSequence).setMapsToLib(keptLibrary);
-					_allInserts.get(insertSequence).addReferenceAlignment(matureID);
-				}else{
-					// if read does not hit annotated mature miRNA, suppress this alignment
-					writeThisAlignment = false;
+					mapsTo = matureID;
 				}
-			}else{
-				//System.out.println(insertSequence+"\t"+keptLibrary+"\t"+mapsTo);
-				try{
-					_allInserts.get(insertSequence).setMapsToLib(keptLibrary);
-					_allInserts.get(insertSequence).addReferenceAlignment(mapsTo);
-				}
-				catch(NullPointerException e){
-					//Thunder.printLineErr("ERROR: "+tmp2.getReadName()+"\t"+insertSequence+"\t"+keptLibrary+"\t"+mapsTo);
-					ExceRpt_Tools.printLineErr("ERROR: Ignoring alignment: "+tmp2.getReadName()+"\t"+keptLibrary+"\t"+mapsTo);
-					//e.printStackTrace();
-				}
-				//if(counter > 0  &&  !lastLib.equals(keptLibrary))
-				//	System.out.println(insertSequence+"\t"+lastLib+"\t"+keptLibrary);
-				//lastLib = keptLibrary;
-				//counter++;
 			}
-
-
-			/*
-			 * Write chosen alignments
-			 */
-			//System.out.print(tmp2.getReadName()+"\t"+mapsTo+"\t"+keptLibrary+"\t"+tmp2.getAlignmentStart()+"\t"+tmp2.getAlignmentEnd()+"\tNM:i:"+tmp2.getIntegerAttribute("NM")+"\tMD:Z:"+tmp2.getStringAttribute("MD"));
-			try {
-				if(writeThisAlignment)
-					_optimalAlignmentWriter.write(tmp2.getReadName()+"\t"+keptLibrary+"\t"+isGenomeMapped+"\t"+mapsTo+"\t"+tmp2.getAlignmentStart()+"\t"+tmp2.getAlignmentEnd()+"\tNM:i:"+tmp2.getIntegerAttribute("NM")+"\tMD:Z:"+tmp2.getStringAttribute("MD")+"\t"+matureID+"\n");
-			} catch (IOException e) {
-				e.printStackTrace();
+			
+			// if this is a new referenceID, add it to the sorted list:
+			if(!refIDs.contains(mapsTo)){
+				refIDs.add(mapsTo);
 			}
+			
 		}
-	}
-
-
-
-	// Hash that holds all libraries, references, and expression statistics
-	// library, referenceID, {uniqueInserts, readCount, readCount(multimap adjusted), readCount(multimap+barcode adjusted}
-	HashMap<String, HashMap<String, double[]>> _library2referenceID2counts = new HashMap<String, HashMap<String, double[]>>();
-
-
-	/**
-	 * Loop through all inserts, create hash maps to contain expressions
-	 */
-	private void computeExpression(){
-		//System.out.println("_allInserts.size(): "+_allInserts.size());
-		Iterator<String> it = _allInserts.keySet().iterator();
-		while(it.hasNext()){
-			Insert tmp = _allInserts.get(it.next());
-			//System.out.println("tmp.getInsertSequence(): "+tmp.getInsertSequence()+"\t"+tmp.mapsToLib());
-			if(!_library2referenceID2counts.containsKey(tmp.mapsToLib()))
-				_library2referenceID2counts.put(tmp.mapsToLib(), new HashMap<String, double[]>());
-
-			int nAlignments = tmp.getReferenceAlignments().size();
-
-			//System.out.println(tmp.getInsertSequence()+"\t"+tmp.getInsertSequenceCount()+"\t"+tmp.mapsToLib()+"\t"+nAlignments);
-
-			for(String thisAlignment: tmp.getReferenceAlignments()){
-				double[] alignmentCounts;
-				if(!_library2referenceID2counts.get(tmp.mapsToLib()).containsKey(thisAlignment))
-					alignmentCounts = new double[]{0.0,0.0,0.0,0.0};
-				else
-					alignmentCounts = _library2referenceID2counts.get(tmp.mapsToLib()).get(thisAlignment);
-
-				alignmentCounts[0] += 1;
-				alignmentCounts[1] += tmp.getInsertSequenceCount();
-				alignmentCounts[2] += (tmp.getInsertSequenceCount()+0.0)/(nAlignments+0.0);
-				alignmentCounts[3] += (tmp.getBarcodeCount()+0.0)/(nAlignments+0.0);
-
-				_library2referenceID2counts.get(tmp.mapsToLib()).put(thisAlignment, alignmentCounts);
-			}
+		
+		// create reference key
+		String referenceIDs = "";
+		boolean first = true;
+		for(String id:refIDs){
+			if(first)
+				referenceIDs = referenceIDs.concat(id);
+			else
+				referenceIDs = referenceIDs.concat(" | "+id);
+			first = false;
 		}
-		//System.out.println("_library2referenceID2counts.size() = "+_library2referenceID2counts.size());
-	}
-
-
-	/**
-	 * Write the insert counts, read counts, and adjusted counts for each of the observed libraries 
-	 * @param basePath
-	 * @throws IOException
-	 */
-	public void writeCounts(String basePath) throws IOException{
-		Iterator<String> libraryIterator = _library2referenceID2counts.keySet().iterator();
-		while(libraryIterator.hasNext()){
-			String thisLibrary = libraryIterator.next();
-			//System.out.println(thisLibrary+"\t"+_library2referenceID2counts.get(thisLibrary).size());
-
-			if(_library2referenceID2counts.get(thisLibrary).size() > 0){
-				BufferedWriter out = new BufferedWriter(new FileWriter(basePath+"/readCounts_"+thisLibrary+".txt"));
-				out.write("ReferenceID\tuniqueReadCount\ttotalReadCount\tmultimapAdjustedReadCount\tmultimapAdjustedBarcodeCount\n");
-
-				TreeMap<String,double[]> tmp_sorted;
-				tmp_sorted = new TreeMap<String,double[]>(new Comparator_SortByAdjustedReadCount(_library2referenceID2counts.get(thisLibrary)));
-				tmp_sorted.putAll(_library2referenceID2counts.get(thisLibrary));
-				Iterator<String> it = tmp_sorted.keySet().iterator();
-				while(it.hasNext()){
-					String thisID = it.next();
-					double[] quants = _library2referenceID2counts.get(thisLibrary).get(thisID);
-					out.write(thisID+"\t"+Math.round(quants[0])+"\t"+Math.round(quants[1])+"\t"+quants[2]+"\t"+quants[3]+"\n");
-				}
-				out.flush();
-				out.close();
-
-
-				// If this is the gencode library, compute gene level expressions (as this is slow to do in post-processing 
-				if(thisLibrary.startsWith("gencode_")){
-
-					out = new BufferedWriter(new FileWriter(basePath+"/readCounts_"+thisLibrary+"_geneLevel.txt"));
-					out.write("ReferenceID\tuniqueReadCount\ttotalReadCount\tmultimapAdjustedReadCount\tmultimapAdjustedBarcodeCount\n");
-
-					HashMap<String, double[]> geneLevelQuants = new HashMap<String, double[]>(); 
-					it = _library2referenceID2counts.get(thisLibrary).keySet().iterator();
-					while(it.hasNext()){
-						String thisID = it.next();
-						//System.out.println("thisID = "+thisID);
-						/*   [library]:[referenceID]
-						 *   ENST00000431311.1:lincRNA:RP11-214L19.1-001:GN=ENSG00000237290.1  */
-						String[] refIDbits = thisID.split(":");
-						if(refIDbits.length < 4){
-							// TODO: figure this out!!!
-							//System.err.println("ERROR parsing "+thisID+" from library "+thisLibrary);
-						}else{
-							String[] geneNameBits = refIDbits[2].split("-");
-							String geneName = geneNameBits[0];
-							for(int i=1;i<geneNameBits.length-1;i++)
-								geneName.concat("-"+geneNameBits[i]);
-							//String newID = geneName+":"+refIDbits[3].substring(3)+":"+refIDbits[1];
-							String newID = geneName+":"+refIDbits[1];
-
-							if(!geneLevelQuants.containsKey(newID))
-								geneLevelQuants.put(newID, new double[]{0.0,0.0,0.0,0.0});
-							double[] thisGeneCounts = geneLevelQuants.get(newID);
-
-							double[] thisTranscriptCounts = _library2referenceID2counts.get(thisLibrary).get(thisID);
-							if(thisTranscriptCounts[0] > thisGeneCounts[0])
-								thisGeneCounts[0] = thisTranscriptCounts[0];
-							if(thisTranscriptCounts[1] > thisGeneCounts[1])
-								thisGeneCounts[1] = thisTranscriptCounts[1];
-							thisGeneCounts[2] += thisTranscriptCounts[2];
-							thisGeneCounts[3] += thisTranscriptCounts[3];
-
-							geneLevelQuants.put(newID, thisGeneCounts);
-						}
-					}
-
-					tmp_sorted = new TreeMap<String,double[]>(new Comparator_SortByAdjustedReadCount(geneLevelQuants));
-					tmp_sorted.putAll(geneLevelQuants);
-					it = tmp_sorted.keySet().iterator();
-					while(it.hasNext()){
-						String thisID = it.next();
-						double[] quants = geneLevelQuants.get(thisID);
-						out.write(thisID+"\t"+Math.round(quants[0])+"\t"+Math.round(quants[1])+"\t"+quants[2]+"\t"+quants[3]+"\n");
-					}
-					out.flush();
-					out.close();
-				}
-			}
+		
+		if(!_referenceID2index.containsKey(referenceIDs)){
+			_referenceID2index.put(referenceIDs, _indexCount);
+			_dictionaryWriter.write(_indexCount+"\t"+referenceIDs+"\n");
+			
+			System.out.println(_indexCount);
+			_indexCount ++;
+		}else{
+			System.out.println(_referenceID2index.get(referenceIDs));
 		}
+		
+		
 	}
 
 
 
-	/**
-	 * 
-	 * @param readsByLibrary
-	 * @param refType
-	 * @param alignment
-	 * @return
-	 */
-	private HashMap<String, ArrayList<SAMRecord>> addReadAssignment(HashMap<String, ArrayList<SAMRecord>> readsByLibrary, String refType, SAMRecord alignment){
-		if(!readsByLibrary.containsKey(refType))
-			readsByLibrary.put(refType, new ArrayList<SAMRecord>());
 
-		readsByLibrary.get(refType).add(alignment);
-		return readsByLibrary;
-	}
-
-
+	private BufferedWriter _dictionaryWriter; 
 
 	/**
 	 * Reads the read alignments
@@ -674,8 +396,12 @@ public class ProcessEndogenousAlignments {
 	 *   genome:miRNA:hsa-mir-486-1:MI0002470:Homo:sapiens:miR-486:stem-loop
 	 * 
 	 * @param path_readAlignments
+	 * @throws IOException 
 	 */
-	public boolean read_Reads(File path_readAlignments){
+	public boolean read_Reads(File path_readAlignments, String outputPath) throws IOException{
+		
+		_dictionaryWriter = new BufferedWriter(new FileWriter(new File(outputPath)));
+		
 		/*
 		 * Read the read alignments
 		 */
@@ -690,7 +416,9 @@ public class ProcessEndogenousAlignments {
 		SAMRecordIterator it = inputSam.iterator();
 		String lastReadID = null;
 		while(it.hasNext()){
+			//count++;
 			thisRecord = it.next();
+			
 			//System.out.println(thisRecord.getReferenceName());
 			if(!thisRecord.getReadName().equals(lastReadID)  &&  lastReadID != null){
 				// new, non first
@@ -712,6 +440,9 @@ public class ProcessEndogenousAlignments {
 			inputSam.close();
 			return false;
 		}*/
+		
+		_dictionaryWriter.flush();
+		_dictionaryWriter.close();
 		inputSam.close();
 		return true;
 	}
@@ -776,10 +507,10 @@ public class ProcessEndogenousAlignments {
 		Options options = new Options();
 		options.addOption(OptionBuilder.withArgName(".SAM or .BAM").hasArg().withDescription("Path to HAIRPIN alignments to the genome").create("hairpin2genome"));
 		options.addOption(OptionBuilder.withArgName(".SAM or .BAM").hasArg().withDescription("Path to MATURE alignments to the hairpins").create("mature2hairpin"));
-		options.addOption(OptionBuilder.withArgName(".SAM or .BAM").hasArg().withDescription("Path to READ alignments to the hairpins").create("reads2all"));
-		options.addOption(OptionBuilder.withArgName(".stats").hasArg().withDescription("[optional] Path to random barcode stats").create("randombarcode"));
+		options.addOption(OptionBuilder.withArgName(".SAM or .BAM").hasArg().withDescription("Path to summariesed, sorted READ alignments to the genome and transcriptome").create("reads2all"));
+		//options.addOption(OptionBuilder.withArgName(".stats").hasArg().withDescription("[optional] Path to random barcode stats").create("randombarcode"));
 		options.addOption(OptionBuilder.withArgName("csv list").hasArg().withDescription("[optional] Library priorities for quantification. Comma separated list of libraries in *descending* order of importance. Default: miRNA,tRNA,piRNA,gencode,circRNA - this can also be used to suppress libraries during quantification.").create("libPriority"));
-		options.addOption(OptionBuilder.withArgName("directory").hasArg().withDescription("Base path to write the results into").create("outputPath"));
+		options.addOption(OptionBuilder.withArgName("path").hasArg().withDescription("File to write the alignment dictionary into").create("dict"));
 		return options;
 	}
 
@@ -788,24 +519,27 @@ public class ProcessEndogenousAlignments {
 		/*String hairpin2genome = "/Users/robk/WORK/YALE_offline/ANNOTATIONS/MICRO_RNA/miRBase_v21_hairpin_hsa_hg19_aligned.sam";
 		String mature2hairpin = "/Users/robk/WORK/YALE_offline/ANNOTATIONS/MICRO_RNA/miRBase_v21_mature_hairpin_hsa_aligned.sam";
 		//String reads_path = "/Users/robk/WORK/YALE_offline/exRNA/TESTING/newEndogenousQuants/endogenousAlignments_ALL.sam";
-		String reads_path = "/Users/robk/WORK/YALE_offline/exRNA/TESTING/newEndogenousQuants/endogenousAlignments_LIBS.sam";
+		String reads_path = "/Users/robk/WORK/YALE_offline/exRNA/TESTING/newEndogenousQuants/endogenousAlignments_LIBS.sam.head";
+		//reads_path = "/Users/robk/WORK/YALE_offline/exRNA/TESTING/newEndogenousQuants/test.txt";
 		//String reads_path = "/Users/robk/WORK/YALE_offline/exRNA/TESTING/newEndogenousQuants/endogenousAlignments_top.sam";
 		//String reads_path = "/Users/robk/WORK/YALE_offline/exRNA/TESTING/newEndogenousQuants/test2.sam";
-		String output_path = "/Users/robk/WORK/YALE_offline/exRNA/TESTING/newEndogenousQuants";
+		String output_dictionary = "/Users/robk/WORK/YALE_offline/exRNA/TESTING/newEndogenousQuants/alignments.dict";
 		args = new String[]{"ProcessEndogenousAlignments",
 				"--hairpin2genome",hairpin2genome,
 				"--mature2hairpin",mature2hairpin,
 				"--reads2all",reads_path,
-				"--outputPath",output_path,
+				"--dict",output_dictionary,
 				"--libPriority","miRNA,tRNA,piRNA,gencode,circRNA"
 		};*/
-
+		
 
 		CommandLine cmdArgs = ExceRpt_Tools.parseArgs(args, getCmdLineOptions());
 
-		if(cmdArgs.hasOption("hairpin2genome") && cmdArgs.hasOption("mature2hairpin") && cmdArgs.hasOption("reads2all") && cmdArgs.hasOption("outputPath")){
+		if(cmdArgs.hasOption("hairpin2genome") && cmdArgs.hasOption("mature2hairpin") && cmdArgs.hasOption("reads2all") && cmdArgs.hasOption("dict")){
+		//if(cmdArgs.hasOption("hairpin2genome") && cmdArgs.hasOption("mature2hairpin") && cmdArgs.hasOption("reads2all")){
 			//ProcessEndogenousAlignments engine = new ProcessEndogenousAlignments(new File(cmdArgs.getOptionValue("hairpin2genome")), new File(cmdArgs.getOptionValue("mature2hairpin")));
-			ProcessEndogenousAlignments engine = new ProcessEndogenousAlignments(cmdArgs.getOptionValue("outputPath"));
+			//ProcessEndogenousAlignments engine = new ProcessEndogenousAlignments(cmdArgs.getOptionValue("outputPath"));
+			ProcessEndogenousAlignments engine = new ProcessEndogenousAlignments();
 
 			// Read barcode stats if they exist
 			//if(cmdArgs.hasOption("randombarcode")){
@@ -828,10 +562,10 @@ public class ProcessEndogenousAlignments {
 
 			// read and process the RNA-seq read alignments
 			ExceRpt_Tools.printLineErr("Processing RNA-seq alignments");
-			boolean cont = engine.read_Reads(new File(cmdArgs.getOptionValue("reads2all")));
+			boolean cont = engine.read_Reads(new File(cmdArgs.getOptionValue("reads2all")), cmdArgs.getOptionValue("dict"));
 
 			if(cont){
-				ExceRpt_Tools.printLineErr("Computing expressions");
+				/*	ExceRpt_Tools.printLineErr("Computing expressions");
 				engine.computeExpression();
 
 				// write the miRNA counts
@@ -842,9 +576,12 @@ public class ProcessEndogenousAlignments {
 
 				// close global buffered writer(s)
 				engine.tidyUp();
+				 */
 
 				ExceRpt_Tools.printLineErr("Done!");
 			}
+			else
+				ExceRpt_Tools.printLineErr("Something went wrong...");
 		}else{
 			HelpFormatter formatter = new HelpFormatter();
 			formatter.printHelp(ExceRpt_Tools.ExceRpt_Tools_EXE_COMMAND+" ProcessEndogenousAlignments", getCmdLineOptions());

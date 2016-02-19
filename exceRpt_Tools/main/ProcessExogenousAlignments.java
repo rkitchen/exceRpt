@@ -3,7 +3,6 @@ package main;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -34,8 +33,8 @@ public class ProcessExogenousAlignments {
 	 * @throws IOException
 	 */
 	public ProcessExogenousAlignments() throws IOException{  }
-	
-	
+
+
 	/**
 	 * 
 	 * @param taxonomyPath
@@ -44,21 +43,51 @@ public class ProcessExogenousAlignments {
 	public void readTaxonomy(String taxonomyPath) throws IOException{
 		_taxonomy = new NCBITaxonomy_Engine(taxonomyPath);
 	}
-	
-	
+
+
+
+	BufferedReader _alignmentReader;
+
 	/**
 	 * 
 	 * @param alignmentsPath
 	 * @throws IOException
 	 */
-	public void processAlignments(String alignmentsPath) throws IOException{
-		//IO_utils.printLineErr("Reading alignments");
-		readAlignments(alignmentsPath);
+	public void processAlignments(String alignmentsPath, int batchSize) throws IOException{
+		IO_utils.printLineErr("Reading alignments...");
+		_alignmentReader = new BufferedReader(new FileReader(alignmentsPath));
+		int batchCount = 1;
+		int readCounter = 0;
+		//boolean hasMoreAlignments = false;
+		//System.out.println("batch "+batchCount);
+		while(readAlignments(batchSize)){
+			// printing:
+			/*System.out.println("batch "+batchCount);
+			Iterator<String> it = _reads2species.keySet().iterator();
+			while(it.hasNext())
+				System.out.println("\t"+it.next());
+			*/
+			
+			
+			IO_utils.printLineErr("Processing alignments in batch "+batchCount);
+			if(_countIgnoredReads)
+				IO_utils.printLineErr(" - Ignored "+_ignoredReads.size()+" alignments to species that could not be found in the taxonomy ("+countIgnoredReads()+" reads removed entirely)");
+			IO_utils.printLineErr(" - Detected "+_species2reads.size()+" possible species from "+_reads2species.size()+" aligned reads");
+			readCounter += _reads2species.size();
+			
+			processAlignments(_taxonomy.getRootNode());
 
-		IO_utils.printLineErr("Processing alignments");
-		processAlignments(_taxonomy.getRootNode());
-
-		IO_utils.printLineErr("Assigned "+_readAssignment.size()+" of "+_reads2species.size()+" reads ("+Math.round((_readAssignment.size()+0.0)*1000.0/(_reads2species.size()+0.0))/10.0+"%) to a subset of the taxonomy");
+			//IO_utils.printLineErr(" - Assigned "+_readAssignment.size()+" of "+_reads2species.size()+" reads ("+Math.round((_readAssignment.size()+0.0)*1000.0/(_reads2species.size()+0.0))/10.0+"%) to a subset of the taxonomy");
+			IO_utils.printLineErr(" - Assigned "+_readAssignment.size()+" of "+readCounter+" reads ("+Math.round((_readAssignment.size()+0.0)*1000.0/(readCounter+0.0))/10.0+"%) to a subset of the taxonomy");
+			batchCount ++;
+			
+			// clean up ready for the next batch
+			_reads2species = new HashMap<String, HashSet<String>>();
+			_species2reads = new HashMap<String, HashSet<String>>();
+			
+			//if(hasMoreAlignments)
+			//	IO_utils.printLineErr("Reading more alignments...");
+		}
 
 		IO_utils.printLineErr("Quantifying");
 		countReads();
@@ -71,6 +100,109 @@ public class ProcessExogenousAlignments {
 	}
 
 
+	private String _lastReadID=null, _lastSpeciesID=null;
+	/**
+	 * 
+	 * @param alignmentsPath where to 
+	 * @param batchSize number of reads to read
+	 * 
+	 * @return true if there are more alignments to read
+	 * @throws IOException
+	 */
+	private boolean readAlignments(int batchSize) throws IOException{
+
+		boolean hasMoreAlignments = false;
+		int readCounter = 0;
+		String line;
+
+		if(_lastReadID != null){// there is a read left over from the last batch, add it!
+			addRead(_lastReadID, _lastSpeciesID);
+		}
+
+		//int count = 0;
+		while((line=_alignmentReader.readLine())!=null){
+			hasMoreAlignments = true;
+
+			String[] bits = line.split("\t");
+
+			String readID = bits[0].trim();
+			String species = bits[2].replace("_", " ").toLowerCase().trim();
+
+			//if(count < 10){
+				//System.out.println(_lastReadID+"\t"+readID+"\t"+line);
+			//}
+			if(readID.equals(_lastReadID)  ||  _lastReadID == null){
+				addRead(readID, species);
+				_lastReadID = readID;
+				_lastSpeciesID = species;
+			}else{ // new read
+				readCounter ++;
+				//System.out.println("readCounter: "+readCounter);
+				_lastReadID = readID;
+				_lastSpeciesID = species;
+				if(readCounter < batchSize)
+					addRead(readID, species);
+				else
+					break;
+			}
+		}
+		
+		if(!hasMoreAlignments)
+			_lastReadID = null;
+
+		
+		
+		//System.out.println(_maxCountSpecies+": "+_maxCount);
+		//br.close();
+		
+		return hasMoreAlignments;
+	}
+	
+	
+	private boolean _countIgnoredReads = false; // can cause high memory usage if there are a lot of these
+	HashSet<String> _ignoredReads = new HashSet<String>();
+	private void addRead(String readID, String species){
+		// check that this species is in the taxonomy
+		//if(_taxonomy.getNodeName2nodeIndex().containsKey(species)){
+		if(_taxonomy.containsNode(species)){
+
+			if(!_reads2species.containsKey(readID))
+				_reads2species.put(readID, new HashSet<String>());
+			_reads2species.get(readID).add(species);
+
+			if(!_species2reads.containsKey(species)){
+				_species2reads.put(species, new HashSet<String>());
+				_species2readCounts.put(species, 0);
+			}
+			_species2reads.get(species).add(readID);
+
+			int thisCount = _species2readCounts.get(species)+1;
+			_species2readCounts.put(species, thisCount);
+
+
+
+			//System.out.println(species+": "+_species2readCounts.get(species));
+		}else if(_countIgnoredReads){
+			//IO_utils.printLineErr("\'"+species+"\' not found in the taxonomy, ignoring");
+			_ignoredReads.add(readID);
+			//ignoredSpecies.add(species);
+		}
+	}
+	private int countIgnoredReads(){
+		int ignoredReadCount = 0;
+		// count reads that are removed completely due to taxonomy ambiguity
+		Iterator<String> it = _ignoredReads.iterator();
+		while(it.hasNext()){
+			if(!_reads2species.containsKey(it.next()))
+				ignoredReadCount ++;
+		}
+		return ignoredReadCount;
+	}
+	
+
+	
+	
+	
 
 	/**
 	 * recount reads so as to be cumulative going up the taxonomic tree 
@@ -179,69 +311,19 @@ public class ProcessExogenousAlignments {
 
 
 
-	private HashMap<String, ArrayList<String>> _reads2species = new HashMap<String, ArrayList<String>>();
-	private HashMap<String, ArrayList<String>> _species2reads = new HashMap<String, ArrayList<String>>();
+	private HashMap<String, HashSet<String>> _reads2species = new HashMap<String, HashSet<String>>();
+	private HashMap<String, HashSet<String>> _species2reads = new HashMap<String, HashSet<String>>();
 	private HashMap<String, Integer> _species2readCounts = new HashMap<String, Integer>();
 
-	private void readAlignments(String alignmentsPath) throws IOException{
-		BufferedReader br = new BufferedReader(new FileReader(alignmentsPath));
-		String line;
-		int ignoredReadCount = 0;
-		HashSet<String> ignoredReads = new HashSet<String>();
-		//HashSet<String> ignoredSpecies = new HashSet<String>();
 
-		//int count = 0;
-		while((line=br.readLine())!=null){
-			//if(count < 10){
-			//	System.out.println(line);
-			//}
-
-			String[] bits = line.split("\t");
-
-			String readID = bits[0].trim();
-			String species = bits[2].replace("_", " ").toLowerCase().trim();
-
-			// check that this species is in the taxonomy
-			//if(_taxonomy.getNodeName2nodeIndex().containsKey(species)){
-			if(_taxonomy.containsNode(species)){
-
-				if(!_reads2species.containsKey(readID))
-					_reads2species.put(readID, new ArrayList<String>());
-				_reads2species.get(readID).add(species);
-
-				if(!_species2reads.containsKey(species)){
-					_species2reads.put(species, new ArrayList<String>());
-					_species2readCounts.put(species, 0);
-				}
-				_species2reads.get(species).add(readID);
-
-				int thisCount = _species2readCounts.get(species)+1;
-				_species2readCounts.put(species, thisCount);
+	
 
 
 
-				//System.out.println(species+": "+_species2readCounts.get(species));
-			}else{
-				//IO_utils.printLineErr("\'"+species+"\' not found in the taxonomy, ignoring");
-				ignoredReads.add(readID);
-				//ignoredSpecies.add(species);
-			}
+	
+	
 
-		}
-
-		// count reads that are removed completely due to taxonomy ambiguity
-		Iterator<String> it = ignoredReads.iterator();
-		while(it.hasNext()){
-			if(!_reads2species.containsKey(it.next()))
-				ignoredReadCount ++;
-		}
-
-		IO_utils.printLineErr("Ignored "+ignoredReads.size()+" alignments to species that could not be found in the taxonomy ("+ignoredReadCount+" reads removed entirely)");
-		IO_utils.printLineErr("Detected "+_species2reads.size()+" possible species from "+_reads2species.size()+" aligned reads");
-		//System.out.println(_maxCountSpecies+": "+_maxCount);
-		br.close();
-	}
-
+	
 
 
 	/**
@@ -254,8 +336,11 @@ public class ProcessExogenousAlignments {
 		options.addOption(OptionBuilder.withArgName("dir").hasArg().withDescription("Path to the directory containing the NCBI taxonomy").create("taxonomyPath"));
 		options.addOption(OptionBuilder.withArgName(".unique.txt").hasArg().withDescription("Path to the exogenous alignments output by exceRpt").create("alignments"));
 		options.addOption(OptionBuilder.withArgName("[min=0, max=1]").hasArg().withDescription("[optional] minimum fraction of reads that must be contained within a subtree before increasing resolution to that subtree").create("frac"));
+		options.addOption(OptionBuilder.withArgName("integer").hasArg().withDescription("[optional] process alignments in batches of reads [default: "+DEFAULT_BATCH_SIZE+"]").create("batchSize"));
 		return options;
 	}
+	
+	public static final int DEFAULT_BATCH_SIZE = 100000;
 
 
 	public static void main(String[] args) throws IOException, ParseException {
@@ -266,27 +351,31 @@ public class ProcessExogenousAlignments {
 		//alignmentsPath = "/Users/robk/WORK/YALE_offline/tmp/Lajos/exogenousTEST/A806WMABXX.unmapped_ExogenousGenomicAlignments.sorted.unique.txt";
 		//alignmentsPath = "/Users/robk/WORK/YALE_offline/tmp/Lajos/exogenousTEST/test.txt";
 
-		args = new String[]{"--taxonomyPath","/Users/robk/WORK/YALE_offline/ANNOTATIONS/taxdump", "--alignments",alignmentsPath};
-		//String taxonomyPath = "/Users/robk/WORK/YALE_offline/ANNOTATIONS/taxdump";
-		
+		//args = new String[]{"--taxonomyPath","/Users/robk/WORK/YALE_offline/ANNOTATIONS/taxdump", "--alignments",alignmentsPath, "--batchSize","100000"};
+
 
 		CommandLine cmdArgs = ExceRpt_Tools.parseArgs(args, getCmdLineOptions());
 		if(cmdArgs.hasOption("taxonomyPath") && cmdArgs.hasOption("alignments")){
-			
+
 			ProcessExogenousAlignments engine = new ProcessExogenousAlignments();
+
+			int batchSize = DEFAULT_BATCH_SIZE;
+			if(cmdArgs.hasOption("batchSize"))
+				batchSize = Integer.valueOf(cmdArgs.getOptionValue("batchSize")).intValue();
 
 			double frac = 0.95;
 			if(cmdArgs.hasOption("frac")){
 				frac = Double.valueOf(cmdArgs.getOptionValue("frac")).doubleValue();
 				engine.setMinReadFractionForTreeDescent(frac);
 			}
-			
-			IO_utils.printLineErr("Summarising alignments in \'"+cmdArgs.getOptionValue("alignments")+"\'");
-			IO_utils.printLineErr("        using taxonomy in \'"+cmdArgs.getOptionValue("taxonomyPath")+"\' and minFraction="+frac);
-			
+
+			IO_utils.printLineErr("Summarising alignments in: \'"+cmdArgs.getOptionValue("alignments")+"\'");
+			IO_utils.printLineErr("            in batches of: "+batchSize+" reads");
+			IO_utils.printLineErr("        using taxonomy in: \'"+cmdArgs.getOptionValue("taxonomyPath")+"\' and minFraction="+frac);
+
 			engine.readTaxonomy(cmdArgs.getOptionValue("taxonomyPath"));
-			
-			engine.processAlignments(cmdArgs.getOptionValue("alignments"));
+
+			engine.processAlignments(cmdArgs.getOptionValue("alignments"), batchSize);
 		}
 		else{
 			HelpFormatter formatter = new HelpFormatter();

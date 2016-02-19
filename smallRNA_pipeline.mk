@@ -16,10 +16,10 @@
 ##                                                                                   ##
 ## Learn more at github.gersteinlab.org/exceRpt                                      ##
 ##                                                                                   ##
-## Version 3.4.0 (2016-02-04)                                                        ##
+## Version 3.4.1 (2016-02-16)                                                        ##
 ##                                                                                   ##
 #######################################################################################
-EXCERPT_VERSION := 3.4.0
+EXCERPT_VERSION := 3.4.1
 
 
 ##
@@ -713,13 +713,22 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousUnaligned_ungapped_noLibs.fq: $(OUTPUT_DIR)
 	@echo -e "$(ts) $(SMRNAPIPELINE): Finished collecting alignments\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Sort alignments
 	@echo -e "$(ts) $(SMRNAPIPELINE): Sorting alignments...\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): cat $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.sam | sort -k 1,1 | sed 's/ /:/g' > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_LIBS.sam\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp.sam | sort -k 1,1 | sed 's/ /:/g' > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_LIBS.sam
 	@echo -e "$(ts) $(SMRNAPIPELINE): Finished sorting alignments\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Assign reads
 	@echo -e "$(ts) $(SMRNAPIPELINE): Assigning reads:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) $(SMRNAPIPELINE): $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) ProcessEndogenousAlignments --libPriority $(ENDOGENOUS_LIB_PRIORITY) --hairpin2genome $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRBase_v21_hairpin_hsa_hg19_aligned.sam --mature2hairpin $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRBase_v21_mature_hairpin_hsa_aligned.sam --reads2all $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_LIBS.sam --outputPath $(OUTPUT_DIR)/$(SAMPLE_ID) $(ENDOGENOUS_QUANT_RANDOM_BARCODE_STATS)\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	$(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) ProcessEndogenousAlignments --libPriority $(ENDOGENOUS_LIB_PRIORITY) --hairpin2genome $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRNA_precursor2genome.sam --mature2hairpin $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRNA_mature2precursor.sam --reads2all $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_LIBS.sam --outputPath $(OUTPUT_DIR)/$(SAMPLE_ID) $(ENDOGENOUS_QUANT_RANDOM_BARCODE_STATS) 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) ProcessEndogenousAlignments --libPriority $(ENDOGENOUS_LIB_PRIORITY) --hairpin2genome $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRNA_precursor2genome.sam --mature2hairpin $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRNA_mature2precursor.sam  --dict $(OUTPUT_DIR)/$(SAMPLE_ID)/alignments.dict --reads2all $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_LIBS.sam | sort -k 2,2 -k 1,1 > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.txt\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	#$(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) ProcessEndogenousAlignments --libPriority $(ENDOGENOUS_LIB_PRIORITY) --hairpin2genome $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRNA_precursor2genome.sam --mature2hairpin $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRNA_mature2precursor.sam --reads2all $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_LIBS.sam --outputPath $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.txt $(ENDOGENOUS_QUANT_RANDOM_BARCODE_STATS) 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) ProcessEndogenousAlignments --libPriority $(ENDOGENOUS_LIB_PRIORITY) --hairpin2genome $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRNA_precursor2genome.sam --mature2hairpin $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRNA_mature2precursor.sam  --dict $(OUTPUT_DIR)/$(SAMPLE_ID)/alignments.dict --reads2all $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_LIBS.sam 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | sort -k 2,2 -k 1,1 > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.txt
 	@echo -e "$(ts) $(SMRNAPIPELINE): Finished assigning reads\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	## Sort alignments by insert sequence then by read ID
+	#cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.txt | sort -k 2,2 -k 1,1 > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.sorted.txt
+	## Quantify all annotated RNAs
+	@echo -e "$(ts) $(SMRNAPIPELINE): Assigning reads:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) QuantifyEndogenousAlignments --dict $(OUTPUT_DIR)/$(SAMPLE_ID)/alignments.dict --acceptedAlignments $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.txt --outputPath $(OUTPUT_DIR)/$(SAMPLE_ID)\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) QuantifyEndogenousAlignments --dict $(OUTPUT_DIR)/$(SAMPLE_ID)/alignments.dict --acceptedAlignments $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.txt --outputPath $(OUTPUT_DIR)/$(SAMPLE_ID) 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	#
 	## Summarise alignment statistics
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_miRNAmature_sense.txt | awk '{SUM+=$$4}END{printf "miRNA_sense\t%.0f\n",SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_miRNAmature_antisense.txt | awk '{SUM+=$$4}END{printf "miRNA_antisense\t%.0f\n",SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
