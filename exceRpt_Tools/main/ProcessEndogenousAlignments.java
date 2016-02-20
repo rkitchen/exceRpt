@@ -44,6 +44,8 @@ public class ProcessEndogenousAlignments {
 	private String _libraryPriorityString_default = "miRNA,tRNA,piRNA,gencode,circRNA";
 	private String _libraryPriorityString = "";
 
+	
+	private boolean _readingGenomeMappedReads = true;
 
 
 	/**
@@ -258,16 +260,16 @@ public class ProcessEndogenousAlignments {
 		SAMRecord tmp2;
 		if(keptLibrary.startsWith("miRNA_")){
 			ArrayList<SAMRecord> precursorAlignments = new ArrayList<SAMRecord>();
-			int index = 0;
+			//int index = 0;
 			it2 = keepAlignments.iterator();
 			
 			// if this is a miRNA alignment, run through all alignments and check for a hit to a mature miRNA 
 			while(it2.hasNext()){
-				index ++;
+				//index ++;
 				tmp2 = it2.next();
 				String[] refIDbits = tmp2.getReferenceName().split(":");
-				String mapsTo = refIDbits[2];
-				for(int i=3;i<refIDbits.length;i++)
+				String mapsTo = refIDbits[1];
+				for(int i=2;i<refIDbits.length;i++)
 					mapsTo = mapsTo.concat(":"+refIDbits[i]);
 
 				// if this read maps to a mature miRNA, 
@@ -321,12 +323,13 @@ public class ProcessEndogenousAlignments {
 			 *   genome:gencode:ENST00000408108.1:miRNA:MIR486-201:GN=ENSG00000221035.1 
 			 */
 			String[] refIDbits = tmp2.getReferenceName().split(":");
-			String isGenomeMapped = refIDbits[0];
-			String mapsTo = refIDbits[2];
-			for(int i=3;i<refIDbits.length;i++)
+			String mapsTo = refIDbits[1];
+			for(int i=2;i<refIDbits.length;i++)
 				mapsTo = mapsTo.concat(":"+refIDbits[i]);
 
-
+			String isGenomeMapped = "genome";
+			if(!_readingGenomeMappedReads)
+				isGenomeMapped = "nogenome";
 
 			/*
 			 *  For the FIRST alignment, print the read info:
@@ -398,14 +401,8 @@ public class ProcessEndogenousAlignments {
 	 * @param path_readAlignments
 	 * @throws IOException 
 	 */
-	public boolean read_Reads(File path_readAlignments, String outputPath) throws IOException{
-		
-		_dictionaryWriter = new BufferedWriter(new FileWriter(new File(outputPath)));
-		
-		/*
-		 * Read the read alignments
-		 */
-		SAMFileReader inputSam = new SAMFileReader(path_readAlignments);
+	
+	public boolean read_Reads(SAMFileReader inputSam) throws IOException{
 		inputSam.setValidationStringency(ValidationStringency.SILENT);
 		//inputSam.setValidationStringency(ValidationStringency.LENIENT);
 
@@ -427,7 +424,8 @@ public class ProcessEndogenousAlignments {
 			}
 
 			// put the SAM record into the map with the library type as the value
-			thisRead.put(thisRecord, thisRecord.getReferenceName().split(":")[1]);
+			//thisRead.put(thisRecord, thisRecord.getReferenceName().split(":")[1]);
+			thisRead.put(thisRecord, thisRecord.getReferenceName().split(":")[0]);
 			lastReadID = thisRecord.getReadName();
 			//System.out.println(thisRecord.getReferenceName().split(":")[0]+"\t"+thisRecord.getReferenceName()+"\t"+thisRecord.getReadName());
 
@@ -436,14 +434,31 @@ public class ProcessEndogenousAlignments {
 		assignRead(thisRead);
 
 		/*}else{
-			Thunder.printLineErr("ERROR: Input SAM file must be sorted by readID");
-			inputSam.close();
-			return false;
+		Thunder.printLineErr("ERROR: Input SAM file must be sorted by readID");
+		inputSam.close();
+		return false;
 		}*/
 		
-		_dictionaryWriter.flush();
-		_dictionaryWriter.close();
 		inputSam.close();
+		return true;
+	}
+	
+	
+	public boolean read_Reads(File path_readAlignments_genome, File path_readAlignments_genomeANDtranscriptome, String outputPath) throws IOException{
+		
+		_dictionaryWriter = new BufferedWriter(new FileWriter(new File(outputPath)));
+		
+		// Read the alignments for genome and transcriptome mapped reads
+		_readingGenomeMappedReads = true;
+		read_Reads(new SAMFileReader(path_readAlignments_genome));
+		_dictionaryWriter.flush();
+		
+		// Read the alignments for transcriptome mapped reads
+		_readingGenomeMappedReads = false;
+		read_Reads(new SAMFileReader(path_readAlignments_genomeANDtranscriptome));
+		_dictionaryWriter.flush();
+		
+		_dictionaryWriter.close();
 		return true;
 	}
 
@@ -507,7 +522,8 @@ public class ProcessEndogenousAlignments {
 		Options options = new Options();
 		options.addOption(OptionBuilder.withArgName(".SAM or .BAM").hasArg().withDescription("Path to HAIRPIN alignments to the genome").create("hairpin2genome"));
 		options.addOption(OptionBuilder.withArgName(".SAM or .BAM").hasArg().withDescription("Path to MATURE alignments to the hairpins").create("mature2hairpin"));
-		options.addOption(OptionBuilder.withArgName(".SAM or .BAM").hasArg().withDescription("Path to summariesed, sorted READ alignments to the genome and transcriptome").create("reads2all"));
+		options.addOption(OptionBuilder.withArgName(".SAM or .BAM").hasArg().withDescription("Path to read alignments to the genome AND transcriptome [MUST be sorted by ReadID]").create("genomeMappedReads"));
+		options.addOption(OptionBuilder.withArgName(".SAM or .BAM").hasArg().withDescription("Path to read alignments to the transcriptome ONLY [MUST be sorted by ReadID]").create("transcriptomeMappedReads"));
 		//options.addOption(OptionBuilder.withArgName(".stats").hasArg().withDescription("[optional] Path to random barcode stats").create("randombarcode"));
 		options.addOption(OptionBuilder.withArgName("csv list").hasArg().withDescription("[optional] Library priorities for quantification. Comma separated list of libraries in *descending* order of importance. Default: miRNA,tRNA,piRNA,gencode,circRNA - this can also be used to suppress libraries during quantification.").create("libPriority"));
 		options.addOption(OptionBuilder.withArgName("path").hasArg().withDescription("File to write the alignment dictionary into").create("dict"));
@@ -519,7 +535,8 @@ public class ProcessEndogenousAlignments {
 		/*String hairpin2genome = "/Users/robk/WORK/YALE_offline/ANNOTATIONS/MICRO_RNA/miRBase_v21_hairpin_hsa_hg19_aligned.sam";
 		String mature2hairpin = "/Users/robk/WORK/YALE_offline/ANNOTATIONS/MICRO_RNA/miRBase_v21_mature_hairpin_hsa_aligned.sam";
 		//String reads_path = "/Users/robk/WORK/YALE_offline/exRNA/TESTING/newEndogenousQuants/endogenousAlignments_ALL.sam";
-		String reads_path = "/Users/robk/WORK/YALE_offline/exRNA/TESTING/newEndogenousQuants/endogenousAlignments_LIBS.sam.head";
+		String readsPath_GnT = "/Users/robk/WORK/YALE_offline/exRNA/TESTING/newEndogenousQuants/endogenousAlignments_genomeMapped_transcriptome_Aligned.out.bam";
+		String readsPath_T = "/Users/robk/WORK/YALE_offline/exRNA/TESTING/newEndogenousQuants/endogenousAlignments_genomeUnmapped_transcriptome_Aligned.out.bam";
 		//reads_path = "/Users/robk/WORK/YALE_offline/exRNA/TESTING/newEndogenousQuants/test.txt";
 		//String reads_path = "/Users/robk/WORK/YALE_offline/exRNA/TESTING/newEndogenousQuants/endogenousAlignments_top.sam";
 		//String reads_path = "/Users/robk/WORK/YALE_offline/exRNA/TESTING/newEndogenousQuants/test2.sam";
@@ -527,7 +544,8 @@ public class ProcessEndogenousAlignments {
 		args = new String[]{"ProcessEndogenousAlignments",
 				"--hairpin2genome",hairpin2genome,
 				"--mature2hairpin",mature2hairpin,
-				"--reads2all",reads_path,
+				"--genomeMappedReads",readsPath_GnT,
+				"--transcriptomeMappedReads",readsPath_T,
 				"--dict",output_dictionary,
 				"--libPriority","miRNA,tRNA,piRNA,gencode,circRNA"
 		};*/
@@ -535,7 +553,7 @@ public class ProcessEndogenousAlignments {
 
 		CommandLine cmdArgs = ExceRpt_Tools.parseArgs(args, getCmdLineOptions());
 
-		if(cmdArgs.hasOption("hairpin2genome") && cmdArgs.hasOption("mature2hairpin") && cmdArgs.hasOption("reads2all") && cmdArgs.hasOption("dict")){
+		if(cmdArgs.hasOption("hairpin2genome") && cmdArgs.hasOption("mature2hairpin") && cmdArgs.hasOption("genomeMappedReads") && cmdArgs.hasOption("transcriptomeMappedReads") && cmdArgs.hasOption("dict")){
 		//if(cmdArgs.hasOption("hairpin2genome") && cmdArgs.hasOption("mature2hairpin") && cmdArgs.hasOption("reads2all")){
 			//ProcessEndogenousAlignments engine = new ProcessEndogenousAlignments(new File(cmdArgs.getOptionValue("hairpin2genome")), new File(cmdArgs.getOptionValue("mature2hairpin")));
 			//ProcessEndogenousAlignments engine = new ProcessEndogenousAlignments(cmdArgs.getOptionValue("outputPath"));
@@ -562,7 +580,7 @@ public class ProcessEndogenousAlignments {
 
 			// read and process the RNA-seq read alignments
 			ExceRpt_Tools.printLineErr("Processing RNA-seq alignments");
-			boolean cont = engine.read_Reads(new File(cmdArgs.getOptionValue("reads2all")), cmdArgs.getOptionValue("dict"));
+			boolean cont = engine.read_Reads(new File(cmdArgs.getOptionValue("genomeMappedReads")), new File(cmdArgs.getOptionValue("transcriptomeMappedReads")), cmdArgs.getOptionValue("dict"));
 
 			if(cont){
 				/*	ExceRpt_Tools.printLineErr("Computing expressions");
