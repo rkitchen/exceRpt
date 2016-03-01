@@ -25,7 +25,6 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 import sequenceTools.Sequence;
-import utils.IO_utils;
 
 
 public class ProcessEndogenousAlignments {
@@ -188,34 +187,37 @@ public class ProcessEndogenousAlignments {
 			if(readNegativeStrand)
 				tmp.getKey().setReadString(Sequence.reverseComplement(tmp.getKey().getReadString()));
 
+			String thisLib = "balls";
 			if(tmp.getValue().equals("miRNA")){
 				if(!readNegativeStrand)
-					readsByLibrary = addReadAssignment(readsByLibrary, "miRNA_sense", tmp.getKey());
+					thisLib = "miRNA_sense";
 				else
-					readsByLibrary = addReadAssignment(readsByLibrary, "miRNA_antisense", tmp.getKey());
+					thisLib = "miRNA_antisense";
 			}else if(tmp.getValue().equals("tRNA")){
 				if(!readNegativeStrand)
-					readsByLibrary = addReadAssignment(readsByLibrary, "tRNA_sense", tmp.getKey());
+					thisLib = "tRNA_sense";
 				else
-					readsByLibrary = addReadAssignment(readsByLibrary, "tRNA_antisense", tmp.getKey());
+					thisLib = "tRNA_antisense";
 			}else if(tmp.getValue().equals("piRNA")){
 				if(!readNegativeStrand)
-					readsByLibrary = addReadAssignment(readsByLibrary, "piRNA_sense", tmp.getKey());
+					thisLib = "piRNA_sense";
 				else
-					readsByLibrary = addReadAssignment(readsByLibrary, "piRNA_antisense", tmp.getKey());
+					thisLib = "piRNA_antisense";
 			}else if(tmp.getValue().equals("gencode")){
 				if(!readNegativeStrand)
-					readsByLibrary = addReadAssignment(readsByLibrary, "gencode_sense", tmp.getKey());
+					thisLib = "gencode_sense";
 				else
-					readsByLibrary = addReadAssignment(readsByLibrary, "gencode_antisense", tmp.getKey());
+					thisLib = "gencode_antisense";
 			}else if(tmp.getValue().equals("circRNA")){
 				if(!readNegativeStrand)
-					readsByLibrary = addReadAssignment(readsByLibrary, "circRNA_sense", tmp.getKey());
+					thisLib = "circRNA_sense";
 				else
-					readsByLibrary = addReadAssignment(readsByLibrary, "circRNA_antisense", tmp.getKey());
+					thisLib = "circRNA_antisense";
 			}
 
-			//System.out.println(tmp.getKey().getReadName()+"\ttmp.getValue()="+tmp.getValue()+"\t"+tmp.getKey().getReferenceName()+"\t"+tmp.getValue()+"\t"+(!readNegativeStrand)+"\t"+readHasSenseAlignment);
+			
+			readsByLibrary = addReadAssignment(readsByLibrary, thisLib, tmp.getKey());
+			//System.out.println(tmp.getKey().getReadName()+"\ttmp.getValue()="+tmp.getValue()+"\t"+tmp.getKey().getReferenceName()+"\t"+tmp.getValue()+"\t"+(!readNegativeStrand)+"\t"+readHasSenseAlignment+"\t"+thisLib);
 		}
 
 
@@ -251,7 +253,7 @@ public class ProcessEndogenousAlignments {
 				}
 			}
 		}
-		//System.out.println();
+		//System.out.println("\tkeptLib: "+keptLibrary);
 
 
 		/*
@@ -269,8 +271,14 @@ public class ProcessEndogenousAlignments {
 				//index ++;
 				tmp2 = it2.next();
 				String[] refIDbits = tmp2.getReferenceName().split(":");
+				
 				String mapsTo = refIDbits[1];
-				for(int i=2;i<refIDbits.length;i++)
+				int startAt = 2;
+				if(_forceLibrary != null){	
+					mapsTo = refIDbits[0];
+					startAt = 1;
+				}
+				for(int i=startAt;i<refIDbits.length;i++)
 					mapsTo = mapsTo.concat(":"+refIDbits[i]);
 
 				// if this read maps to a mature miRNA, 
@@ -324,8 +332,14 @@ public class ProcessEndogenousAlignments {
 			 *   genome:gencode:ENST00000408108.1:miRNA:MIR486-201:GN=ENSG00000221035.1 
 			 */
 			String[] refIDbits = tmp2.getReferenceName().split(":");
+			
 			String mapsTo = refIDbits[1];
-			for(int i=2;i<refIDbits.length;i++)
+			int startAt = 2;
+			if(_forceLibrary != null){	
+				mapsTo = refIDbits[0];
+				startAt = 1;
+			}
+			for(int i=startAt;i<refIDbits.length;i++)
 				mapsTo = mapsTo.concat(":"+refIDbits[i]);
 
 			String isGenomeMapped = "genome";
@@ -426,12 +440,13 @@ public class ProcessEndogenousAlignments {
 
 			// put the SAM record into the map with the library type as the value
 			//thisRead.put(thisRecord, thisRecord.getReferenceName().split(":")[1]);
-			thisRead.put(thisRecord, thisRecord.getReferenceName().split(":")[0]);
+			
+			if(_forceLibrary != null)
+				thisRead.put(thisRecord, _forceLibrary);
+			else
+				thisRead.put(thisRecord, thisRecord.getReferenceName().split(":")[0]);
 			lastReadID = thisRecord.getReadName();
 			
-			if(thisRecord.getReadName().equals("R0209720:522:C7YF6ACXX:6:1101:1423:2180"))
-				IO_utils.printLineErr(thisRecord.getReferenceName().split(":")[0]+"\t"+thisRecord.getReferenceName()+"\t"+thisRecord.getReadName());
-
 		}
 		// assign the final read!
 		assignRead(thisRead);
@@ -534,6 +549,7 @@ public class ProcessEndogenousAlignments {
 		//options.addOption(OptionBuilder.withArgName(".stats").hasArg().withDescription("[optional] Path to random barcode stats").create("randombarcode"));
 		options.addOption(OptionBuilder.withArgName("csv list").hasArg().withDescription("[optional] Library priorities for quantification. Comma separated list of libraries in *descending* order of importance. Default: miRNA,tRNA,piRNA,gencode,circRNA - this can also be used to suppress libraries during quantification.").create("libPriority"));
 		options.addOption(OptionBuilder.withArgName("path").hasArg().withDescription("File to write the alignment dictionary into").create("dict"));
+		options.addOption(OptionBuilder.withArgName("string").hasArg().withDescription("[optional] Force library for all alignments.").create("forceLib"));
 		return options;
 	}
 
@@ -564,6 +580,18 @@ public class ProcessEndogenousAlignments {
 				"--dict",output_dictionary,
 				"--libPriority","miRNA,tRNA,piRNA,gencode,circRNA"
 		};*/
+		
+		/*String hairpin2genome = "/Users/robk/Downloads/miRNA_precursor2genome.sam";
+		String mature2hairpin = "/Users/robk/Downloads/miRNA_mature2precursor.sam";
+		String readsPath_T = "/Users/robk/Downloads/exogenous_miRBase_Aligned.out.bam";
+		String output_dictionary = "/Users/robk/Downloads/alignments.dict";
+		args = new String[]{"ProcessEndogenousAlignments",
+				"--hairpin2genome",hairpin2genome,
+				"--mature2hairpin",mature2hairpin,
+				"--transcriptomeMappedReads",readsPath_T,
+				"--dict",output_dictionary,
+				"--forceLib","miRNA"
+		};*/
 
 		CommandLine cmdArgs = ExceRpt_Tools.parseArgs(args, getCmdLineOptions());
 
@@ -588,6 +616,9 @@ public class ProcessEndogenousAlignments {
 				//Thunder.printLineErr("Using default library priorities: "+engine._libraryPriorityString);
 			}
 
+			if(cmdArgs.hasOption("forceLib"))
+				engine.setForceLibrary(cmdArgs.getOptionValue("forceLib"));
+			
 			// Read hairpin alignments to the genome and mature alignments to the hairpins
 			ExceRpt_Tools.printLineErr("Reading miRNA annotation info");
 			engine.read_miRNAinfo(new File(cmdArgs.getOptionValue("hairpin2genome")), new File(cmdArgs.getOptionValue("mature2hairpin")));
@@ -609,6 +640,9 @@ public class ProcessEndogenousAlignments {
 			System.err.println();
 		}
 	}
+	
+	private String _forceLibrary = null;
+	public void setForceLibrary(String lib){ _forceLibrary = lib; }
 }
 
 
