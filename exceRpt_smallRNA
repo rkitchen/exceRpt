@@ -16,10 +16,10 @@
 ##                                                                                   ##
 ## Learn more at github.gersteinlab.org/exceRpt                                      ##
 ##                                                                                   ##
-## Version 4.0.2 (2016-03-08)                                                        ##
+## Version 4.0.3 (2016-04-13)                                                        ##
 ##                                                                                   ##
 #######################################################################################
-EXCERPT_VERSION := 4.0.2
+EXCERPT_VERSION := 4.0.3
 
 
 ##
@@ -371,7 +371,7 @@ endif
 ## Compress only the most vital output!
 ##
 #ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome | awk '{print $$9}' | grep "sense.grouped\|stat" | awk '{print "$(SAMPLE_ID)/noGenome/"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt;
-COMPRESS_COMMAND := ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID) | awk '{print $$9}' | grep "readCounts_\|.readLengths.txt\|_fastqc.zip\|.counts\|.adapterSeq\|.qualityEncoding" | awk '{print "$(SAMPLE_ID)/"$$1}' > $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt; \
+COMPRESS_COMMAND := ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID) | awk '{print $$9}' | grep "readCounts_\|.readLengths.txt\|_fastqc.zip\|.counts\|.adapterSeq\|.qualityEncoding\|.CIGARstats.txt\|.coverage.txt" | awk '{print "$(SAMPLE_ID)/"$$1}' > $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt; \
 echo $(SAMPLE_ID).log >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt; \
 echo $(SAMPLE_ID).stats >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt; \
 echo $(SAMPLE_ID).qcResult >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt; \
@@ -677,13 +677,20 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_unspliced.wig: $(OUTPUT_DIR)/$(S
 $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_transcriptome_Aligned.out.sorted.bam.coverage.txt: $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_transcriptome_Unmapped.R1.fastq.gz
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	#
+	@echo -e "$(ts) $(SMRNAPIPELINE): Performing CIGAR QC on endogenous genome alignments:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) CIGAR_2_PWM -f $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genome_Aligned.out.bam > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genome_Aligned.out.bam.CIGARstats.txt" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) CIGAR_2_PWM -f $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genome_Aligned.out.bam > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genome_Aligned.out.bam.CIGARstats.txt
+	@echo -e "$(ts) $(SMRNAPIPELINE): Finished performing CIGAR QC on endogenous genome alignments\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	#
 	@echo -e "$(ts) $(SMRNAPIPELINE): Sorting endogenous transcriptome alignments:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): $(SAMTOOLS_EXE) sort -n -@ $(N_THREADS) -m 8G -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_transcriptome_Aligned.out.bam > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_transcriptome_Aligned.out.sorted.bam" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	$(SAMTOOLS_EXE) sort -n -@ $(N_THREADS) -m 8G -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_transcriptome_Aligned.out.bam > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_transcriptome_Aligned.out.sorted.bam
+	@echo -e "$(ts) $(SMRNAPIPELINE): Finished sorting endogenous transcriptome alignments\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	#
-	@echo -e "$(ts) $(SMRNAPIPELINE): Performing QC on endogenous alignments:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Performing read-coverage QC on endogenous transcriptome alignments:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) ReadCoverage -exceRpt -a $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/gencodeAnnotation.gtf -f $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_transcriptome_Aligned.out.sorted.bam" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	$(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) ReadCoverage -exceRpt -a $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/gencodeAnnotation.gtf -f $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_transcriptome_Aligned.out.sorted.bam
-	@echo -e "$(ts) $(SMRNAPIPELINE): Finished performing QC on endogenous alignments\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Finished performing read-coverage QC on endogenous transcriptome alignments\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 
 ## process alignments
