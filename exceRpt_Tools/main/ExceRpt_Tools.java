@@ -9,6 +9,8 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+
+
 //import transcriptome.CIGAR_2_PWM;
 import fastqTools.FindAdapter;
 import fastaTools.FastaHeaderGrep;
@@ -18,10 +20,11 @@ import fastqTools.GetSequenceLengths;
 import fastqTools.MatchPairedEndSequences;
 import fastqTools.ProcessFastqWithRandomBarcode;
 import fastqTools.RemoveHomopolymers;
+import footprintAlignments.ReadCoverage;
 
 public class ExceRpt_Tools {
 
-	public static final String VERSION = "1.2.1";
+	public static final String VERSION = "1.2.2";
 	
 	public static final String OPT_PATH_DB_ANNOTATION = "A";
 	public static final String OPT_PATH_DB_SAMPLE = "S";
@@ -68,6 +71,8 @@ public class ExceRpt_Tools {
 			MatchPairedEndSequences.main(args);
 		}else if(main.equals("fastaheadergrep")){
 			FastaHeaderGrep.main(args);
+		}else if(main.equals("readcoverage")){
+			ReadCoverage.main(args);
 		}else if(main.equals("processendogenousalignments")){
 			ProcessEndogenousAlignments.main(args);
 		}else if(main.equals("quantifyendogenousalignments")){
@@ -99,6 +104,7 @@ public class ExceRpt_Tools {
 			System.out.println("         RemoveHomopolymerRepeats      | Filter fasta or fastq sequences based on sequence composition");
 			System.out.println("         MatchPairedEndSequences       | Match paired-end fastq sequences based on readID");
 			//System.out.println("         CIGAR_2_PWM                   | Reads SAM alignments and converts the CIGAR strings to a position-weight matrix");
+			System.out.println("         ReadCoverage                  | Reads SAM/BAM alignments to the TRANSCRIPTOME and calculates read coverage consistency");
 			System.out.println("         ProcessEndogenousAlignments   | Process endogenous smallRNA alignments for the exceRpt pipeline");
 			System.out.println("         QuantifyEndogenousAlignments  | Quantify endogenous smallRNA alignments for the exceRpt pipeline");
 			System.out.println("         ProcessExogenousAlignments    | Process exogenous genomic alignments for the exceRpt pipeline");

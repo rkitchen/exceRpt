@@ -64,6 +64,7 @@ STAR_outFilterMatchNmin				:= $(MIN_READ_LENGTH)
 STAR_outFilterMatchNminOverLread 	:= 0.9
 STAR_outFilterMismatchNmax 			:= 1
 STAR_outFilterMismatchNoverLmax 	:= 0.05
+STAR_alignEndsType					:= Local
 
 
 ##
@@ -71,7 +72,7 @@ STAR_outFilterMismatchNoverLmax 	:= 0.05
 ##
 ##    Choose what kind of EXOGENOUS alignments to attempt:
 ## 		- off 		: none
-##		- miRNAs	: map only to exogenous miRNAs in miRbase
+##		- miRNA		: map only to exogenous miRNAs in miRbase
 ##		- on		: map to exogenous miRNAs in miRbase AND the genomes of all sequenced species in ensembl/NCBI
 ##
 MAP_EXOGENOUS 				:= off
@@ -194,7 +195,7 @@ endif
 ##
 ## STAR dynamic parameter string
 ##
-STAR_ENDOGENOUS_DYNAMIC_PARAMS := --alignEndsType Local --outFilterMatchNmin $(MIN_READ_LENGTH) --outFilterMatchNminOverLread $(STAR_outFilterMatchNminOverLread) --outFilterMismatchNmax $(STAR_outFilterMismatchNmax) --outFilterMismatchNoverLmax $(STAR_outFilterMismatchNoverLmax) 
+STAR_ENDOGENOUS_DYNAMIC_PARAMS := --alignEndsType $(STAR_alignEndsType) --outFilterMatchNmin $(MIN_READ_LENGTH) --outFilterMatchNminOverLread $(STAR_outFilterMatchNminOverLread) --outFilterMismatchNmax $(STAR_outFilterMismatchNmax) --outFilterMismatchNoverLmax $(STAR_outFilterMismatchNoverLmax) 
 
 
 
@@ -338,6 +339,7 @@ endif
 ##
 ## Bowtie2 command to align reads to the UniVec contaminant sequence database
 ##
+#$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genome_ --genomeDir $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/STAR_INDEX_genome --readFilesIn $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.noRiboRNA.fastq.gz --outReadsUnmapped Fastx --parametersFiles $(DATABASE_PATH)/STAR_Parameters_Endogenous_smallRNA.in $(STAR_ENDOGENOUS_DYNAMIC_PARAMS) >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
 COMMAND_MAP_UNIVEC ?= $(BOWTIE2_EXE) --phred$(shell cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).qualityEncoding) -p $(N_THREADS) $(BOWTIE2_MAPPING_PARAMS_RRNA) --un-gz $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.noUniVecContaminants.fastq.gz -x $(DATABASE_PATH)/UniVec/UniVec_Core.contaminants -U $(FILE_TO_INPUT_TO_UNIVEC_ALIGNMENT) 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '$$2 != 4 {print $$0}' > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.uniVecContaminantMapped.sam; \
 cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.uniVecContaminantMapped.sam | grep -v "^@" | awk '{print $$3}' | sort -k 2 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err | uniq --count > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.uniVecContaminants.counts 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err; \
 cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.uniVecContaminantMapped.sam | grep -v "^@" | awk '{print $$1}' | sort 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err | uniq -c | wc -l > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.uniVecContaminants.readCount 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err; \
@@ -669,8 +671,23 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_unspliced.wig: $(OUTPUT_DIR)/$(S
 	@echo -e "$(ts) $(SMRNAPIPELINE): Finished converting genomic alignments to .wig format\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 
+##
+## Do QC on alignments
+##
+$(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_transcriptome_Aligned.out.sorted.bam.coverage.txt: $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_transcriptome_Unmapped.R1.fastq.gz
+	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	#
+	@echo -e "$(ts) $(SMRNAPIPELINE): Sorting endogenous transcriptome alignments:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): $(SAMTOOLS_EXE) sort -n -@ $(N_THREADS) -m 8G -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_transcriptome_Aligned.out.bam > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_transcriptome_Aligned.out.sorted.bam" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(SAMTOOLS_EXE) sort -n -@ $(N_THREADS) -m 8G -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_transcriptome_Aligned.out.bam > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_transcriptome_Aligned.out.sorted.bam
+	#
+	@echo -e "$(ts) $(SMRNAPIPELINE): Performing QC on endogenous alignments:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) ReadCoverage -exceRpt -a $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/gencodeAnnotation.gtf -f $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_transcriptome_Aligned.out.sorted.bam
+	@echo -e "$(ts) $(SMRNAPIPELINE): Finished performing QC on endogenous alignments\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+
+
 ## process alignments
-$(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.txt.gz: $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_transcriptome_Unmapped.R1.fastq.gz
+$(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.txt.gz: $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_transcriptome_Unmapped.R1.fastq.gz $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_transcriptome_Aligned.out.sorted.bam.coverage.txt
 #$(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.txt.gz: $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_transcriptome_Unmapped.R1.fastq.gz $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_unspliced.wig
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## Assign reads

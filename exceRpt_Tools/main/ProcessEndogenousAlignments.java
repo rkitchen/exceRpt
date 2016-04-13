@@ -449,7 +449,8 @@ public class ProcessEndogenousAlignments {
 			
 		}
 		// assign the final read!
-		assignRead(thisRead);
+		if(thisRead.size() > 0)
+			assignRead(thisRead);
 
 		/*}else{
 		Thunder.printLineErr("ERROR: Input SAM file must be sorted by readID");
@@ -593,6 +594,19 @@ public class ProcessEndogenousAlignments {
 				"--forceLib","miRNA"
 		};*/
 
+		/*String hairpin2genome = "/Users/robk/Downloads/miRNA_precursor2genome.sam";
+		String mature2hairpin = "/Users/robk/Downloads/miRNA_mature2precursor.sam";
+		String readsPath_G = "/Users/robk/Downloads/endogenousAlignments_genomeMapped_transcriptome_Aligned.out.bam";
+		String readsPath_T = "/Users/robk/Downloads/endogenousAlignments_genomeUnmapped_transcriptome_Aligned.out.bam";
+		String output_dictionary = "/Users/robk/Downloads/alignments.dict";
+		args = new String[]{"ProcessEndogenousAlignments",
+				"--hairpin2genome",hairpin2genome,
+				"--mature2hairpin",mature2hairpin,
+				"--genomeMappedReads",readsPath_G,
+				"--transcriptomeMappedReads",readsPath_T,
+				"--dict",output_dictionary
+		};*/
+		
 		CommandLine cmdArgs = ExceRpt_Tools.parseArgs(args, getCmdLineOptions());
 
 		if(cmdArgs.hasOption("hairpin2genome") && cmdArgs.hasOption("mature2hairpin") && cmdArgs.hasOption("transcriptomeMappedReads") && cmdArgs.hasOption("dict")){
