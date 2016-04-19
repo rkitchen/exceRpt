@@ -16,10 +16,10 @@
 ##                                                                                   ##
 ## Learn more at github.gersteinlab.org/exceRpt                                      ##
 ##                                                                                   ##
-## Version 4.1.0 (2016-04-13)                                                        ##
+## Version 4.1.1 (2016-04-18)                                                        ##
 ##                                                                                   ##
 #######################################################################################
-EXCERPT_VERSION := 4.1.0
+EXCERPT_VERSION := 4.1.1
 
 
 ##
@@ -59,11 +59,13 @@ QFILTER_MIN_QUAL 		:= 20
 ##
 ## 6) ENDOGENOUS alignment parameters
 ##
+DOWNSAMPLE_RNA_READS				:= NULL
+DOWNSAMPLE_RNA_READS_SEED 			:= 7
 MIN_READ_LENGTH 					:= 18
 STAR_outFilterMatchNmin				:= $(MIN_READ_LENGTH)
 STAR_outFilterMatchNminOverLread 	:= 0.9
 STAR_outFilterMismatchNmax 			:= 1
-STAR_outFilterMismatchNoverLmax 	:= 0.05
+STAR_outFilterMismatchNoverLmax 	:= 0.3
 STAR_alignEndsType					:= Local
 
 
@@ -102,7 +104,6 @@ ifeq ($(LOCAL_EXECUTION),true)
 	JAVA_EXE              := /usr/bin/java
 	FASTX_CLIP_EXE        := $(EXE_DIR)/fastx_0.0.14/bin/fastx_clipper
 	FASTX_FILTER_EXE      := $(EXE_DIR)/fastx_0.0.14/bin/fastq_quality_filter
-	BOWTIE1_EXE           := $(EXE_DIR)/bowtie-1.1.1/bowtie
 	#VIENNA_PATH          := $(EXE_DIR)/ViennaRNA_2.1.5/bin
 	BOWTIE2_EXE           := $(EXE_DIR)/bowtie2-2.2.4/bowtie2
 	#SAMTOOLS_EXE          := $(EXE_DIR)/samtools-1.1/samtools
@@ -135,7 +136,6 @@ else
 
 	FASTX_CLIP_EXE := fastx_clipper
 	FASTX_FILTER_EXE := fastq_quality_filter
-	BOWTIE1_EXE := bowtie
 	VIENNA_PATH := NULL
 	BOWTIE2_EXE := bowtie2
 	SAMTOOLS_EXE := samtools
@@ -221,7 +221,7 @@ endif
 
 ## Parameters to use for the bowtie mapping of calibrator oligos and rRNAs
 BOWTIE2_MAPPING_PARAMS_CALIBRATOR := -D 15 -R 2 -N $(MAX_MISMATCHES_EXOGENOUS) -L $(BOWTIE_SEED_LENGTH) -i S,1,0
-BOWTIE2_MAPPING_PARAMS_RRNA       := -D 15 -R 2 -N $(MAX_MISMATCHES_EXOGENOUS) -L $(BOWTIE_SEED_LENGTH) -i S,1,0
+#BOWTIE2_MAPPING_PARAMS_RRNA       := -D 15 -R 2 -N $(MAX_MISMATCHES_EXOGENOUS) -L $(BOWTIE_SEED_LENGTH) -i S,1,0
 
 
 #################################################
@@ -255,6 +255,15 @@ endif
 ## Guess quality encoding
 ##
 #COMMAND_FILTER_BY_QUALITY ?= gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz | $(FASTX_FILTER_EXE) -v -Q$(shell cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).qualityEncoding) -p $(QFILTER_MIN_READ_FRAC) -q $(QFILTER_MIN_QUAL) > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.filtered.tmp 2>>$(OUTPUT_DIR)/$(SAMPLE_ID).log
+
+
+ifeq ($(DOWNSAMPLE_RNA_READS),NULL)
+	COMMAND_DOWNSAMPLE := 
+else
+	COMMAND_DOWNSAMPLE := mv $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.txt $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.original.txt; \
+							cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.original.txt | shuf -n $(DOWNSAMPLE_RNA_READS) --random-source=<(get_seeded_random $(DOWNSAMPLE_RNA_READS_SEED)) > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.txt; \
+							gzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.original.txt > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.original.txt.gz
+
 
 
 ##
@@ -369,7 +378,7 @@ endif
 ## Compress only the most vital output!
 ##
 #ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID)/noGenome | awk '{print $$9}' | grep "sense.grouped\|stat" | awk '{print "$(SAMPLE_ID)/noGenome/"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt;
-COMPRESS_COMMAND := ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID) | awk '{print $$9}' | grep "readCounts_\|.readLengths.txt\|_fastqc.zip\|.counts\|.adapterSeq\|.qualityEncoding\|.CIGARstats.txt\|.coverage.txt" | awk '{print "$(SAMPLE_ID)/"$$1}' > $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt; \
+COMPRESS_COMMAND := ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID) | awk '{print $$9}' | grep "readCounts_\|.readLengths.txt\|_fastqc.zip\|.counts\|.knownAdapterSeq\|.adapterSeq\|.qualityEncoding\|.CIGARstats.txt\|.coverage.txt" | awk '{print "$(SAMPLE_ID)/"$$1}' > $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt; \
 echo $(SAMPLE_ID).log >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt; \
 echo $(SAMPLE_ID).stats >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt; \
 echo $(SAMPLE_ID).qcResult >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt; \
@@ -697,11 +706,19 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_transcriptome_Align
 $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.txt.gz: $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_transcriptome_Unmapped.R1.fastq.gz $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_transcriptome_Aligned.out.sorted.bam.coverage.txt
 #$(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.txt.gz: $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_transcriptome_Unmapped.R1.fastq.gz $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_unspliced.wig
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	#
 	## Assign reads
 	@echo -e "$(ts) $(SMRNAPIPELINE): Assigning and sorting reads:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) ProcessEndogenousAlignments --libPriority $(ENDOGENOUS_LIB_PRIORITY) --genomeMappedReads $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_transcriptome_Aligned.out.bam --transcriptomeMappedReads $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_transcriptome_Aligned.out.bam --hairpin2genome $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRNA_precursor2genome.sam --mature2hairpin $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRNA_mature2precursor.sam --dict $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.dict 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | sort -k 2,2 -k 1,1 > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.txt\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	$(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) ProcessEndogenousAlignments --libPriority $(ENDOGENOUS_LIB_PRIORITY) --genomeMappedReads $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_transcriptome_Aligned.out.bam --transcriptomeMappedReads $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_transcriptome_Aligned.out.bam --hairpin2genome $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRNA_precursor2genome.sam --mature2hairpin $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/miRNA_mature2precursor.sam --dict $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.dict 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | sort -k 2,2 -k 1,1 > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.txt
 	@echo -e "$(ts) $(SMRNAPIPELINE): Finished assigning and sorting reads\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	#
+	## Do we want to downsample?
+	@echo -e "$(ts) $(SMRNAPIPELINE): If requested, downsampling to $(DOWNSAMPLE_RNA_READS) transcriptome alignments:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): $(COMMAND_DOWNSAMPLE)\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(COMMAND_DOWNSAMPLE)
+	@echo -e "$(ts) $(SMRNAPIPELINE): Finished downsampling transcriptome alignments\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	#
 	## Quantify all annotated RNAs
 	@echo -e "$(ts) $(SMRNAPIPELINE): Quantifying:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) QuantifyEndogenousAlignments --dict $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.dict --acceptedAlignments $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.txt --outputPath $(OUTPUT_DIR)/$(SAMPLE_ID)\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
