@@ -311,8 +311,8 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   ##
   ## Trim read-length matrix
   ##
-  #read.lengths = read.lengths[,0:(max(as.numeric(colnames(read.lengths[, colSums(read.lengths) > 0])))+1)]
-  read.lengths = read.lengths[,colSums(read.lengths) > 0, drop=F]
+  read.lengths = read.lengths[,0:(max(as.numeric(colnames(read.lengths[, colSums(read.lengths) > 0])))+1)]
+  #read.lengths = read.lengths[,colSums(read.lengths) > 0, drop=F]
   
   
   ##
@@ -444,7 +444,7 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
     ## plot distribution of clipped read lengths - read count
     ##
     tmp = melt(read.lengths); colnames(tmp) = c("sample","length","count")
-    tmp = tmp[1:max(which(tmp$count > 0)), ]
+    #tmp = tmp[1:max(which(tmp$count > 0)), ]
     p = ggplot(tmp, aes(x=length, y=count, colour=sample)) +geom_line(alpha=0.75) +xlab("read length (nt)") +ylab("# reads") +ggtitle("read-length distributions") +xlim(14,min(c(75,max(tmp$length))))
     if(nrow(read.lengths) > 30){ p = p +guides(colour=FALSE) }
     print(p)
@@ -456,7 +456,7 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
     ## plot distribution of clipped read lengths - fraction
     ##
     tmp = melt(t(apply(read.lengths, 1, function(row){ row/sum(row) }))); colnames(tmp) = c("sample","length","fraction")
-    tmp = tmp[1:max(which(tmp$fraction > 0)), ]
+    #tmp = tmp[1:max(which(tmp$fraction > 0)), ]
     p = ggplot(tmp, aes(x=length, y=fraction, colour=sample)) +geom_line(alpha=0.75) +xlab("read length (nt)") +ylab("fraction of reads") +ggtitle("read-length distributions") +xlim(14,min(c(75,max(tmp$length))))
     if(nrow(read.lengths) > 30){ p = p +guides(colour=FALSE) }
     print(p)
