@@ -11,7 +11,9 @@ import org.apache.commons.cli.ParseException;
 
 import transcriptome.CIGAR_2_PWM;
 import fastqTools.FindAdapter;
+import fastaTools.Fasta2Fastq;
 import fastaTools.FastaHeaderGrep;
+import fastqTools.Fastq2Fasta;
 import fastqTools.FilterBySequenceLength;
 import fastqTools.FilterFastxByHeaderList;
 import fastqTools.GetSequenceLengths;
@@ -83,6 +85,10 @@ public class ExceRpt_Tools {
 			ProcessFastqWithRandomBarcode.main(args);
 		}else if(main.equals("findadapter")){
 			FindAdapter.main(args);
+		}else if(main.equals("fastq2fasta")){
+			Fastq2Fasta.main(args);
+		}else if(main.equals("fasta2fastq")){
+			Fasta2Fastq.main(args);
 		}
 		
 		
@@ -94,6 +100,8 @@ public class ExceRpt_Tools {
 			System.out.println("");
 
 			System.out.println("Command: GetSequenceLengths            | Get the distribution of sequence lengths in a FASTA/Q file");
+			System.out.println("         Fasta2Fastq                   | Convert FASTA sequence(s) to FASTQ sequence(s)");
+			System.out.println("         Fastq2Fasta                   | Convert FASTQ sequence(s) to FASTA sequence(s)");
 			System.out.println("         FastaHeaderGrep               | Filter fasta sequences based on the sequence ID");
 			System.out.println("         FilterFastxByIDList           | Filter fasta/q sequences based on a list of sequence IDs");
 			System.out.println("         FilterSequencesByLength       | Filter fasta or fastq sequences based on some maximum sequence length");
