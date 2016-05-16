@@ -12,7 +12,7 @@ Rob Kitchen, rob.kitchen@yale.edu
 
 CONTENTS:
 
-smallRNA_pipeline -- This choreographs the processing, filtering, and alignment of a single smallRNA-seq sample. The script is a makefile and 
+exceRpt_smallRNA -- This choreographs the processing, filtering, and alignment of a single smallRNA-seq sample. The script is a makefile and 
 
 mergePipelineRuns -- This script will take as input a directory containing 1 or more subdirectories or zipfiles containing output from the pipeline above. In this way, results from 1 or more smallRNA-seq samples can be combined, several QC plots are generated, and the read-counts are normalised ready for downstream analysis by clustering and/or differential expression.
 
