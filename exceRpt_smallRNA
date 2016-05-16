@@ -16,10 +16,10 @@
 ##                                                                                   ##
 ## Learn more at github.gersteinlab.org/exceRpt                                      ##
 ##                                                                                   ##
-## Version 4.1.3 (2016-04-28)                                                        ##
+## Version 4.1.4 (2016-05-16)                                                        ##
 ##                                                                                   ##
 #######################################################################################
-EXCERPT_VERSION := 4.1.3
+EXCERPT_VERSION := 4.1.4
 
 
 ##
@@ -78,7 +78,9 @@ STAR_alignEndsType					:= Local
 ##		- on		: map to exogenous miRNAs in miRbase AND the genomes of all sequenced species in ensembl/NCBI
 ##
 MAP_EXOGENOUS 				:= off
+## for exogenous alignments (can only be 0 or 1)
 MAX_MISMATCHES_EXOGENOUS 	:= 0
+
 
 ##
 ## 8) If this is a local installation of the pipeline, be sure to also modify the parameters in steps 4, 5, and 6 below...
@@ -137,6 +139,7 @@ else
 
 	FASTX_CLIP_EXE := fastx_clipper
 	FASTX_FILTER_EXE := fastq_quality_filter
+	FASTX_TRIMMER_EXE := fastx_trimmer
 	VIENNA_PATH := NULL
 	BOWTIE2_EXE := bowtie2
 	SAMTOOLS_EXE := samtools
@@ -171,9 +174,6 @@ SMRNAPIPELINE := exceRpt_smallRNA
 ##
 #BOWTIE_SEED_LENGTH := 19
 BOWTIE_SEED_LENGTH := $(MIN_READ_LENGTH)
-
-## for calibrator, contaminant, rRNA, and exogenous alignments (can only be 0 or 1)
-#MAX_MISMATCHES_EXOGENOUS := 1
 
 
 
@@ -222,7 +222,7 @@ endif
 #EXOGENOUS_MIRNA_SPECIES := $(shell cat $(SRNABENCH_LIBS)/libs/mature.fa | grep ">" | awk -F '-' '{print $$1}' | sed 's/>//g'| sort | uniq | tr '\n' ':' | rev | cut -c 2- | rev)
 
 ## Parameters to use for the bowtie mapping of calibrator oligos and rRNAs
-BOWTIE2_MAPPING_PARAMS_CALIBRATOR := -D 15 -R 2 -N $(MAX_MISMATCHES_EXOGENOUS) -L $(BOWTIE_SEED_LENGTH) -i S,1,0
+BOWTIE2_MAPPING_PARAMS_CALIBRATOR := -D 15 -R 2 -N $(STAR_outFilterMismatchNmax) -L $(BOWTIE_SEED_LENGTH) -i S,1,0
 #BOWTIE2_MAPPING_PARAMS_RRNA       := -D 15 -R 2 -N $(MAX_MISMATCHES_EXOGENOUS) -L $(BOWTIE_SEED_LENGTH) -i S,1,0
 
 
@@ -428,7 +428,7 @@ help:
 	@echo -e "*Required* OPTIONs:"	
 	@echo -e "  INPUT_FILE_PATH                  | Path to the input fastq/fasta/sra file"
 	@echo -e "  OUTPUT_DIR                       | Path to store the output results"
-	@echo -e "  EXE_DIR                          | Path to the exceRpt executables.  This *must* be an *absolute* path (e.g. '/gpfs/scratch/fas/gerstein/bin/smallRNAPipeline')"
+	@echo -e "  EXE_DIR                          | Path to the exceRpt executables.  This *must* be an *absolute* path (e.g. '/path/from/root/to/smallRNAPipeline')"
 	@echo -e ""
 	@echo -e "Main analysis OPTIONs:"
 	@echo -e "  DATABASE_PATH                    | <Path>                           | [default: '$(DATABASE_PATH)''] change the location of the exceRpt database [by default this is within the EXE_DIR specified above]" 

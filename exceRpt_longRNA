@@ -1,0 +1,428 @@
+#######################################################################################
+##                                                                                   ##
+##                      ____        _                                                ##
+##     _____  _____ ___|  _ \ _ __ | |_                                              ##
+##    / _ \ \/ / __/ _ \ |_) | '_ \| __|                                             ##
+##   |  __/>  < (_|  __/  _ <| |_) | |_                                              ##
+##    \___/_/\_\___\___|_| \_\ .__/ \__|                                             ##
+##                           |_|                                                     ##
+##                                                                                   ##
+##                                                                                   ##
+## The extra-cellular RNA processing toolkit (exceRpt)                               ##
+##                                                                                   ##
+## This pipeline processes a single sequence file from a single sample               ##
+##                                                                                   ##
+## Author: Rob Kitchen (rob.kitchen@yale.edu)                                        ##
+##                                                                                   ##
+## Learn more at github.gersteinlab.org/exceRpt                                      ##
+##                                                                                   ##
+## Version 4.0.1 (2016-02-19)                                                        ##
+##                                                                                   ##
+#######################################################################################
+
+
+## Define executable directory
+EXE_DIR := /gpfs/scratch/fas/gerstein/rrk24/bin/smallRNAPipeline
+
+## Read core variables
+include ${EXE_DIR}/exceRpt_main
+
+
+
+
+
+##
+## New STAR / eXpress USER variables:
+##
+OUTPUT_NAME := NULL
+RAWDATA_PATH := NULL
+
+BIN_PATH := /gpfs/scratch/fas/gerstein/rrk24/bin
+GENOMEREF_PATH := /gpfs/scratch/fas/gerstein/rrk24/ANNOTATIONS
+
+## for BigMem nodes
+#NTHREADS := 64
+#MAX_RAM := 300000000000
+
+## For standard compute nodes
+NTHREADS := 8
+MAX_RAM := 40000000000
+
+STAR_EXE := $(BIN_PATH)/STAR_2.4.2a/bin/Linux_x86_64/STAR
+EXPRESS_EXE := $(BIN_PATH)/express-1.5.1-linux_x86_64/express
+
+ifeq ($(ORGANISM),human)
+  GENOME	      := hg38
+  GENOMEREF_PATH      := /gpfs/scratch/fas/gerstein/rrk24/ANNOTATIONS
+  ANNOTATION_GTF      := $(GENOMEREF_PATH)/gencode.v21.annotation_noSelenocysteine.gtf
+  TRANSCRIPTOME_FASTA := $(GENOMEREF_PATH)/gencode.v21.annotation_noSelenocysteine.fa
+  RSEQ_INTERVAL       := $(GENOMEREF_PATH)/gencode.v21.annotation_noSelenocysteine.int
+else ifeq ($(ORGANISM),mouse)
+  GENOME	      := mm10
+  GENOMEREF_PATH      := /gpfs/scratch/fas/gerstein/rrk24/ANNOTATIONS/MOUSE
+  ANNOTATION_GTF      := $(GENOMEREF_PATH)/gencode.vM6.primary_assembly.annotation.gtf
+  TRANSCRIPTOME_FASTA := $(GENOMEREF_PATH)/gencode.vM6.primary_assembly.annotation.fa
+endif
+
+STAR_UNIVEC_DIR := /gpfs/scratch/fas/gerstein/rrk24/ANNOTATIONS/STAR_GENOME_UniVec
+
+
+#STAR_PARAMS_RRNA := --outFilterMultimapNmax 50 --outFilterMatchNminOverLread 0.66 --outFilterMatchNmin 50 --outFilterMismatchNoverLmax 0.05 --outFilterIntronMotifs RemoveNoncanonical
+#STAR_PARAMS_TRANSCRIPTOME := --outFilterMultimapNmax 50 --outFilterMatchNminOverLread 0.66 --outFilterMatchNmin 35 --outFilterMismatchNoverLmax 0.25 --outFilterIntronMotifs RemoveNoncanonical
+
+
+RNA_SEQ_TYPE := normal
+ADAPTER_SEQ := NULL
+#EXPRESS_EXP_FRAG_LENGTH := 200
+#EXPRESS_EXP_FRAG_STDEV := 80
+#EXPRESS_STRANDED_FLAG := --rf-stranded
+EXPRESS_STRANDED_FLAG :=
+
+#RNA_SEQ_TYPE := footprint
+ifeq ($(RNA_SEQ_TYPE),footprint)
+  # 1 base mismatch in a 27nt read = 0.037
+  STAR_PARAMS_RRNA := --outFilterMultimapNmax 50 --outFilterMatchNminOverLread 0.90 --outFilterMatchNmin 25 --outFilterMismatchNoverLmax 0.037 --outFilterIntronMotifs RemoveNoncanonical
+  STAR_PARAMS_TRANSCRIPTOME := --outFilterMultimapNmax 50 --outFilterMatchNminOverLread 0.90 --outFilterMatchNmin 25 --outFilterMismatchNoverLmax 0.037 --outFilterIntronMotifs RemoveNoncanonical
+  #MAX_TOLERABLE_MISMATCH_FRACTION := 0.037
+  #MIN_MATCHED_BASES := 25
+  #MAX_TOLERABLE_MISMATCH_FRACTION_RRNA := 0.037
+  #MIN_MATCHED_BASES_RRNA := 25
+  EXPRESS_EXP_FRAG_LENGTH := 29
+  EXPRESS_EXP_FRAG_STDEV := 2
+  EXPRESS_STRANDED_FLAG :=
+  #ADAPTER_SEQ := AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC
+endif
+
+
+
+##
+## Computed Variables:
+##
+#ANNOTATION_BASENAME := $(notdir $(ANNOTATION_GTF))
+#ANNOTATION_BASENAME := $(basename $(ANNOTATION_BASENAME))
+#RRNA_BASENAME := $(notdir $(FASTA_RRNA))
+#RRNA_BASENAME := $(basename $(RRNA_BASENAME))
+
+#STAR_GENOME_DIR := $(GENOMEREF_PATH)/STAR_genomes/$(GENOME)
+#STAR_TRANSCRIPTOME_DIR := $(GENOMEREF_PATH)/STAR_genomes/$(ANNOTATION_BASENAME)
+#TRANSCRIPTOME_FASTA := $(GENOMEREF_PATH)/$(ANNOTATION_BASENAME).fa
+#STAR_RRNA_DIR := $(GENOMEREF_PATH)/STAR_genomes/$(RRNA_BASENAME)
+
+
+
+##
+## BulldogN-specific variables:
+##
+BLAT_PATH := $(BIN_PATH)/x86_64
+JAVASCRIPTS_PATH := $(BIN_PATH)/myJavaScripts
+
+BOWTIEBUILD_EXE := $(BIN_PATH)/bowtie2-2.2.4/bowtie2-build
+BOWTIE_EXE := $(BIN_PATH)/bowtie2-2.2.4/bowtie2
+
+JAVA_PATH 	 := /usr/java/jdk1.7.0_03/bin
+FASTQC_PATH 	 := $(BIN_PATH)/FastQC_0.9.4
+FASTX_EXE 	 := $(BIN_PATH)/fastx_toolkit-0.0.14/bin/fastx_clipper
+SAMTOOLS_EXE  	 := $(BIN_PATH)/samtools-1.1/samtools
+#SAMTOOLS_EXE     := $(BIN_PATH)/samtools-0.1.19/samtools
+PERLSCRIPTS_PATH := $(BIN_PATH)
+RSEQTOOLS_PATH   := $(BIN_PATH)/RSEQtools_0.6 
+UCSCTOOLS_PATH   := $(BIN_PATH)/UCSC_tools
+
+
+##
+## ANNOTATION variables
+##
+GENOMEREF_L10a := $(GENOMEREF_PATH)/L10a
+
+
+## GET RAW DATA LIST
+EMPTY :=
+SPACE := $(EMPTY) $(EMPTY)
+COMMA := ,
+ifeq ($(RAWDATA_STRING_R1),$(EMPTY))
+  RAWDATA_FILES_TMP1 := $(shell find $(RAWDATA_PATH) \( -name "*_R1_*.fq" -or -name "*_R1_*.fastq" -or -name "*_R1_*.fq.gz" -or -name "*_R1_*.fastq.gz" \))
+  RAWDATA_FILES_TMP2 := $(shell find $(RAWDATA_PATH) \( -name "*_R2_*.fq" -or -name "*_R2_*.fastq" -or -name "*_R2_*.fq.gz" -or -name "*_R2_*.fastq.gz" \))
+  RAWDATA_FILES_R1 := $(sort $(RAWDATA_FILES_TMP1))
+  RAWDATA_FILES_R2 := $(sort $(RAWDATA_FILES_TMP2))
+  RAWDATA_STRING_R1 := $(subst $(SPACE),$(COMMA),$(RAWDATA_FILES_R1))
+  RAWDATA_STRING_R2 := $(subst $(SPACE),$(COMMA),$(RAWDATA_FILES_R2))
+endif
+
+
+##
+## Automatic adapter detection
+##
+ifeq ($(RNA_SEQ_TYPE),footprint)
+  ifeq ($(ADAPTER_SEQ),NULL)
+    CLIP_COMMAND := gunzip -c $(RAWDATA_FILES_R1) | $(BOWTIE_EXE) --no-head -p $(NTHREADS) --local -D 15 -R 2 -N 0 -L 20 -i S,1,0.75 -k 2 --upto 10000000 -x $(GENOMEREF_PATH)/$(GENOME) -U - | awk '{if ($$5==255) print $$0}' | awk '{if ($$2==0) print $$3"\t"$$4"\t"$$6"\t"$$10}' | grep "[[:space:]]2[0-9]M[0-9][0-9]S" | tee $(OUTPUT_DIR)/$(OUTPUT_NAME)/tmp.sam | awk '{print $$3}' | sort | uniq -c | sort -rnk 1 | head -n 1 | awk '{print substr($$2,1,2)}' > $(OUTPUT_DIR)/$(OUTPUT_NAME)/tmp.txt;     cat $(OUTPUT_DIR)/$(OUTPUT_NAME)/tmp.sam | grep "[[:space:]]$$(<$(OUTPUT_DIR)/$(OUTPUT_NAME)/tmp.txt)" | awk '{getline len<"$(OUTPUT_DIR)/$(OUTPUT_NAME)/tmp.txt"; print substr($$4,len+1)}' | sed 's/[A]*$$//' | sort | uniq -c | sort -rnk 1 | awk '{if ($$1 > 99) print $$0}' | tee $(OUTPUT_DIR)/$(OUTPUT_NAME)/$(OUTPUT_NAME).potentialAdapters.txt | head -n 2 | awk '{print length, $$0}' | sort -nr | head -1 | awk '{print $$3}' > $(OUTPUT_DIR)/$(OUTPUT_NAME)/$(OUTPUT_NAME).adapterSeq;   rm $(OUTPUT_DIR)/$(OUTPUT_NAME)/tmp.txt;  rm $(OUTPUT_DIR)/$(OUTPUT_NAME)/tmp.sam
+  else
+    CLIP_COMMAND := echo $(ADAPTER_SEQ) > $(OUTPUT_DIR)/$(OUTPUT_NAME)/$(OUTPUT_NAME).adapterSeq
+  endif
+  
+  CLIP_COMMAND := $(CLIP_COMMAND);   gunzip -c $(RAWDATA_FILES_R1) | $(FASTX_EXE) -a $(ADAPTER_SEQ) -l 10 -v -M 10 -z -o $(OUTPUT_DIR)/$(OUTPUT_NAME)/$(OUTPUT_NAME)_noAdapter.fq.gz
+
+endif
+
+
+## SIMPLIFIED OUTPUT PREFIX:
+OUTPUT_PREFIX := $(OUTPUT_DIR)/$(OUTPUT_NAME)/$(OUTPUT_NAME)
+
+
+ifeq ($(RAWDATA_STRING_R2),$(EMPTY))
+  ##
+  ## For single-end RNA-seq
+  ##
+  
+  #L10a_MAPPING_COMMAND := $(BOWTIE_EXE) -p $(NTHREADS) --sensitive-local -x $(GENOMEREF_L10a) -U $(RAWDATA_STRING_R1) 2> $(OUTPUT_DIR)/$(OUTPUT_NAME)/$(OUTPUT_NAME)_L10a.bowtie.log | $(SAMTOOLS_EXE) view -q 3 -S - > $(OUTPUT_DIR)/$(OUTPUT_NAME)/$(OUTPUT_NAME)_L10a.sam
+  
+  ## Remove UniVec contaminants
+  ifeq ($(RNA_SEQ_TYPE),footprint)
+    ## For footprint reads
+    STAR_COMMAND_UNIVEC := $(CLIP_COMMAND);  $(STAR_EXE) --outFileNamePrefix $(OUTPUT_PREFIX)_UniVec_ --genomeDir $(STAR_UNIVEC_DIR) --readFilesIn $(OUTPUT_PREFIX)_noAdapter.fq.gz --runThreadN $(NTHREADS) --readFilesCommand zcat --parametersFiles $(STAR_PARAMS_RRNA);  java -jar ~/bin/Thunder.jar GetSequenceLengths $(OUTPUT_PREFIX)_UniVec_Unmapped.out.mate1 > $(OUTPUT_PREFIX)_UniVec_Unmapped.out.mate1.readLengths.txt
+  else
+    ## For normal single-end RNA-seq
+    STAR_COMMAND_UNIVEC := $(STAR_EXE) --outFileNamePrefix $(OUTPUT_PREFIX)_UniVec_ --genomeDir $(STAR_UNIVEC_DIR) --readFilesIn $(RAWDATA_STRING_R1) --runThreadN $(NTHREADS) --readFilesCommand zcat --parametersFiles $(STAR_PARAMS_RRNA)
+  endif
+
+  ## Remove rRNA
+  STAR_COMMAND_RRNA := $(STAR_EXE) --outFileNamePrefix $(OUTPUT_PREFIX)_rRNA_ --readFilesIn $(OUTPUT_PREFIX)_UniVec_Unmapped.out.mate1 --runThreadN $(NTHREADS) --outWigType bedGraph --outWigNorm None --parametersFiles $(STAR_PARAMS_RRNA);  java -jar ~/bin/Thunder.jar GetSequenceLengths $(OUTPUT_PREFIX)_rRNA_Unmapped.out.mate1 > $(OUTPUT_PREFIX)_noRiboRNA.fq.1.readLengths.txt
+  
+  ## Compress rRNA unmapped reads 
+  STAR_COMPRESS_RRNA_OUTPUT := gzip -c $(OUTPUT_PREFIX)_rRNA_Unmapped.out.mate1 > $(OUTPUT_PREFIX)_noRiboRNA.fq.1.gz; \
+  rm $(OUTPUT_PREFIX)_UniVec_Unmapped.out.mate1; \
+  rm $(OUTPUT_PREFIX)_rRNA_Unmapped.out.mate1
+  #rm $(OUTPUT_PREFIX)_rRNA_Aligned.sortedByCoord.out.bam;
+
+
+  ## Do FastQC
+  FASTQC_COMMAND := $(JAVA_PATH)/java -classpath $(FASTQC_PATH) -Dfastqc.threads=$(NTHREADS) -Dfastqc.unzip=false -Dfastqc.output_dir=$(OUTPUT_DIR)/$(OUTPUT_NAME)/ uk/ac/bbsrc/babraham/FastQC/FastQCApplication $(OUTPUT_PREFIX)_rRNA_Unmapped.fq.1
+  
+  ## Align to genome
+  STAR_COMMAND_GENOME := $(STAR_EXE) --outFileNamePrefix $(OUTPUT_PREFIX)_Genome_ --readFilesIn $(OUTPUT_PREFIX)_noRiboRNA.fq.1.gz --readFilesCommand zcat --runThreadN $(NTHREADS) --parametersFiles $(STAR_PARAMS_GENOME)
+  #STAR_COMMAND_GENOME := $(STAR_EXE) --outFileNamePrefix $(OUTPUT_PREFIX)_Genome_ --readFilesIn $(OUTPUT_PREFIX)_rRNA_Unmapped.out.mate1 --runThreadN $(NTHREADS) --parametersFiles $(STAR_PARAMS_GENOME); #\
+  #gzip -c $(OUTPUT_PREFIX)_Genome_Unmapped.out.mate1 > $(OUTPUT_PREFIX)_Genome_Unmapped.R1.fq.gz
+  #rm $(OUTPUT_PREFIX)_*_Unmapped.out.mate*
+  
+else
+  ##
+  ## For paired-end RNA-seq
+  ##
+  #L10a_MAPPING_COMMAND := $(BOWTIE_EXE) -p $(NTHREADS) --sensitive -x $(GENOMEREF_L10a) -1 $(RAWDATA_STRING_R1) -2 $(RAWDATA_STRING_R2) 2> $(OUTPUT_DIR)/$(OUTPUT_NAME)/$(OUTPUT_NAME)_L10a.bowtie.log | $(SAMTOOLS_EXE) view -q 3 -S - > $(OUTPUT_DIR)/$(OUTPUT_NAME)/$(OUTPUT_NAME)_L10a.sam
+  
+  ## Remove UniVec contaminants -- need all this extra guff because sometimes the read-pairs are not in the correct order following STAR output!!!
+  STAR_COMMAND_UNIVEC := $(STAR_EXE) --runThreadN $(NTHREADS) --outFileNamePrefix $(OUTPUT_PREFIX)_UniVec_ --genomeDir $(STAR_UNIVEC_DIR) --readFilesIn $(RAWDATA_STRING_R1) $(RAWDATA_STRING_R2) --readFilesCommand zcat --parametersFiles $(STAR_PARAMS_RRNA); \
+  cat $(OUTPUT_PREFIX)_UniVec_Unmapped.out.mate1 | awk '{ printf("%s",$$0); n++; if(n%4==0) { printf("\n");} else { printf("\t\t");} }' | awk '{i=index($$1,"/"); printf("%s\t%s\n",substr($$1,1,i-1),$$0);}' | sort -k1,1 | awk '{print $$2"\n"$$4"\n"$$5"\n"$$6}' > $(OUTPUT_PREFIX)_UniVec_Unmapped.fq.1; \
+  cat $(OUTPUT_PREFIX)_UniVec_Unmapped.out.mate2 | awk '{ printf("%s",$$0); n++; if(n%4==0) { printf("\n");} else { printf("\t\t");} }' | awk '{i=index($$1,"/"); printf("%s\t%s\n",substr($$1,1,i-1),$$0);}' | sort -k1,1 | awk '{print $$2"\n"$$4"\n"$$5"\n"$$6}' > $(OUTPUT_PREFIX)_UniVec_Unmapped.fq.2;
+  #rm $(OUTPUT_PREFIX)_UniVec_Unmapped.out.mate*
+  
+  ## Remove rRNA -- need all this extra guff because sometimes the read-pairs are not in the correct order following STAR output!!!
+  STAR_COMMAND_RRNA := $(STAR_EXE) --runThreadN $(NTHREADS) --outFileNamePrefix $(OUTPUT_PREFIX)_rRNA_ --readFilesIn $(OUTPUT_PREFIX)_UniVec_Unmapped.fq.1 $(OUTPUT_PREFIX)_UniVec_Unmapped.fq.2 --outWigType bedGraph --outWigNorm None --parametersFiles $(STAR_PARAMS_RRNA); \
+  cat $(OUTPUT_PREFIX)_rRNA_Unmapped.out.mate1 | awk '{ printf("%s",$$0); n++; if(n%4==0) { printf("\n");} else { printf("\t\t");} }' | awk '{i=index($$1,"/"); printf("%s\t%s\n",substr($$1,1,i-1),$$0);}' | sort -k1,1 | awk '{print $$2"\n"$$4"\n"$$5"\n"$$6}' | gzip -c > $(OUTPUT_PREFIX)_noRiboRNA.fq.1.gz; \
+  cat $(OUTPUT_PREFIX)_rRNA_Unmapped.out.mate2 | awk '{ printf("%s",$$0); n++; if(n%4==0) { printf("\n");} else { printf("\t\t");} }' | awk '{i=index($$1,"/"); printf("%s\t%s\n",substr($$1,1,i-1),$$0);}' | sort -k1,1 | awk '{print $$2"\n"$$4"\n"$$5"\n"$$6}' | gzip -c > $(OUTPUT_PREFIX)_noRiboRNA.fq.2.gz;
+
+  ## Compress rRNA unmapped reads
+  #STAR_COMPRESS_RRNA_OUTPUT := gzip -c $(OUTPUT_PREFIX)_rRNA_Unmapped.out.mate1 > $(OUTPUT_PREFIX)_noRiboRNA.fq.1.gz;  gzip -c $(OUTPUT_PREFIX)_rRNA_Unmapped.out.mate2 > $(OUTPUT_PREFIX)_noRiboRNA.fq.2.gz;
+  
+  STAR_COMPRESS_RRNA_OUTPUT := rm $(OUTPUT_PREFIX)_rRNA_Aligned.sortedByCoord.out.bam;  \
+  rm $(OUTPUT_PREFIX)_UniVec_Unmapped.fq.1;  rm $(OUTPUT_PREFIX)_UniVec_Unmapped.fq.2; \
+  rm $(OUTPUT_PREFIX)_UniVec_Unmapped.out.mate1;  rm $(OUTPUT_PREFIX)_UniVec_Unmapped.out.mate2; \
+  rm $(OUTPUT_PREFIX)_rRNA_Unmapped.out.mate1;  rm $(OUTPUT_PREFIX)_rRNA_Unmapped.out.mate2
+  #STAR_COMPRESS_RRNA_OUTPUT := cat $(OUTPUT_PREFIX)_rRNA_Unmapped.out.mate1 | awk '{ printf("%s",$$0); n++; if(n%4==0) { printf("\n");} else { printf("\t\t");} }' | awk '{i=index($$1,"/"); printf("%s\t%s\n",substr($$1,1,i-1),$$0);}' | sort -k1,1 | awk '{print $$2"\n"$$4"\n"$$5"\n"$$6}' | gzip -c > $(OUTPUT_PREFIX)_noRiboRNA.fq.1.gz; \
+  #cat $(OUTPUT_PREFIX)_rRNA_Unmapped.out.mate2 | awk '{ printf("%s",$$0); n++; if(n%4==0) { printf("\n");} else { printf("\t\t");} }' | awk '{i=index($$1,"/"); printf("%s\t%s\n",substr($$1,1,i-1),$$0);}' | sort -k1,1 | awk '{print $$2"\n"$$4"\n"$$5"\n"$$6}' | gzip -c > $(OUTPUT_PREFIX)_noRiboRNA.fq.2.gz; \
+  #rm $(OUTPUT_PREFIX)_UniVec_Unmapped.out.mate*;  rm $(OUTPUT_PREFIX)_rRNA_Unmapped.out.mate*
+
+  ## Do FastQC
+  #FASTQC_COMMAND := $(JAVA_PATH)/java -classpath $(FASTQC_PATH) -Dfastqc.threads=$(NTHREADS) -Dfastqc.unzip=false -Dfastqc.output_dir=$(OUTPUT_DIR)/$(OUTPUT_NAME)/ uk/ac/bbsrc/babraham/FastQC/FastQCApplication $(OUTPUT_PREFIX)_noRiboRNA.fq.1.gz;   $(JAVA_PATH)/java -classpath $(FASTQC_PATH) -Dfastqc.threads=$(NTHREADS) -Dfastqc.unzip=false -Dfastqc.output_dir=$(OUTPUT_DIR)/$(OUTPUT_NAME)/ uk/ac/bbsrc/babraham/FastQC/FastQCApplication $(OUTPUT_PREFIX)_noRiboRNA.fq.2.gz
+  FASTQC_COMMAND := $(JAVA_PATH)/java -classpath $(FASTQC_PATH) -Dfastqc.threads=$(NTHREADS) -Dfastqc.unzip=false -Dfastqc.output_dir=$(OUTPUT_DIR)/$(OUTPUT_NAME)/ uk/ac/bbsrc/babraham/FastQC/FastQCApplication $(OUTPUT_PREFIX)_rRNA_Unmapped.fq.1; \
+  $(JAVA_PATH)/java -classpath $(FASTQC_PATH) -Dfastqc.threads=$(NTHREADS) -Dfastqc.unzip=false -Dfastqc.output_dir=$(OUTPUT_DIR)/$(OUTPUT_NAME)/ uk/ac/bbsrc/babraham/FastQC/FastQCApplication $(OUTPUT_PREFIX)_rRNA_Unmapped.fq.2
+
+
+  ## Align to genome
+  STAR_COMMAND_GENOME := $(STAR_EXE) --outFileNamePrefix $(OUTPUT_PREFIX)_Genome_ --readFilesIn $(OUTPUT_PREFIX)_noRiboRNA.fq.1.gz $(OUTPUT_PREFIX)_noRiboRNA.fq.2.gz --readFilesCommand zcat --runThreadN $(NTHREADS) --parametersFiles $(STAR_PARAMS_GENOME)
+  #STAR_COMMAND_GENOME := $(STAR_EXE) --outFileNamePrefix $(OUTPUT_PREFIX)_Genome_ --readFilesIn $(OUTPUT_PREFIX)_rRNA_Unmapped.fq.1 $(OUTPUT_PREFIX)_rRNA_Unmapped.fq.2 --runThreadN $(NTHREADS) --parametersFiles $(STAR_PARAMS_GENOME)
+  #gzip -c $(OUTPUT_PREFIX)_Genome_Unmapped.out.mate1 > $(OUTPUT_PREFIX)_Genome_Unmapped.R1.fq.gz; \
+  #gzip -c $(OUTPUT_PREFIX)_Genome_Unmapped.out.mate2 > $(OUTPUT_PREFIX)_Genome_Unmapped.R2.fq.gz
+  #rm $(OUTPUT_PREFIX)_*_Unmapped.out.mate*;  rm $(OUTPUT_PREFIX)_*_Unmapped.fq.*
+  
+  #STAR_COMMAND_GENOME := $(STAR_EXE) --outFileNamePrefix $(OUTPUT_PREFIX)_Genome_ --readFilesIn $(OUTPUT_PREFIX)_noRiboRNA.fq.1.gz $(OUTPUT_PREFIX)_noRiboRNA.fq.2.gz --runThreadN $(NTHREADS) --readFilesCommand zcat --parametersFiles $(STAR_PARAMS_GENOME)
+  #STAR_COMMAND_TRANSCRIPTOME := $(STAR_EXE) --runMode alignReads --genomeDir $(STAR_TRANSCRIPTOME_DIR) --outFileNamePrefix $(OUTPUT_DIR)/$(OUTPUT_NAME)/$(OUTPUT_NAME)_$(ANNOTATION_BASENAME)_ --readFilesIn $(OUTPUT_DIR)/$(OUTPUT_NAME)/$(OUTPUT_NAME)_noRiboRNA.fq.1.gz $(OUTPUT_DIR)/$(OUTPUT_NAME)/$(OUTPUT_NAME)_noRiboRNA.fq.2.gz --runThreadN $(NTHREADS) $(STAR_PARAMS_TRANSCRIPTOME) --outSAMattributes Standard --outReadsUnmapped Fastx --readFilesCommand zcat --limitGenomeGenerateRAM $(MAX_RAM) --outStd SAM | $(SAMTOOLS_EXE) view -Sb - > $(OUTPUT_DIR)/$(OUTPUT_NAME)/$(OUTPUT_NAME)_$(ANNOTATION_BASENAME)_mappedReads.bam
+  #STAR_COMPRESS_TRANSCRIPTOME_OUTPUT := gzip $(OUTPUT_DIR)/$(OUTPUT_NAME)/$(OUTPUT_NAME)_$(ANNOTATION_BASENAME)_Unmapped.out.mate1; mv $(OUTPUT_DIR)/$(OUTPUT_NAME)/$(OUTPUT_NAME)_$(ANNOTATION_BASENAME)_Unmapped.out.mate1.gz $(OUTPUT_DIR)/$(OUTPUT_NAME)/$(OUTPUT_NAME)_$(ANNOTATION_BASENAME)_unmapped.fq.1.gz; gzip $(OUTPUT_DIR)/$(OUTPUT_NAME)/$(OUTPUT_NAME)_$(ANNOTATION_BASENAME)_Unmapped.out.mate2; mv $(OUTPUT_DIR)/$(OUTPUT_NAME)/$(OUTPUT_NAME)_$(ANNOTATION_BASENAME)_Unmapped.out.mate2.gz $(OUTPUT_DIR)/$(OUTPUT_NAME)/$(OUTPUT_NAME)_$(ANNOTATION_BASENAME)_unmapped.fq.2.gz
+  
+endif
+
+
+
+
+
+define MESSAGESEP
+
+>>> 
+endef
+
+
+##
+## START WORKFLOW
+##
+.PHONY: all
+.DEFAULT: all
+all: quantifyKnownTranscripts
+
+
+
+
+##
+## Extract transcript sequences from the genome fasta files using the annotation info
+##
+$(TRANSCRIPTOME_FASTA): $(GENOMEREF_PATH)/$(GENOME).fa $(ANNOTATION_GTF)
+	$(JAVA_PATH)/java -Xmx$(MAX_RAM) -jar $(BIN_PATH)/Thunder.jar GTF2Fasta -k "exon" -a $(ANNOTATION_GTF) -i $(GENOMEREF_PATH)/$(GENOME).fa -o $(TRANSCRIPTOME_FASTA)
+
+
+
+##
+## Create STAR rRNA reference
+##
+#$(STAR_RRNA_DIR)/Genome: $(FASTA_RRNA)
+#	mkdir $(STAR_RRNA_DIR)
+#	$(STAR_EXE) --runMode genomeGenerate --genomeDir $(STAR_RRNA_DIR) --genomeFastaFiles $(FASTA_RRNA) --runThreadN $(NTHREADS) --limitGenomeGenerateRAM $(MAX_RAM)
+
+
+##
+## Create STAR genome reference
+##
+#$(STAR_GENOME_DIR)/Genome: $(GENOMEREF_PATH)/$(GENOME).fa
+#	mkdir $(STAR_GENOME_DIR)
+#	$(STAR_EXE) --runMode genomeGenerate --genomeDir $(STAR_GENOME_DIR) --genomeFastaFiles $(GENOMEREF_PATH)/$(GENOME).fa --runThreadN $(NTHREADS) --limitGenomeGenerateRAM $(MAX_RAM)
+
+
+
+##
+## Create results directory
+##
+#$(OUTPUT_DIR)/$(OUTPUT_NAME): 
+#	mkdir $(OUTPUT_DIR)/$(OUTPUT_NAME)
+
+
+
+##
+### Map reads to UniVec contaminant sequences
+###
+##$(OUTPUT_PREFIX)_UniVec_unmapped.mate1.fq.gz: $(STAR_UNIVEC_DIR)/Genome $(OUTPUT_DIR)/$(OUTPUT_NAME)
+$(OUTPUT_PREFIX)_UniVec_Log.final.out: 
+	mkdir -p $(OUTPUT_DIR)/$(OUTPUT_NAME)
+	$(echo $(MESSAGESEP)Filtering reads mapping to likely contaminant sequences in UniVec)
+	$(STAR_COMMAND_UNIVEC)
+
+##
+## Map reads to rRNA sequences
+##
+#$(OUTPUT_PREFIX)_rRNA_Log.final.out: $(OUTPUT_PREFIX)_UniVec_Log.final.out
+$(OUTPUT_PREFIX)_noRiboRNA.fq.1.gz: $(OUTPUT_PREFIX)_UniVec_Log.final.out
+	$(echo $(MESSAGESEP)Filtering reads mapping to rRNA sequences)
+	$(STAR_COMMAND_RRNA)
+	$(STAR_COMPRESS_RRNA_OUTPUT) 
+
+
+##
+## Map reads to the L10a sequence (human and mouse) and the eGFP sequence 
+##
+#$(OUTPUT_DIR)/$(OUTPUT_NAME)/$(OUTPUT_NAME)_L10a.bowtie.log:
+MapToL10a: 
+	$(echo $(MESSAGESEP)Mapping reads to human/mouse L10a and eGFP)
+	$(L10a_MAPPING_COMMAND)	
+#grep -c "255003734:144-797" A1-Total_2x75_L10a_noRiboRNA.sorted.sam
+#grep -c "72407914:35-688" A1-Total_2x75_L10a_noRiboRNA.sorted.sam
+#grep -c "EGFP_extended" 
+
+
+
+
+
+##
+## Do QC on rRNA-removed reads
+##
+#$(OUTPUT_PREFIX)_noRiboRNA.fq.1_fastqc.zip: $(OUTPUT_PREFIX)_rRNA_Unmapped.fq.1
+$(OUTPUT_PREFIX)_noRiboRNA.fq.1_fastqc.zip: $(OUTPUT_PREFIX)_rRNA_Log.final.out
+	$(echo $(MESSAGESEP)Running FastQC on filtered reads)
+	$(FASTQC_COMMAND)
+
+
+##
+## Target for just doing the rRNA mapping and removal
+##
+FilterRRNA: $(OUTPUT_PREFIX)_noRiboRNA.fq.1_fastqc.zip
+
+
+##
+## Map reads to the genome and annotated transcripts using STAR
+##
+#$(OUTPUT_PREFIX)_Genome_Aligned.toTranscriptome.sorted.bam: $(OUTPUT_PREFIX)_noRiboRNA.fq.1_fastqc.zip
+#$(OUTPUT_PREFIX)_Genome_Aligned.toTranscriptome.out.bam: $(OUTPUT_PREFIX)_rRNA_Log.final.out
+#$(OUTPUT_PREFIX)_Genome_Aligned.toTranscriptome.out.bam: $(OUTPUT_PREFIX)_noRiboRNA.fq.1.gz
+$(OUTPUT_PREFIX)_Genome_Aligned.toTranscriptome.sorted.bam: $(OUTPUT_PREFIX)_noRiboRNA.fq.1.gz
+	$(echo $(MESSAGESEP)Mapping reads using STAR)
+	$(STAR_COMMAND_GENOME)
+	#
+	$(echo $(MESSAGESEP)Indexing genomic alignments for IGV)
+	$(SAMTOOLS_EXE) index $(OUTPUT_PREFIX)_Genome_Aligned.sortedByCoord.out.bam
+	#
+	$(echo $(MESSAGESEP)Sorting transcriptomic alignments for eXpress)
+	$(SAMTOOLS_EXE) sort -@ $(NTHREADS) -n -T $(OUTPUT_PREFIX)_Genome_Aligned.toTranscriptome.sorted.tmp -o $(OUTPUT_PREFIX)_Genome_Aligned.toTranscriptome.sorted.bam $(OUTPUT_PREFIX)_Genome_Aligned.toTranscriptome.out.bam
+	rm $(OUTPUT_PREFIX)_Genome_Aligned.toTranscriptome.out.bam
+
+
+##
+## Create genome coverage (bigwig) tracks and compress genome mapped reads to CRAM
+##
+$(OUTPUT_PREFIX)_Genome_Aligned.sortedByCoord.out.cram: $(OUTPUT_PREFIX)_Genome_Aligned.toTranscriptome.sorted.bam
+	$(echo $(MESSAGESEP)Compressing bedGraph signal tracks to bigWig)
+	sort -k1,1 -k2,2n $(OUTPUT_PREFIX)_Genome_Signal.UniqueMultiple.str1.out.bg > $(OUTPUT_PREFIX)_tmp.sorted.bg;  $(UCSCTOOLS_PATH)/bedGraphToBigWig $(OUTPUT_PREFIX)_tmp.sorted.bg $(GENOMEREF_PATH)/$(GENOME).chrom.sizes $(OUTPUT_PREFIX)_Genome_Signal.UniqueMultiple.str1.out.bigwig;  rm $(OUTPUT_PREFIX)_Genome_Signal.UniqueMultiple.str1.out.bg
+	sort -k1,1 -k2,2n $(OUTPUT_PREFIX)_Genome_Signal.UniqueMultiple.str2.out.bg > $(OUTPUT_PREFIX)_tmp.sorted.bg;  $(UCSCTOOLS_PATH)/bedGraphToBigWig $(OUTPUT_PREFIX)_tmp.sorted.bg $(GENOMEREF_PATH)/$(GENOME).chrom.sizes $(OUTPUT_PREFIX)_Genome_Signal.UniqueMultiple.str2.out.bigwig;  rm $(OUTPUT_PREFIX)_Genome_Signal.UniqueMultiple.str2.out.bg
+	sort -k1,1 -k2,2n $(OUTPUT_PREFIX)_Genome_Signal.Unique.str1.out.bg > $(OUTPUT_PREFIX)_tmp.sorted.bg;  $(UCSCTOOLS_PATH)/bedGraphToBigWig $(OUTPUT_PREFIX)_tmp.sorted.bg $(GENOMEREF_PATH)/$(GENOME).chrom.sizes $(OUTPUT_PREFIX)_Genome_Signal.Unique.str1.out.bigwig;  rm $(OUTPUT_PREFIX)_Genome_Signal.Unique.str1.out.bg
+	sort -k1,1 -k2,2n $(OUTPUT_PREFIX)_Genome_Signal.Unique.str2.out.bg > $(OUTPUT_PREFIX)_tmp.sorted.bg;  $(UCSCTOOLS_PATH)/bedGraphToBigWig $(OUTPUT_PREFIX)_tmp.sorted.bg $(GENOMEREF_PATH)/$(GENOME).chrom.sizes $(OUTPUT_PREFIX)_Genome_Signal.Unique.str2.out.bigwig;  rm $(OUTPUT_PREFIX)_Genome_Signal.Unique.str2.out.bg
+	rm $(OUTPUT_PREFIX)_tmp.sorted.bg
+	#
+	$(echo $(MESSAGESEP)Compressing genomic alignments to CRAM)
+	$(SAMTOOLS_EXE) view -@ $(NTHREADS) -CT $(GENOMEREF_PATH)/$(GENOME).fa $(OUTPUT_PREFIX)_Genome_Aligned.sortedByCoord.out.bam > $(OUTPUT_PREFIX)_Genome_Aligned.sortedByCoord.out.cram
+	rm $(OUTPUT_PREFIX)_Genome_Aligned.sortedByCoord.out.bam
+
+
+
+##
+## Compress genomic alignments and sort transcriptome alignments
+##
+#$(OUTPUT_PREFIX)_Genome_Aligned.toTranscriptome.sorted.bam: $(OUTPUT_PREFIX)_Genome_Aligned.toTranscriptome.out.bam
+#	$(echo $(MESSAGESEP)Indexing genomic alignments for IGV)
+#	$(SAMTOOLS_EXE) index $(OUTPUT_PREFIX)_Genome_Aligned.sortedByCoord.out.bam
+
+
+##
+## Sort transcriptomic alignments by readID
+##
+#$(OUTPUT_PREFIX)_Genome_Aligned.toTranscriptome.sorted.bam: $(OUTPUT_PREFIX)_Genome_Aligned.toTranscriptome.out.bam $(OUTPUT_PREFIX)_Genome_Aligned.sortedByCoord.out.bam.bai
+#	$(echo $(MESSAGESEP)Sorting transcriptomic alignments for eXpress)
+#	$(SAMTOOLS_EXE) sort -@ $(NTHREADS) -n -T $(OUTPUT_PREFIX)_Genome_Aligned.toTranscriptome.sorted.tmp -o $(OUTPUT_PREFIX)_Genome_Aligned.toTranscriptome.sorted.bam $(OUTPUT_PREFIX)_Genome_Aligned.toTranscriptome.out.bam 
+
+
+##
+## Calculate gene-level RPKMs using RSEQtools
+##
+#$(OUTPUT_PREFIX)_Genome_Aligned.sortedByCoord.uniqueMap.noMito.geneQuantRSEQTools.txt: $(OUTPUT_PREFIX)_Genome_Aligned.toTranscriptome.sorted.bam
+#	cd $(RSEQTOOLS_PATH)
+#	$(SAMTOOLS_EXE) view $(OUTPUT_PREFIX)_Genome_Aligned.sortedByCoord.out.bam | grep -v "chrM" | awk '{ if($$12=="NH:i:1") {print $$0} }' | ./sam2mrf.py | ./mrfQuantifier $(RSEQ_INTERVAL) singleOverlap > $(OUTPUT_PREFIX)_Genome_Aligned.sortedByCoord.uniqueMap.noMito.geneQuantRSEQTools.txt
+#	cd -
+
+
+##
+## Quantify known transcript expression using eXpress
+##
+$(OUTPUT_DIR)/$(OUTPUT_NAME)/results.xprs: $(OUTPUT_PREFIX)_Genome_Aligned.toTranscriptome.sorted.bam $(TRANSCRIPTOME_FASTA) $(OUTPUT_PREFIX)_Genome_Aligned.sortedByCoord.out.cram
+	$(EXPRESS_EXE) -o $(OUTPUT_DIR)/$(OUTPUT_NAME) $(EXPRESS_STRANDED_FLAG) -O 5 $(TRANSCRIPTOME_FASTA) $(OUTPUT_PREFIX)_Genome_Aligned.toTranscriptome.sorted.bam
+
+##
+## Create MAKEFILE targets for running STAR/eXpress or RSEQtools
+##
+#align: $(OUTPUT_PREFIX)_Genome_Aligned.toTranscriptome.sorted.bam
+align: $(OUTPUT_PREFIX)_Genome_Aligned.sortedByCoord.out.cram
+quantifyKnownTranscripts: $(OUTPUT_DIR)/$(OUTPUT_NAME)/results.xprs
+
+
