@@ -16,10 +16,10 @@
 ##                                                                                   ##
 ## Learn more at github.gersteinlab.org/exceRpt                                      ##
 ##                                                                                   ##
-## Version 4.1.4 (2016-05-16)                                                        ##
+## Version 4.1.5 (2016-05-23)                                                        ##
 ##                                                                                   ##
 #######################################################################################
-EXCERPT_VERSION := 4.1.4
+EXCERPT_VERSION := 4.1.5
 
 
 ##
@@ -401,6 +401,7 @@ ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes | awk '{print $$9}' | grep "
 #ls -lh $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA | awk '{print $$9}' | grep "exogenous_miRBase_mapped" | awk '{print "$(SAMPLE_ID)/EXOGENOUS_rRNA/"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt
 
 
+OUTDIR := $(OUTPUT_DIR)/$(SAMPLE_ID)
 
 
 ###########################################################
@@ -486,7 +487,7 @@ compressCoreResults:
 ####
 #### Main sub-target
 ####
-processSample: $(OUTPUT_DIR)/$(SAMPLE_ID)/$(PROCESS_SAMPLE_REQFILE)
+processSample: $(OUTDIR)/$(PROCESS_SAMPLE_REQFILE)
 	## Wrap up logging and stats files
 	@echo -e "$(ts) $(SMRNAPIPELINE): END smallRNA-seq Pipeline for sample $(SAMPLE_ID)\n======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): END\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).err
@@ -524,7 +525,7 @@ processSample: $(OUTPUT_DIR)/$(SAMPLE_ID)/$(PROCESS_SAMPLE_REQFILE)
 ##
 ## Make results directory & Write adapter sequence
 ##
-$(OUTPUT_DIR)/$(SAMPLE_ID)/Progress_1_FoundAdapter.dat: 
+$(OUTDIR)/Progress_1_FoundAdapter.dat: 
 	#$(EXPORT_CMD)
 	@echo -e "$(USEAGE)"
 	mkdir -p $(OUTPUT_DIR)/$(SAMPLE_ID)
@@ -545,7 +546,7 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/Progress_1_FoundAdapter.dat:
 ##
 ## CLIP 3' adapter sequence
 ##
-$(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz: $(OUTPUT_DIR)/$(SAMPLE_ID)/Progress_1_FoundAdapter.dat
+$(OUTDIR)/$(SAMPLE_ID).clipped.fastq.gz: $(OUTDIR)/Progress_1_FoundAdapter.dat
 	## Run the SW alignment of known adapters regardless of user preference
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): Checking adapter against known sequences: $(COMMAND_CONVERT_SRA) 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err | $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) FindAdapter -n 1000 -m 100000 -s 7 -a $(DATABASE_PATH)/adapters/adapters.fa - > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).knownAdapterSeq 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
@@ -572,7 +573,7 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz: $(OUTPUT_DIR)/$(SAMPLE
 ##
 ## Guess Fastq quality encoding
 ##
-$(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).qualityEncoding: $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz
+$(OUTDIR)/$(SAMPLE_ID).qualityEncoding: $(OUTDIR)/$(SAMPLE_ID).clipped.fastq.gz
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): Guessing encoding of fastq read-qualities:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	## ASCII 84 is equal to Q20 (p<0.01) in Phred+64, so any file with max quals greater than this can reasonably assumed to be Phred+64
@@ -584,7 +585,7 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).qualityEncoding: $(OUTPUT_DIR)/$(SAMPLE_
 ##
 ## Trim reads at the 5' end?
 ##
-$(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.fastq.gz: $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).qualityEncoding
+$(OUTDIR)/$(SAMPLE_ID).clipped.trimmed.fastq.gz: $(OUTDIR)/$(SAMPLE_ID).clipped.fastq.gz $(OUTDIR)/$(SAMPLE_ID).qualityEncoding
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): Trimming $(TRIM_N_BASES_5p) bases from the 5' end of all reads:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz | $(FASTX_TRIMMER_EXE) -z -Q$(shell cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).qualityEncoding) -f $(shell expr $(TRIM_N_BASES_5p) + $(ONE) ) > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.fastq.gz 2>>$(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
@@ -595,7 +596,7 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.fastq.gz: $(OUTPUT_DIR)/
 ##
 ## FILTER clipped reads that have poor overall base quality  &  Remove homopolymer repeats
 ##
-$(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.fastq.gz: $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.fastq.gz $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).qualityEncoding
+$(OUTDIR)/$(SAMPLE_ID).clipped.trimmed.filtered.fastq.gz: $(OUTDIR)/$(SAMPLE_ID).clipped.trimmed.fastq.gz $(OUTDIR)/$(SAMPLE_ID).qualityEncoding
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): Filtering reads by base quality:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	#@echo -e "$(ts) $(SMRNAPIPELINE): $(COMMAND_FILTER_BY_QUALITY)\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
@@ -620,7 +621,7 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.fastq.gz: $(OUT
 ##
 ## Assess Read-lengths after clipping
 ##
-$(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.readLengths.txt: $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.fastq.gz
+$(OUTDIR)/$(SAMPLE_ID).clipped.trimmed.filtered.readLengths.txt: $(OUTDIR)/$(SAMPLE_ID).clipped.trimmed.filtered.fastq.gz
 	@echo -e "======================" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): Calculating length distribution of clipped reads:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) GetSequenceLengths $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.fastq > $@ 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
@@ -633,7 +634,7 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.readLengths.txt
 ##
 ## Perform FastQC after adapter removal
 ##
-$(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered_fastqc.zip: $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.fastq.gz
+$(OUTDIR)/$(SAMPLE_ID).clipped.trimmed.filtered_fastqc.zip: $(OUTDIR)/$(SAMPLE_ID).clipped.trimmed.filtered.fastq.gz
 	@echo -e "======================" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): Running FastQC on clipped reads:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): $(FASTQC_EXE) -Xmx$(JAVA_RAM) -Dfastqc.threads=$(N_THREADS) -Dfastqc.unzip=false -Dfastqc.output_dir=$(OUTPUT_DIR)/$(SAMPLE_ID)/ uk/ac/bbsrc/babraham/FastQC/FastQCApplication $< >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
@@ -644,7 +645,7 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered_fastqc.zip: $(O
 ##
 ## MAP to external bowtie (calibrator?) library and to UniVec sequences
 ##
-$(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.noUniVecContaminants.fastq.gz: $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.fastq.gz $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.readLengths.txt $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered_fastqc.zip
+$(OUTDIR)/$(SAMPLE_ID).clipped.trimmed.filtered.noUniVecContaminants.fastq.gz: $(OUTDIR)/$(SAMPLE_ID).clipped.trimmed.filtered.fastq.gz $(OUTDIR)/$(SAMPLE_ID).clipped.trimmed.filtered.readLengths.txt $(OUTDIR)/$(SAMPLE_ID).clipped.trimmed.filtered_fastqc.zip
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): $(LOGENTRY_MAP_CALIBRATOR_1)" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): $(COMMAND_MAP_CALIBRATOR)" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
@@ -665,7 +666,7 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.noUniVecContami
 ##
 ## MAP to rRNA sequences
 ##
-$(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.noRiboRNA.fastq.gz: $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.noUniVecContaminants.fastq.gz
+$(OUTDIR)/$(SAMPLE_ID).clipped.trimmed.filtered.noRiboRNA.fastq.gz: $(OUTDIR)/$(SAMPLE_ID).clipped.trimmed.filtered.noUniVecContaminants.fastq.gz
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): Mapping reads to ribosomal RNA sequences using STAR:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): $(COMMAND_MAP_RRNAS)\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
@@ -684,7 +685,7 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.noRiboRNA.fastq
 ##
 ## Perform FastQC again after rRNA / UniVec removal
 ##
-$(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.noRiboRNA_fastqc.zip: $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.noRiboRNA.fastq.gz
+$(OUTDIR)/$(SAMPLE_ID).clipped.trimmed.filtered.noRiboRNA_fastqc.zip: $(OUTDIR)/$(SAMPLE_ID).clipped.trimmed.filtered.noRiboRNA.fastq.gz
 	@echo -e "======================" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): Running FastQC on cleaned reads:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): $(FASTQC_EXE) -Xmx$(JAVA_RAM) -Dfastqc.threads=$(N_THREADS) -Dfastqc.unzip=false -Dfastqc.output_dir=$(OUTPUT_DIR)/$(SAMPLE_ID)/ uk/ac/bbsrc/babraham/FastQC/FastQCApplication $< >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
@@ -698,7 +699,7 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.noRiboRNA_fastq
 ##
 
 ## map ALL READS to the GENOME (STAR ungapped)
-$(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_transcriptome_Unmapped.R1.fastq.gz: $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.noRiboRNA.fastq.gz $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.noRiboRNA_fastqc.zip
+$(OUTDIR)/endogenousAlignments_genomeUnmapped_transcriptome_Unmapped.R1.fastq.gz: $(OUTDIR)/$(SAMPLE_ID).clipped.trimmed.filtered.noRiboRNA.fastq.gz $(OUTDIR)/$(SAMPLE_ID).clipped.trimmed.filtered.noRiboRNA_fastqc.zip
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): Mapping reads to the genome of the primary organism:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): $(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genome_ --genomeDir $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/STAR_INDEX_genome --readFilesIn $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.noRiboRNA.fastq.gz --outReadsUnmapped Fastx --parametersFiles $(DATABASE_PATH)/STAR_Parameters_Endogenous_smallRNA.in $(STAR_ENDOGENOUS_DYNAMIC_PARAMS) >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
@@ -739,7 +740,7 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_transcriptome_Unm
 
 
 ## convert genomic alignments to wiggle file for display - CURRENTLY DISABLED - REQUIRES BAM TO BE SORTED!
-$(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_unspliced.wig: $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_transcriptome_Unmapped.R1.fastq.gz
+$(OUTDIR)/endogenousAlignments_unspliced.wig: $(OUTDIR)/endogenousAlignments_genomeUnmapped_transcriptome_Unmapped.R1.fastq.gz
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): Converting genomic alignments to .wig format:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): $(SAMTOOLS_EXE) sort -@ $(N_THREADS) -m 8G -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genome_Aligned.out.bam | $(SAMTOOLS_EXE) mpileup -t SP - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | perl -ne 'BEGIN{print "track type=wiggle_0 name=$(SAMPLE_ID) description=$(SAMPLE_ID)\n"};($$c, $$start, undef, $$depth) = split; if ($$c ne $$lastC) { print "variableStep chrom=$$c\n"; };$$lastC=$$c;next unless $$. % 10 ==0;print "$$start\t$$depth\n" unless $$depth<3;' > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genome_Aligned.wig 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 
@@ -750,7 +751,7 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_unspliced.wig: $(OUTPUT_DIR)/$(S
 ##
 ## Do QC on alignments
 ##
-$(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_transcriptome_Aligned.out.sorted.bam.coverage.txt: $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_transcriptome_Unmapped.R1.fastq.gz
+$(OUTDIR)/endogenousAlignments_genomeMapped_transcriptome_Aligned.out.sorted.bam.coverage.txt: $(OUTDIR)/endogenousAlignments_genomeUnmapped_transcriptome_Unmapped.R1.fastq.gz
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	#
 	@echo -e "$(ts) $(SMRNAPIPELINE): Performing CIGAR QC on endogenous genome alignments:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
@@ -770,7 +771,7 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_transcriptome_Align
 
 
 ## process alignments
-$(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.txt.gz: $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_transcriptome_Unmapped.R1.fastq.gz $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_transcriptome_Aligned.out.sorted.bam.coverage.txt
+$(OUTDIR)/endogenousAlignments_Accepted.txt.gz: $(OUTDIR)/endogenousAlignments_genomeUnmapped_transcriptome_Unmapped.R1.fastq.gz $(OUTDIR)/endogenousAlignments_genomeMapped_transcriptome_Aligned.out.sorted.bam.coverage.txt
 #$(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.txt.gz: $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_transcriptome_Unmapped.R1.fastq.gz $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_unspliced.wig
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	#
@@ -815,7 +816,7 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.txt.gz: $(OUTPUT_DIR)/$
 ##
 ## Align reads to repetitive element sequences, just in case repetitive reads have not been mapped to the genome
 ##
-$(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_repetitiveElements_Unmapped.R1.fastq.gz: $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.txt.gz $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_transcriptome_Unmapped.R1.fastq.gz
+$(OUTDIR)/endogenousAlignments_repetitiveElements_Unmapped.R1.fastq.gz: $(OUTDIR)/endogenousAlignments_Accepted.txt.gz $(OUTDIR)/endogenousAlignments_genomeUnmapped_transcriptome_Unmapped.R1.fastq.gz
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): Mapping reads to repetitive elements in the host genome:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): $(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_repetitiveElements_ --genomeDir $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/STAR_INDEX_repetitiveElements --readFilesIn $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_transcriptome_Unmapped.R1.fastq.gz --outReadsUnmapped Fastx --parametersFiles $(DATABASE_PATH)/STAR_Parameters_Endogenous_smallRNA.in $(STAR_ENDOGENOUS_DYNAMIC_PARAMS) >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
@@ -830,7 +831,7 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_repetitiveElements_Unmapped.R1.f
 ##
 ## map REMAINING reads to the genome allowing gaps / novel splices
 ##
-$(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeGapped_Unmapped.R1.fastq.gz: $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_repetitiveElements_Unmapped.R1.fastq.gz
+$(OUTDIR)/endogenousAlignments_genomeGapped_Unmapped.R1.fastq.gz: $(OUTDIR)/endogenousAlignments_repetitiveElements_Unmapped.R1.fastq.gz
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): Aligning remaining reads to the genome allowing gaps \n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): $(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeGapped_ --alignIntronMax 0 --alignIntronMin 21 --genomeDir $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/STAR_INDEX_genome --readFilesIn $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_repetitiveElements_Unmapped.R1.fastq.gz --outReadsUnmapped Fastx --parametersFiles $(DATABASE_PATH)/STAR_Parameters_Endogenous_smallRNA.in >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
@@ -845,7 +846,7 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeGapped_Unmapped.R1.fastq.g
 ##
 ## Use the unmapped reads and search against all miRNAs in miRBase
 ##
-$(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_Unmapped.R1.fastq.gz: $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeGapped_Unmapped.R1.fastq.gz
+$(OUTDIR)/EXOGENOUS_miRNA/exogenous_miRBase_Unmapped.R1.fastq.gz: $(OUTDIR)/endogenousAlignments_genomeGapped_Unmapped.R1.fastq.gz
 	mkdir -p $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): Mapping reads to all miRNAs in miRBase:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
@@ -875,7 +876,7 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_Unmapped.R1.fastq.g
 ##
 ## Use the unmapped reads and search against all rRNAs in RDP (ribosome DB)
 ##
-$(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/unaligned.fq.gz: $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_Unmapped.R1.fastq.gz
+$(OUTDIR)/EXOGENOUS_rRNA/unaligned.fq.gz: $(OUTDIR)/EXOGENOUS_miRNA/exogenous_miRBase_Unmapped.R1.fastq.gz
 	mkdir -p $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): Mapping reads to rRNA sequences in RDP (a.k.a. ribosome DB):\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
@@ -899,7 +900,7 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/unaligned.fq.gz: $(OUTPUT_DIR)/$(SAMPL
 ## Routines for aligning unmapped reads to exogenous sequences
 ##
 ## Bacteria
-$(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria10_Aligned.out.sam: $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/unaligned.fq.gz
+$(OUTDIR)/EXOGENOUS_genomes/Bacteria10_Aligned.out.sam: $(OUTDIR)/EXOGENOUS_rRNA/unaligned.fq.gz
 	mkdir -p $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): Mapping reads to exogenous GENOMES of BACTERIA:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
@@ -926,7 +927,7 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria10_Aligned.out.sam: $(OUTPU
 	@echo -e "\n$(ts) $(SMRNAPIPELINE): Finished mapping to exogenous GENOMES of BACTERIA\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 ## Plants
-$(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Plants5_Aligned.out.sam: $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/unaligned.fq.gz
+$(OUTDIR)/EXOGENOUS_genomes/Plants5_Aligned.out.sam: $(OUTDIR)/EXOGENOUS_rRNA/unaligned.fq.gz
 	mkdir -p $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): Mapping reads to exogenous GENOMES of PLANTS:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
@@ -943,7 +944,7 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Plants5_Aligned.out.sam: $(OUTPUT_D
 	@echo -e "\n$(ts) $(SMRNAPIPELINE): Finished mapping to exogenous GENOMES of PLANTS\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 ## Fungi, Protist, and Virus
-$(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/FungiProtistVirus_Aligned.out.sam: $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/unaligned.fq.gz
+$(OUTDIR)/EXOGENOUS_genomes/FungiProtistVirus_Aligned.out.sam: $(OUTDIR)/EXOGENOUS_rRNA/unaligned.fq.gz
 	mkdir -p $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): Mapping reads to exogenous GENOMES of FUNGI, PROTISTS, and VIRUSES:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
@@ -951,7 +952,7 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/FungiProtistVirus_Aligned.out.sam: 
 	@echo -e "\n$(ts) $(SMRNAPIPELINE): Finished mapping to exogenous GENOMES of FUNGI, PROTISTS, and VIRUSES\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 ## Vertebrates
-$(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Vertebrate4_Aligned.out.sam: $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/unaligned.fq.gz
+$(OUTDIR)/EXOGENOUS_genomes/Vertebrate4_Aligned.out.sam: $(OUTDIR)/EXOGENOUS_rRNA/unaligned.fq.gz
 	mkdir -p $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): Mapping reads to exogenous GENOMES of VERTEBRATES:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
@@ -969,7 +970,7 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Vertebrate4_Aligned.out.sam: $(OUTP
 ##
 ## Combine exogenous genome alignment info
 ##
-$(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.txt: $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Bacteria10_Aligned.out.sam $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Plants5_Aligned.out.sam $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/FungiProtistVirus_Aligned.out.sam $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/Vertebrate4_Aligned.out.sam
+$(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.txt: $(OUTDIR)/EXOGENOUS_genomes/Bacteria10_Aligned.out.sam $(OUTDIR)/EXOGENOUS_genomes/Plants5_Aligned.out.sam $(OUTDIR)/EXOGENOUS_genomes/FungiProtistVirus_Aligned.out.sam $(OUTDIR)/EXOGENOUS_genomes/Vertebrate4_Aligned.out.sam
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): Collecting all alignments to exogenous GENOMES...\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	#
@@ -1025,7 +1026,7 @@ $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.t
 ##
 ## Create taxonomic summary of exogenous read counts:
 ##
-$(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.result.taxaAnnotated.txt: $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.txt
+$(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.result.taxaAnnotated.txt: $(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.txt
 	@echo -e "\n$(ts) $(SMRNAPIPELINE): Started quantifying exogenous GENOMES\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "\n$(ts) $(SMRNAPIPELINE): $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) ProcessExogenousAlignments -taxonomyPath $(DATABASE_PATH)/NCBI_taxonomy_taxdump -frac 0.95 -alignments $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.txt > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.result.taxaAnnotated.txt 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	$(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) ProcessExogenousAlignments -taxonomyPath $(DATABASE_PATH)/NCBI_taxonomy_taxdump -frac 0.95 -alignments $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.txt > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes/ExogenousGenomicAlignments.result.taxaAnnotated.txt 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
