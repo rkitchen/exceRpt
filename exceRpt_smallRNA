@@ -16,10 +16,10 @@
 ##                                                                                   ##
 ## Learn more at github.gersteinlab.org/exceRpt                                      ##
 ##                                                                                   ##
-## Version 4.1.5 (2016-05-23)                                                        ##
+## Version 4.1.6 (2016-05-23)                                                        ##
 ##                                                                                   ##
 #######################################################################################
-EXCERPT_VERSION := 4.1.5
+EXCERPT_VERSION := 4.1.6
 
 
 ##
@@ -250,6 +250,8 @@ ifeq ($(suffix $(INPUT_FILE_NAME)),.sra)
 	COMMAND_CONVERT_SRA := $(SRATOOLS_EXE) --stdout $(INPUT_FILE_PATH)
 else ifeq ($(suffix $(INPUT_FILE_NAME)),.gz)
 	COMMAND_CONVERT_SRA := gunzip -c $(INPUT_FILE_PATH)
+else ifeq ($(suffix $(INPUT_FILE_NAME)),.bz2)
+	COMMAND_CONVERT_SRA := bzip2 -dc $(INPUT_FILE_PATH)
 endif
 
 
