@@ -4,7 +4,7 @@
 ##                                                                                      ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                           ##
 ##                                                                                      ##
-## Version 3.2.1 (2015-11-03)                                                           ##
+## Version 3.2.2 (2016-05-24)                                                           ##
 ##                                                                                      ##
 ##########################################################################################
 
@@ -311,7 +311,7 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   ##
   ## Trim read-length matrix
   ##
-  read.lengths = read.lengths[,0:(max(as.numeric(colnames(read.lengths[, colSums(read.lengths) > 0])))+1)]
+  read.lengths = read.lengths[,0:(max(as.numeric(colnames(read.lengths[, colSums(read.lengths) > 0, drop=F])))+1), drop=F]
   #read.lengths = read.lengths[,colSums(read.lengths) > 0, drop=F]
   
   
@@ -587,7 +587,7 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   sampleTotals = sampleTotals[order(apply(sampleTotals, 1, median, na.rm=T), decreasing=F), ,drop=F]
   tmp = melt(as.matrix(sampleTotals))
   colnames(tmp) = c("biotype","sampleID","readCount")
-  p = ggplot(na.omit(tmp), aes(y=readCount,x=biotype, colour=biotype)) +geom_hline(y=1,linetype="dashed") +geom_boxplot() +scale_y_log10(breaks=c(0.01,0.1,1,10,100,1000,10000,100000,1000000,10000000,100000000)) +guides(colour=FALSE) +coord_flip()
+  p = ggplot(na.omit(tmp), aes(y=readCount,x=biotype, colour=biotype)) +geom_hline(aes(yintercept=1),linetype="dashed") +geom_boxplot() +scale_y_log10(breaks=c(0.01,0.1,1,10,100,1000,10000,100000,1000000,10000000,100000000)) +guides(colour=FALSE) +coord_flip()
   print(p)
   
   
@@ -616,22 +616,30 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   if(nrow(exprs.miRNA) > 0){
     tmp = melt(exprs.miRNA)
     colnames(tmp) = c("miRNA","sample","abundance")
-    p = ggplot(tmp, aes(y=abundance, x=sample, colour=sample)) +geom_violin() +geom_boxplot(alpha=0.2) +ylab("Read count") +ggtitle("miRNA abundance distributions (raw counts)") +theme(axis.ticks = element_blank(), axis.text.x = element_blank()) +scale_y_log10()
-    if(ncol(exprs.miRNA.rpm) > 30){ p = p +guides(colour=FALSE) }
+    p = ggplot(tmp, aes(y=abundance, x=sample, colour=sample)) +geom_violin() +geom_boxplot(alpha=0.2) +ylab("Read count") +ggtitle("miRNA abundance distributions (raw counts)") +scale_y_log10()
+    if(ncol(exprs.miRNA.rpm) > 30){ 
+      p = p + guides(colour=FALSE) +theme(axis.text.x=element_text(angle = 90, hjust = 1))
+    }else{
+      p = p+theme(axis.ticks = element_blank(), axis.text.x = element_blank())
+    }
     print(p)
     
     p = ggplot(tmp, aes(x=abundance, colour=sample)) +geom_density() +xlab("Read count") +ggtitle("miRNA abundance distributions (raw counts)") +scale_x_log10()
-    if(ncol(exprs.miRNA.rpm) > 30){ p = p +guides(colour=FALSE) }
+    #if(ncol(exprs.miRNA.rpm) > 30){ p = p +guides(colour=FALSE) }
     print(p)
     
     tmp = melt(exprs.miRNA.rpm)
     colnames(tmp) = c("miRNA","sample","abundance")
     p = ggplot(tmp, aes(y=abundance, x=sample, colour=sample)) +geom_violin() +geom_boxplot(alpha=0.2) +ylab("Reads per million (RPM)") +ggtitle("miRNA abundance distributions (RPM)") +theme(axis.ticks = element_blank(), axis.text.x = element_blank()) +scale_y_log10()
-    if(ncol(exprs.miRNA.rpm) > 30){ p = p +guides(colour=FALSE) }
+    if(ncol(exprs.miRNA.rpm) > 30){ 
+      p = p + guides(colour=FALSE) +theme(axis.text.x=element_text(angle = 90, hjust = 1))
+    }else{
+      p = p+theme(axis.ticks = element_blank(), axis.text.x = element_blank())
+    }
     print(p)
     
     p = ggplot(tmp, aes(x=abundance, colour=sample)) +geom_density() +xlab("Reads per million (RPM)") +ggtitle("miRNA abundance distributions (RPM)") +scale_x_log10()
-    if(ncol(exprs.miRNA.rpm) > 30){ p = p +guides(colour=FALSE) }
+    #if(ncol(exprs.miRNA.rpm) > 30){ p = p +guides(colour=FALSE) }
     print(p)
   }
   
