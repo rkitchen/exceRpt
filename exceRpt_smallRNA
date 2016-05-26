@@ -16,10 +16,10 @@
 ##                                                                                   ##
 ## Learn more at github.gersteinlab.org/exceRpt                                      ##
 ##                                                                                   ##
-## Version 4.1.7 (2016-05-24)                                                        ##
+## Version 4.1.9 (2016-05-26)                                                        ##
 ##                                                                                   ##
 #######################################################################################
-EXCERPT_VERSION := 4.1.7
+EXCERPT_VERSION := 4.1.9
 
 
 ##
@@ -301,7 +301,7 @@ endif
 
 
 ## If no adapter clipping command has been set- use this one:
-COMMAND_CLIP_ADAPTER ?= $(COMMAND_CONVERT_SRA) | $(FASTX_CLIP_EXE) $(FASTX_CLIP_COMMANDS_FOR_RANDOM_BARCODE) -a $(shell cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).adapterSeq) -l $(MIN_READ_LENGTH) -v -n -M 7 -z -o $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.tmp.gz >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
+COMMAND_CLIP_ADAPTER ?= $(COMMAND_CONVERT_SRA) > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).preClipped.fastq.tmp; $(FASTX_CLIP_EXE) $(FASTX_CLIP_COMMANDS_FOR_RANDOM_BARCODE) -Q$(shell cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).qualityEncoding) -a $(shell cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).adapterSeq) -l $(MIN_READ_LENGTH) -v -n -M 7 -i $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).preClipped.fastq.tmp -z -o $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.tmp.gz >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err; rm $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).preClipped.fastq.tmp
 
 
 
@@ -546,9 +546,21 @@ $(OUTDIR)/Progress_1_FoundAdapter.dat:
 
 
 ##
+## Guess Fastq quality encoding
+##
+$(OUTDIR)/$(SAMPLE_ID).qualityEncoding: $(OUTDIR)/Progress_1_FoundAdapter.dat
+	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Guessing encoding of fastq read-qualities:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	## ASCII 84 is equal to Q20 (p<0.01) in Phred+64, so any file with max quals greater than this can reasonably assumed to be Phred+64
+	@echo -e "$(ts) $(SMRNAPIPELINE): $(COMMAND_CONVERT_SRA) | head -n 40000 | awk '{if(NR%4==0) printf("%s",$$0);}' | od -A n -t u1 | grep -v "^\*" | awk 'BEGIN{min=100;max=0;}{for(i=1;i<=NF;i++) {if($$i>max) max=$$i; if($$i<min) min=$$i;}}END{if(max<84) print "33"; else print "64";}' > $@\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(COMMAND_CONVERT_SRA) | head -n 40000 | awk '{if(NR%4==0) printf("%s",$$0);}' | od -A n -t u1 | grep -v "^\*" | awk 'BEGIN{min=100;max=0;}{for(i=1;i<=NF;i++) {if($$i>max) max=$$i; if($$i<min) min=$$i;}}END{if(max<84) print "33"; else print "64";}' > $@
+	@echo -e "$(ts) $(SMRNAPIPELINE): Finished guessing encoding of fastq read-qualities:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+
+
+##
 ## CLIP 3' adapter sequence
 ##
-$(OUTDIR)/$(SAMPLE_ID).clipped.fastq.gz: $(OUTDIR)/Progress_1_FoundAdapter.dat
+$(OUTDIR)/$(SAMPLE_ID).clipped.fastq.gz: $(OUTDIR)/$(SAMPLE_ID).qualityEncoding
 	## Run the SW alignment of known adapters regardless of user preference
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): Checking adapter against known sequences: $(COMMAND_CONVERT_SRA) 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err | $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) FindAdapter -n 1000 -m 100000 -s 7 -a $(DATABASE_PATH)/adapters/adapters.fa - > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).knownAdapterSeq 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
@@ -573,21 +585,9 @@ $(OUTDIR)/$(SAMPLE_ID).clipped.fastq.gz: $(OUTDIR)/Progress_1_FoundAdapter.dat
 
 
 ##
-## Guess Fastq quality encoding
-##
-$(OUTDIR)/$(SAMPLE_ID).qualityEncoding: $(OUTDIR)/$(SAMPLE_ID).clipped.fastq.gz
-	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) $(SMRNAPIPELINE): Guessing encoding of fastq read-qualities:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	## ASCII 84 is equal to Q20 (p<0.01) in Phred+64, so any file with max quals greater than this can reasonably assumed to be Phred+64
-	@echo -e "$(ts) $(SMRNAPIPELINE): $(COMMAND_CONVERT_SRA) | head -n 40000 | awk '{if(NR%4==0) printf("%s",$$0);}' | od -A n -t u1 | grep -v "^\*" | awk 'BEGIN{min=100;max=0;}{for(i=1;i<=NF;i++) {if($$i>max) max=$$i; if($$i<min) min=$$i;}}END{if(max<84) print "33"; else print "64";}' > $@\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	$(COMMAND_CONVERT_SRA) | head -n 40000 | awk '{if(NR%4==0) printf("%s",$$0);}' | od -A n -t u1 | grep -v "^\*" | awk 'BEGIN{min=100;max=0;}{for(i=1;i<=NF;i++) {if($$i>max) max=$$i; if($$i<min) min=$$i;}}END{if(max<84) print "33"; else print "64";}' > $@
-	@echo -e "$(ts) $(SMRNAPIPELINE): Finished guessing encoding of fastq read-qualities:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-
-
-##
 ## Trim reads at the 5' end?
 ##
-$(OUTDIR)/$(SAMPLE_ID).clipped.trimmed.fastq.gz: $(OUTDIR)/$(SAMPLE_ID).clipped.fastq.gz $(OUTDIR)/$(SAMPLE_ID).qualityEncoding
+$(OUTDIR)/$(SAMPLE_ID).clipped.trimmed.fastq.gz: $(OUTDIR)/$(SAMPLE_ID).clipped.fastq.gz
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): Trimming $(TRIM_N_BASES_5p) bases from the 5' end of all reads:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz | $(FASTX_TRIMMER_EXE) -z -Q$(shell cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).qualityEncoding) -f $(shell expr $(TRIM_N_BASES_5p) + $(ONE) ) > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.fastq.gz 2>>$(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
