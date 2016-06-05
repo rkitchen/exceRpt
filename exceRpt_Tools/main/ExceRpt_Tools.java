@@ -10,12 +10,13 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 import transcriptome.CIGAR_2_PWM;
-import fastqTools.FindAdapter;
 import fastaTools.Fasta2Fastq;
 import fastaTools.FastaHeaderGrep;
+import fastaTools.FastaRemoveDuplicates;
 import fastqTools.Fastq2Fasta;
 import fastqTools.FilterBySequenceLength;
 import fastqTools.FilterFastxByHeaderList;
+import fastqTools.FindAdapter;
 import fastqTools.GetSequenceLengths;
 import fastqTools.MatchPairedEndSequences;
 import fastqTools.ProcessFastqWithRandomBarcode;
@@ -24,7 +25,7 @@ import footprintAlignments.ReadCoverage;
 
 public class ExceRpt_Tools {
 
-	public static final String VERSION = "1.2.4";
+	public static final String VERSION = "1.2.5";
 	
 	public static final String OPT_PATH_DB_ANNOTATION = "A";
 	public static final String OPT_PATH_DB_SAMPLE = "S";
@@ -89,6 +90,8 @@ public class ExceRpt_Tools {
 			Fastq2Fasta.main(args);
 		}else if(main.equals("fasta2fastq")){
 			Fasta2Fastq.main(args);
+		}else if(main.equals("removefastaduplicates")){
+			FastaRemoveDuplicates.main(args);
 		}
 		
 		
@@ -103,6 +106,7 @@ public class ExceRpt_Tools {
 			System.out.println("         Fasta2Fastq                   | Convert FASTA sequence(s) to FASTQ sequence(s)");
 			System.out.println("         Fastq2Fasta                   | Convert FASTQ sequence(s) to FASTA sequence(s)");
 			System.out.println("         FastaHeaderGrep               | Filter fasta sequences based on the sequence ID");
+			System.out.println("         RemoveFastaDuplicates         | Filter fasta sequences to remove duplicate sequence headers");
 			System.out.println("         FilterFastxByIDList           | Filter fasta/q sequences based on a list of sequence IDs");
 			System.out.println("         FilterSequencesByLength       | Filter fasta or fastq sequences based on some maximum sequence length");
 			System.out.println("         ProcessFastqWithRandomBarcode | Filter fasta or fastq sequences based on some maximum sequence length");
