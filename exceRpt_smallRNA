@@ -16,10 +16,10 @@
 ##                                                                                   ##
 ## Learn more at github.gersteinlab.org/exceRpt                                      ##
 ##                                                                                   ##
-## Version 4.2.1 (2016-06-05)                                                        ##
+## Version 4.2.2 (2016-06-06)                                                        ##
 ##                                                                                   ##
 #######################################################################################
-EXCERPT_VERSION := 4.2.1
+EXCERPT_VERSION := 4.2.2
 
 
 ##
@@ -499,7 +499,7 @@ processSample: $(OUTDIR)/$(PROCESS_SAMPLE_REQFILE)
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID).stats | grep "^input" | awk '{print $$2}' > $(OUTPUT_DIR)/$(SAMPLE_ID).qctmp
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID).stats | grep "^genome" | awk '{print $$2}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).qctmp
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID).stats | grep "sense" | awk '{SUM+=$$2}END{print SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).qctmp
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID).qctmp | tr '\n' '\t' | awk '{result="FAIL"; ratio=$$3/$$2; if(ratio>$(MIN_GENOME_TRANSCRIPTOME_RATIO) && $$3>$(MIN_TRANSCRIPTOME_MAPPED))result="PASS"}END{print "QC_result: "result"\nInputReads: "$$1"\nGenomeReads: "$$2"\nTranscriptomeReads: "$$3"\nTranscriptomeGenomeRatio: "ratio}' > $(OUTPUT_DIR)/$(SAMPLE_ID).qcResult
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID).qctmp | tr '\n' '\t' | awk '{result="FAIL"; ratio=0; if($$2>0){ratio=$$3/$$2}; if(ratio>$(MIN_GENOME_TRANSCRIPTOME_RATIO) && $$3>$(MIN_TRANSCRIPTOME_MAPPED))result="PASS"}END{print "QC_result: "result"\nInputReads: "$$1"\nGenomeReads: "$$2"\nTranscriptomeReads: "$$3"\nTranscriptomeGenomeRatio: "ratio}' > $(OUTPUT_DIR)/$(SAMPLE_ID).qcResult
 	gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.txt.gz | wc -l > $(OUTPUT_DIR)/$(SAMPLE_ID).qctmp
 	gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.txt.gz | awk '{print $$2}' | uniq | wc -l >> $(OUTPUT_DIR)/$(SAMPLE_ID).qctmp
 	#
