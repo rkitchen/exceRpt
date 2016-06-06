@@ -4,7 +4,7 @@
 ##                                                                                      ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                           ##
 ##                                                                                      ##
-## Version 3.2.2 (2016-05-24)                                                           ##
+## Version 3.2.3 (2016-06-06)                                                           ##
 ##                                                                                      ##
 ##########################################################################################
 
@@ -440,6 +440,7 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   
   
   if(ncol(read.lengths) > 1){
+    printMessage("Plotting read-length distributions")
     ##
     ## plot distribution of clipped read lengths - read count
     ##
@@ -467,6 +468,7 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   ##
   ## Plot run duration of each sample
   ##
+  printMessage("Plotting run-duration")
   tmp=melt(as.matrix(run.duration))
   colnames(tmp) = c("sampleID","stuff","runDuration_seconds")
   tmp = cbind(tmp, category=.bincode(tmp[,3], breaks=c(0,as.numeric(quantile(tmp[,3],probs=c(0.10,0.90,1))))))
@@ -481,13 +483,14 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   p = ggplot(tmp, aes(x=sampleID,y=runDuration_seconds,fill=colour)) +geom_bar(stat="identity") +facet_grid(~category,scales="free_x",space="free_x") +guides(fill=FALSE) +theme(axis.text.x=element_text(angle=90, hjust=1,vjust=0.5))
   print(p)
   
-  p = ggplot(tmp, aes(x=inputReadCount,y=runDuration_seconds,colour=colour)) +geom_point(size=10) +guides(colour=FALSE) +scale_y_log10(limits=c(1,10^ceiling(log10(max(tmp$runDuration_seconds)))), breaks=10^seq(1:ceiling(log10(max(tmp$runDuration_seconds))))) +scale_x_log10(limits=c(min(c(100000,10^floor(log10(min(tmp$inputReadCount))))),10^ceiling(log10(max(tmp$inputReadCount)))), breaks=10^seq(min(c(100000,floor(log10(min(tmp$inputReadCount))))),ceiling(log10(max(tmp$inputReadCount)))))
+  p = ggplot(tmp, aes(x=inputReadCount,y=runDuration_seconds,colour=colour)) +geom_point(size=10) +guides(colour=FALSE) +scale_y_log10(limits=c(1,10^ceiling(log10(max(tmp$runDuration_seconds)))), breaks=10^seq(1:ceiling(log10(max(tmp$runDuration_seconds))))) +scale_x_log10(limits=c(min(c(100000,10^floor(log10(min(tmp$inputReadCount+1))))),10^ceiling(log10(max(tmp$inputReadCount)))), breaks=10^seq(min(c(100000,floor(log10(min(tmp$inputReadCount+1))))),ceiling(log10(max(tmp$inputReadCount)))))
   print(p)
   
   
   ##
   ## plot distribution of # mapped reads per sample
   ##
+  printMessage("Plotting # mapped reads")
   tmp = log10(libSizes$all)
   hist(tmp, breaks=seq(0,ceiling(max(tmp)), by=0.1), col="grey", border="white", xlab="log10(# mapped reads)", main="Library size (all mapped reads)", ylab="# samples")
   
@@ -509,6 +512,7 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   ##
   ## Plot heatmap of mapping percentages through the pipeline
   ##
+  printMessage("Plotting mapping stats heatmap (1/3)")
   toplot = melt(as.matrix(mapping.stats / mapping.stats$input)); colnames(toplot) = c("Sample","Stage","ReadFraction")
   toplot$Stage = with(toplot, factor(Stage, levels = rev(levels(Stage))))
   toplot$Sample = factor(as.character(toplot$Sample), levels=rownames(mapping.stats)[sampleOrder])
@@ -519,6 +523,7 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   ##
   ## Plot heatmap of mapping percentages through the pipeline
   ##
+  printMessage("Plotting mapping stats heatmap (2/3)")
   if(max(mapping.stats$successfully_clipped) > 0){
     toplot = melt(as.matrix(mapping.stats / mapping.stats$successfully_clipped)[,-1,drop=F]); colnames(toplot) = c("Sample","Stage","ReadFraction")
     toplot$Stage = with(toplot, factor(Stage, levels = rev(levels(Stage))))
@@ -531,6 +536,7 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   ##
   ## Plot heatmap of mapping percentages through the pipeline
   ##
+  printMessage("Plotting mapping stats heatmap (3/3)")
   toplot = melt(as.matrix(mapping.stats / mapping.stats$reads_used_for_alignment)[,-c(1:7),drop=F]); colnames(toplot) = c("Sample","Stage","ReadFraction")
   toplot$Stage = with(toplot, factor(Stage, levels = rev(levels(Stage))))
   toplot$Sample = factor(as.character(toplot$Sample), levels=rownames(mapping.stats)[sampleOrder])
@@ -543,6 +549,7 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   ##
   ## Plot breakdown of counts in each biotype 
   ##
+  printMessage("Plotting biotype counts")
   require(plyr)
   sampleTotals=matrix(NA,ncol=nrow(mapping.stats),nrow=0); colnames(sampleTotals) = rownames(mapping.stats)
   if(nrow(exprs.miRNA) > 0){
@@ -595,6 +602,7 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   ##
   ## Calculate reads per million (RPM)
   ##
+  printMessage("Normalising to RPM")
   #libSize.use = libSizes$all
   #libSize.use = libSizes$miRNA
   libSize.use = libSizes$genome
@@ -614,6 +622,7 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   
   ## Plot miRNA expression distributions
   if(nrow(exprs.miRNA) > 0){
+    printMessage("Plotting miRNA expression distributions")
     tmp = melt(exprs.miRNA)
     colnames(tmp) = c("miRNA","sample","abundance")
     p = ggplot(tmp, aes(y=abundance, x=sample, colour=sample)) +geom_violin() +geom_boxplot(alpha=0.2) +ylab("Read count") +ggtitle("miRNA abundance distributions (raw counts)") +scale_y_log10()
@@ -649,6 +658,7 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   ## Finally, plot exogenous if there are any
   ##
   if(nrow(exprs.exogenousGenomes_speciesSpecific) > 0  &&  ncol(exprs.exogenousGenomes_speciesSpecific) > 1){
+    printMessage("Plotting exogenous counts")
     par(oma=c(5,0,0,8))
     tmp.order = order(apply(t(t(exprs.exogenousGenomes_speciesSpecific)/colSums(exprs.exogenousGenomes_speciesSpecific)), 1, median), decreasing=T)
     heatmap.2(log10(exprs.exogenousGenomes_speciesSpecific[tmp.order, ][1:100,]+0.1),trace="none")
