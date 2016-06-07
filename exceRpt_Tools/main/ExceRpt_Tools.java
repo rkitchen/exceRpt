@@ -21,11 +21,12 @@ import fastqTools.GetSequenceLengths;
 import fastqTools.MatchPairedEndSequences;
 import fastqTools.ProcessFastqWithRandomBarcode;
 import fastqTools.RemoveHomopolymers;
+import fastqTools.TrimFastq;
 import footprintAlignments.ReadCoverage;
 
 public class ExceRpt_Tools {
 
-	public static final String VERSION = "1.2.6";
+	public static final String VERSION = "1.2.7";
 	
 	public static final String OPT_PATH_DB_ANNOTATION = "A";
 	public static final String OPT_PATH_DB_SAMPLE = "S";
@@ -92,7 +93,11 @@ public class ExceRpt_Tools {
 			Fasta2Fastq.main(args);
 		}else if(main.equals("removefastaduplicates")){
 			FastaRemoveDuplicates.main(args);
+		}else if(main.equals("trimfastq")){
+			TrimFastq.main(args);
 		}
+		
+		
 		
 		
 		else{
@@ -109,6 +114,7 @@ public class ExceRpt_Tools {
 			System.out.println("         RemoveFastaDuplicates         | Filter fasta sequences to remove duplicate sequence headers");
 			System.out.println("         FilterFastxByIDList           | Filter fasta/q sequences based on a list of sequence IDs");
 			System.out.println("         FilterSequencesByLength       | Filter fasta or fastq sequences based on some maximum sequence length");
+			System.out.println("         TrimFastq                     | Trim bases from the 5' and/or 3' end of each read in a fastq file");
 			System.out.println("         ProcessFastqWithRandomBarcode | Filter fasta or fastq sequences based on some maximum sequence length");
 			System.out.println("         FindAdapter                   | Determine most likely 3' adapter sequence from fastq reads");
 			System.out.println("         RemoveHomopolymerRepeats      | Filter fasta or fastq sequences based on sequence composition");

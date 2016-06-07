@@ -16,10 +16,10 @@
 ##                                                                                   ##
 ## Learn more at github.gersteinlab.org/exceRpt                                      ##
 ##                                                                                   ##
-## Version 4.2.2 (2016-06-06)                                                        ##
+## Version 4.2.3 (2016-06-07)                                                        ##
 ##                                                                                   ##
 #######################################################################################
-EXCERPT_VERSION := 4.2.2
+EXCERPT_VERSION := 4.2.3
 
 
 ##
@@ -40,6 +40,7 @@ MAIN_ORGANISM_GENOME_ID := hg38
 ADAPTER_SEQ 				:= guessKnown
 CALIBRATOR_LIBRARY      	:= NULL
 TRIM_N_BASES_5p				:= 0
+TRIM_N_BASES_3p				:= 0
 RANDOM_BARCODE_LENGTH		:= 0
 RANDOM_BARCODE_LOCATION 	:= -5p -3p
 KEEP_RANDOM_BARCODE_STATS	:= false
@@ -106,7 +107,6 @@ ifeq ($(LOCAL_EXECUTION),true)
 	JAVA_EXE              := /usr/bin/java
 	FASTX_CLIP_EXE        := $(EXE_DIR)/fastx_0.0.14/bin/fastx_clipper
 	FASTX_FILTER_EXE      := $(EXE_DIR)/fastx_0.0.14/bin/fastq_quality_filter
-	FASTX_TRIMMER_EXE     := $(EXE_DIR)/fastx_0.0.14/bin/fastx_trimmer
 	#VIENNA_PATH          := $(EXE_DIR)/ViennaRNA_2.1.5/bin
 	BOWTIE2_EXE           := $(EXE_DIR)/bowtie2-2.2.4/bowtie2
 	#SAMTOOLS_EXE          := $(EXE_DIR)/samtools-1.1/samtools
@@ -139,7 +139,6 @@ else
 
 	FASTX_CLIP_EXE := fastx_clipper
 	FASTX_FILTER_EXE := fastq_quality_filter
-	FASTX_TRIMMER_EXE := fastx_trimmer
 	VIENNA_PATH := NULL
 	BOWTIE2_EXE := bowtie2
 	SAMTOOLS_EXE := samtools
@@ -444,6 +443,7 @@ help:
 	@echo -e ""  
 	@echo -e "Additional analysis OPTIONs:"
 	@echo -e "  TRIM_N_BASES_5p                  | <int>                            | [default: '$(TRIM_N_BASES_5p)'] remove N bases from the 5' end of every read" 
+	@echo -e "  TRIM_N_BASES_3p                  | <int>                            | [default: '$(TRIM_N_BASES_3p)'] remove N bases from the 3' end of every read" 
 	@echo -e "  RANDOM_BARCODE_LENGTH            | <int>                            | [default: $(RANDOM_BARCODE_LENGTH)] identify and remove random barcodes of this number of nucleotides.  For a Bioo prep with a 4N random barcode on both the 3' and 5' adapter, this value should be '4'."
 	@echo -e "  RANDOM_BARCODE_LOCATION          | '-5p -3p'/'-5p'/'-3p'            | [default: '$(RANDOM_BARCODE_LOCATION)'] specify where to look for the random barcode(s)" 
 	@echo -e "  KEEP_RANDOM_BARCODE_STATS        | 'false'/'true'                   | [default: '$(KEEP_RANDOM_BARCODE_STATS)'] specify whether or not to calculate overrepresentation statistics using the random barcodes (this may be slow and memory intensive!)" 
@@ -587,14 +587,16 @@ $(OUTDIR)/$(SAMPLE_ID).clipped.fastq.gz: $(OUTDIR)/$(SAMPLE_ID).qualityEncoding
 
 
 ##
-## Trim reads at the 5' end?
+## Trim reads at the 5' and/or 3' end?
 ##
 $(OUTDIR)/$(SAMPLE_ID).clipped.trimmed.fastq.gz: $(OUTDIR)/$(SAMPLE_ID).clipped.fastq.gz
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) $(SMRNAPIPELINE): Trimming $(TRIM_N_BASES_5p) bases from the 5' end of all reads:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) $(SMRNAPIPELINE): gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz | $(FASTX_TRIMMER_EXE) -z -Q$(shell cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).qualityEncoding) -f $(shell expr $(TRIM_N_BASES_5p) + $(ONE) ) > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.fastq.gz 2>>$(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz | $(FASTX_TRIMMER_EXE) -z -Q$(shell cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).qualityEncoding) -f $(shell expr $(TRIM_N_BASES_5p) + $(ONE) ) > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.fastq.gz 2>>$(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) $(SMRNAPIPELINE): Finished trimming bases from the 5' end of all reads\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Trimming $(TRIM_N_BASES_5p) bases from the 5' and $(TRIM_N_BASES_3p) bases from the 3' of all reads:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	#@echo -e "$(ts) $(SMRNAPIPELINE): gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz | $(FASTX_TRIMMER_EXE) -z -Q$(shell cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).qualityEncoding) -f $(shell expr $(TRIM_N_BASES_5p) + $(ONE) ) > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.fastq.gz 2>>$(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	#gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz | $(FASTX_TRIMMER_EXE) -z -Q$(shell cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).qualityEncoding) -f $(shell expr $(TRIM_N_BASES_5p) + $(ONE) ) > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.fastq.gz 2>>$(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz | $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) TrimFastq -5p $(TRIM_N_BASES_5p) -3p $(TRIM_N_BASES_3p) | gzip -c > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.fastq.gz 2>>$(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz | $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) TrimFastq -5p $(TRIM_N_BASES_5p) -3p $(TRIM_N_BASES_3p) | gzip -c > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.fastq.gz 2>>$(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(SMRNAPIPELINE): Finished trimming bases from the 5' and 3' end of all reads\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 
 ##
