@@ -335,7 +335,7 @@ public class ProcessExogenousAlignments {
 		Options options = new Options();
 		options.addOption(OptionBuilder.withArgName("dir").hasArg().withDescription("Path to the directory containing the NCBI taxonomy").create("taxonomyPath"));
 		options.addOption(OptionBuilder.withArgName(".unique.txt").hasArg().withDescription("Path to the exogenous alignments output by exceRpt").create("alignments"));
-		options.addOption(OptionBuilder.withArgName("[min=0, max=1]").hasArg().withDescription("[optional] minimum fraction of reads that must be contained within a subtree before increasing resolution to that subtree").create("frac"));
+		options.addOption(OptionBuilder.withArgName("[min=0, max=1]").hasArg().withDescription("[optional] minimum fraction of reads that must be contained within a subtree before increasing resolution to that subtree [default: 0.95]").create("frac"));
 		options.addOption(OptionBuilder.withArgName("integer").hasArg().withDescription("[optional] process alignments in batches of reads [default: "+DEFAULT_BATCH_SIZE+"]").create("batchSize"));
 		return options;
 	}
