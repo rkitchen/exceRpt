@@ -4,9 +4,40 @@
 ##                                                                                      ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                           ##
 ##                                                                                      ##
-## Version 3.2.3 (2016-06-06)                                                           ##
+## Version 4.0.1 (2016-06-09)                                                           ##
 ##                                                                                      ##
 ##########################################################################################
+
+
+
+##
+##
+##
+processSamplesInDir = function(data.dir, output.dir=data.dir){
+  
+  ##  Look for samples to merge
+  printMessage("Searching for valid exceRpt pipeline output...")
+  samplePathList = unique(SearchForSampleData(data.dir,""))
+  
+  ## get sample names and remove duplicates:
+  sampleIDs = sapply(samplePathList, function(path){ tmp=unlist(strsplit(path,"/")); tmp[length(tmp)] })
+  samplePathList = samplePathList[!duplicated(sampleIDs)]
+  
+  ## -- Kill script if we do not have any samples to process
+  NumberOfCompatibleSamples = length(samplePathList)
+  stopifnot(NumberOfCompatibleSamples > 0)
+  printMessage(c("Found ",NumberOfCompatibleSamples," valid samples"))
+  
+  ## reads, normalises, and saves individual sample results
+  sampleIDs = readData(samplePathList, output.dir)
+  
+  ## plots the data
+  PlotData(sampleIDs, output.dir)
+  
+  ## output warnings
+  warnings()
+}
+
 
 
 ##
@@ -96,24 +127,104 @@ printMessage = function(message=""){
 
 
 
+
+##
+## Plots a taxonomy tree for a give sample
+##
+plotTree = function(rEG, counts_uniq, counts_cum, fontScale=2, title=""){
+  usenodes = nodes(rEG)
+  names(usenodes) = nodes(rEG)
+  nNodes = length(usenodes)
+  
+  nA <- list()
+  nA$shape = rep("circle",nNodes)
+  nA$fixedSize<-rep(FALSE, nNodes)
+  nA$height <- nA$width <- sqrt(counts_cum/10)
+  nA$color <- rep(rgb(0,0,0,0.25),nNodes)
+  nA$style <- rep("bold", nNodes)
+  nA$fillcolor <- sapply(counts_uniq*10, function(val){ if(val>100){val=100}; rgb(100-val,100-val,100,maxColorValue=100)})
+  nA$label <- paste(usenodes,"\\\n",round(counts_cum*10)/10,"%",sep="")
+  nA$fontsize <- (nA$height+(1.0-min(nA$height)))*fontScale
+  
+  nA <- lapply(nA, function(x) { names(x) <- nodes(rEG); x})
+  eA <- list()
+  
+  plot(rEG, nodeAttrs=nA, edgeAttrs=eA, main=title)
+}
+
+##
+## Plot exogenous genomes
+##
+plotExogenousTaxonomyTrees = function(counts, cumcounts, outPath, fontScale=2){
+  
+  ## read the taxonomy
+  load(paste("/Users/robk/WORK/YALE_offline/ANNOTATIONS/taxdump","/NCBI_Taxonomy.RData",sep=""))
+  
+  ## add direct count to the cumulative counts matrix
+  cumcounts = cumcounts+counts
+  
+  #counts.norm = t(t(counts*100)/colSums(counts))
+  counts.norm = apply(counts, 2, function(col){ col*100/sum(col) })
+  cumcounts.norm = apply(cumcounts, 2, function(col){ col*100/col[1] })
+  
+  ## remove nodes with < 0.1% of all reads
+  minPercent = 1
+  keepRows = which(apply(counts.norm, 1, max) >= minPercent)
+  keepRows = sort(unique(c(keepRows, which(apply(cumcounts.norm, 1, max) >= minPercent))))
+  
+  # use the 
+  data_uniq = counts.norm[keepRows, , drop=F]
+  data_cum = cumcounts.norm[keepRows, , drop=F]
+  #if("significantDEX" %in% names(combinedSamples)){
+  #  significant = combinedSamples$significantDEX[keepRows]
+  #  foldChange = combinedSamples$foldChange[keepRows]
+  #}
+  
+  
+  require(Rgraphviz)
+  directNodes = names[names[,2] %in% rownames(data_cum), ]
+  useEdges = edges[which(edges[,1] %in% directNodes$tax_id), ]
+  useNodes = directNodes
+  
+  
+  rEG <<- new("graphNEL", nodes=unique(useNodes[,2]), edgemode="directed")
+  for(i in 2:nrow(useEdges)){
+    if(useEdges[i,1] %in% useNodes[,1]  &  useEdges[i,2] %in% useNodes[,1]){
+      from = useNodes[which(useNodes[,1] == useEdges[i,2]), 2]
+      to = useNodes[which(useNodes[,1] == useEdges[i,1]), 2]
+      if(from != to)
+        rEG <- addEdge(from, to, rEG, 1)
+    }else{
+      cat(i,"\n")
+    }
+  }
+  
+  usenodes = nodes(rEG)
+  names(usenodes) = nodes(rEG)
+  nNodes = length(usenodes)
+  
+  data_uniq = data_uniq[match(usenodes, rownames(data_uniq)), , drop=F]
+  data_cum = data_cum[match(usenodes, rownames(data_cum)), , drop=F]
+  data_uniq[is.na(data_uniq)] = 0
+  data_cum[is.na(data_cum)] = 0
+  
+  #data_uniq = apply(data_uniq, 1, max)
+  #data_cum = rowMeans(data_cum)
+  
+  pdf(file=outPath, height=7, width=15)
+  for(i in 1:ncol(data_uniq))
+    plotTree(rEG, data_uniq[,i], data_cum[,i], title=paste(colnames(data_uniq)[i]," (total reads: ",cumcounts[1,i],")", sep=""))
+  dev.off()
+}
+
+
+
+
+
 ##
 ##
 ##
-processSamplesInDir = function(data.dir, output.dir=data.dir){
-  
-  ##  Look for samples to merge
-  printMessage("Searching for valid exceRpt pipeline output...")
-  samplePathList = unique(SearchForSampleData(data.dir,""))
-  
-  ## get sample names and remove duplicates:
-  sampleIDs = sapply(samplePathList, function(path){ tmp=unlist(strsplit(path,"/")); tmp[length(tmp)] })
-  samplePathList = samplePathList[!duplicated(sampleIDs)]
-  
-  ## -- Kill script if we do not have any samples to process
-  NumberOfCompatibleSamples = length(samplePathList)
-  stopifnot(NumberOfCompatibleSamples > 0)
-  printMessage(c("Found ",NumberOfCompatibleSamples," valid samples"))
-  
+readData = function(samplePathList, output.dir){
   
   ##
   ## Create objects to contain the data
@@ -254,25 +365,27 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
       }
       
       
-      # Update list of detected smallRNA IDs
-      allIDs.miRNA = unique(c(allIDs.miRNA, as.character(miRNA_sense$ID)))
-      allIDs.tRNA = unique(c(allIDs.tRNA, as.character(tRNA_sense$ID)))
-      allIDs.piRNA = unique(c(allIDs.piRNA, rownames(piRNA_sense)))
-      allIDs.gencode = unique(c(allIDs.gencode, as.character(gencode_sense$ID)))
-      allIDs.circularRNA = unique(c(allIDs.circularRNA, rownames(circRNA_sense)))
-      
-      sample.data[[i]] = list("miRNA_sense"=miRNA_sense,"miRNA_antisense"=miRNA_antisense, "tRNA_sense"=tRNA_sense,"tRNA_antisense"=tRNA_antisense, "piRNA_sense"=piRNA_sense,"piRNA_antisense"=piRNA_antisense, "gencode_sense"=gencode_sense,"gencode_antisense"=gencode_antisense, "circRNA_sense"=circRNA_sense,"circRNA_antisense"=circRNA_antisense, "adapterSeq"=adapterSeq, "runTiming"=runTiming)
-      names(sample.data)[i] = thisSampleID
+      ##
+      ## Read exogenous miRNA alignments (if applicable)
+      ##
+      exogenous_miRNA_sense = NA
+      if("EXOGENOUS_miRNA" %in% availableFiles){
+        tmp.dir = paste(samplePathList[i],"EXOGENOUS_miRNA",sep="/")
+        if("readCounts_miRNAmature_sense.txt" %in% dir(tmp.dir)){
+          exogenous_miRNA_sense = read.table(paste(tmp.dir,"readCounts_miRNAmature_sense.txt",sep="/"), header=T, sep="\t", comment.char="", stringsAsFactors=F,colClasses=c("character","numeric","numeric","numeric","numeric"), row.names=1)
+        }
+        if("readCounts_miRNAmature_antisense.txt" %in% dir(tmp.dir)){
+          exogenous_miRNA_antisense = read.table(paste(tmp.dir,"readCounts_miRNAmature_antisense.txt",sep="/"), header=T, sep="\t", comment.char="", stringsAsFactors=F,colClasses=c("character","numeric","numeric","numeric","numeric"), row.names=1)
+        }
+      }
       
       
       ##
       ## Read exogenous miRNA alignments (if applicable)
       ##
-      if("EXOGENOUS_miRNA" %in% availableFiles){
-        tmp.dir = paste(samplePathList[i],"EXOGENOUS_miRNA",sep="/")
-        if("mature_sense.grouped" %in% dir(tmp.dir)){
-          #sample.data[[i]]$exogenous_miRNA = readData(tmp.dir,"mature_sense.grouped", 4)
-          #allIDs.exogenous_miRNA = unique(c(allIDs.exogenous_miRNA, as.character(sample.data[[i]]$exogenous_miRNA[,1])))
+      if("EXOGENOUS_rRNA" %in% availableFiles){
+        tmp.dir = paste(samplePathList[i],"EXOGENOUS_rRNA",sep="/")
+        if("SOMETHING" %in% dir(tmp.dir)){
         }
       }
       
@@ -280,16 +393,29 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
       ##
       ## Read exogenous genome alignments (if applicable)
       ##
+      exogenous_genomes = NA
       if("EXOGENOUS_genomes" %in% availableFiles){
         tmp.dir = paste(samplePathList[i],"EXOGENOUS_genomes",sep="/")
-        if("ExogenousGenomicAlignments.result.txt" %in% dir(tmp.dir)){
-          tmp = read.table(paste(tmp.dir, "ExogenousGenomicAlignments.result.txt",sep="/"), stringsAsFactors=F, comment.char="",header=T)
-          rownames(tmp) = apply(tmp[,1:2], 1, paste, collapse="|")
-          #colnames(tmp) = c("Kingdom","Species","ReadCount_all","ReadCount_kingdomSpecific","ReadCount_speciesSpecific")
-          sample.data[[i]]$exogenous_genomes = tmp
-          allIDs.exogenous_genomes = unique(c(allIDs.exogenous_genomes, as.character(rownames(sample.data[[i]]$exogenous_genomes))))
+        if("ExogenousGenomicAlignments.result.taxaAnnotated.txt" %in% dir(tmp.dir)){
+          exogenous_genomes = read.table(paste(tmp.dir,"/ExogenousGenomicAlignments.result.taxaAnnotated.txt",sep=""), sep="\t", stringsAsFactors = F, quote="", comment.char=""); colnames(exogenous_genomes) = c("indent","distFromRoot","level","name","uniqueReads","allSumReads")
         }
       }
+      
+      
+      
+      # Update list of detected smallRNA IDs
+      allIDs.miRNA = unique(c(allIDs.miRNA, as.character(miRNA_sense$ID)))
+      allIDs.tRNA = unique(c(allIDs.tRNA, as.character(tRNA_sense$ID)))
+      allIDs.piRNA = unique(c(allIDs.piRNA, rownames(piRNA_sense)))
+      allIDs.gencode = unique(c(allIDs.gencode, as.character(gencode_sense$ID)))
+      allIDs.circularRNA = unique(c(allIDs.circularRNA, rownames(circRNA_sense)))
+      allIDs.exogenous_miRNA = unique(c(allIDs.exogenous_miRNA, rownames(exogenous_miRNA_sense)))
+      allIDs.exogenous_genomes = unique(c(allIDs.exogenous_genomes, exogenous_genomes$name))
+      
+      sample.data[[i]] = list("miRNA_sense"=miRNA_sense,"miRNA_antisense"=miRNA_antisense, "tRNA_sense"=tRNA_sense,"tRNA_antisense"=tRNA_antisense, "piRNA_sense"=piRNA_sense,"piRNA_antisense"=piRNA_antisense, "gencode_sense"=gencode_sense,"gencode_antisense"=gencode_antisense, "circRNA_sense"=circRNA_sense,"circRNA_antisense"=circRNA_antisense, "exogenous_miRNA_sense"=exogenous_miRNA_sense, "exogenous_genomes"=exogenous_genomes, "adapterSeq"=adapterSeq, "runTiming"=runTiming)
+      names(sample.data)[i] = thisSampleID
+      
+      
       printMessage(c("[",i,"/",length(samplePathList),"] Added sample \'",thisSampleID,"\'"))
     }
   }
@@ -333,9 +459,9 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   exprs.piRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$piRNA_sense), dimnames=list(allIDs$piRNA_sense, names(sample.data)))
   exprs.gencode = matrix(0,ncol=length(sample.data),nrow=length(allIDs$gencode_sense), dimnames=list(allIDs$gencode_sense, names(sample.data)))
   exprs.circRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$circRNA_sense), dimnames=list(allIDs$circRNA_sense, names(sample.data)))
-  #exprs.exogenous_miRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$exogenous_miRNA), dimnames=list(allIDs$exogenous_miRNA, names(sample.data)))
-  exprs.exogenousGenomes_speciesSpecific = matrix(0,ncol=length(sample.data),nrow=length(allIDs$exogenous_genomes), dimnames=list(allIDs$exogenous_genomes, names(sample.data)))
-  exprs.exogenousGenomes_kingdomSpecific = matrix(0,ncol=length(sample.data),nrow=length(allIDs$exogenous_genomes), dimnames=list(allIDs$exogenous_genomes, names(sample.data)))
+  exprs.exogenous_miRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$exogenous_miRNA), dimnames=list(allIDs$exogenous_miRNA, names(sample.data)))
+  exprs.exogenousGenomes_specific = matrix(0,ncol=length(sample.data),nrow=length(allIDs$exogenous_genomes), dimnames=list(allIDs$exogenous_genomes, names(sample.data)))
+  exprs.exogenousGenomes_cumulative = matrix(0,ncol=length(sample.data),nrow=length(allIDs$exogenous_genomes), dimnames=list(allIDs$exogenous_genomes, names(sample.data)))
   for(i in 1:length(sample.data)){
     run.duration[i,] = sample.data[[i]]$runTiming[1,4,drop=F]
     exprs.miRNA[match(sample.data[[i]]$miRNA_sense$ID, rownames(exprs.miRNA)),i] = as.numeric(sample.data[[i]]$miRNA_sense$multimapAdjustedReadCount)
@@ -343,9 +469,9 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
     exprs.piRNA[match(rownames(sample.data[[i]]$piRNA_sense), rownames(exprs.piRNA)),i] = as.numeric(sample.data[[i]]$piRNA_sense$multimapAdjustedReadCount)
     exprs.gencode[match(sample.data[[i]]$gencode_sense$ID, rownames(exprs.gencode)),i] = as.numeric(sample.data[[i]]$gencode_sense$multimapAdjustedReadCount)
     exprs.circRNA[match(rownames(sample.data[[i]]$circRNA_sense), rownames(exprs.circRNA)),i] = as.numeric(sample.data[[i]]$circRNA_sense$multimapAdjustedReadCount)
-    #exprs.exogenous_miRNA[match(sample.data[[i]]$exogenous_miRNA[,1], rownames(exprs.exogenous_miRNA)),i] = as.numeric(sample.data[[i]]$exogenous_miRNA[,2])
-    exprs.exogenousGenomes_speciesSpecific[match(rownames(sample.data[[i]]$exogenous_genomes), rownames(exprs.exogenousGenomes_speciesSpecific)),i] = as.numeric(sample.data[[i]]$exogenous_genomes[,5])
-    exprs.exogenousGenomes_kingdomSpecific[match(rownames(sample.data[[i]]$exogenous_genomes), rownames(exprs.exogenousGenomes_kingdomSpecific)),i] = as.numeric(sample.data[[i]]$exogenous_genomes[,4])
+    exprs.exogenous_miRNA[match(rownames(sample.data[[i]]$exogenous_miRNA), rownames(exprs.exogenous_miRNA)),i] = as.numeric(sample.data[[i]]$exogenous_miRNA$multimapAdjustedReadCount)
+    exprs.exogenousGenomes_specific[match(sample.data[[i]]$exogenous_genomes$name, rownames(exprs.exogenousGenomes_specific)),i] = as.numeric(sample.data[[i]]$exogenous_genomes$uniqueReads)
+    exprs.exogenousGenomes_cumulative[match(sample.data[[i]]$exogenous_genomes$name, rownames(exprs.exogenousGenomes_cumulative)),i] = as.numeric(sample.data[[i]]$exogenous_genomes$allSumReads)
   }
   
   
@@ -361,6 +487,8 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   libSizes$genome = mapping.stats[,colnames(mapping.stats) %in% "genome"]
   libSizes$smRNA = mapping.stats[,grep("sense",colnames(mapping.stats))]
   libSizes$miRNA = colSums(exprs.miRNA)
+  libSizes$exogenous_miRNA = colSums(exprs.exogenous_miRNA)
+  libSizes$exogenous_genomes = exprs.exogenousGenomes_cumulative[rownames(exprs.exogenousGenomes_cumulative)=="root",]
   
   
   ##
@@ -368,15 +496,23 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   ##
   printMessage("Saving raw data to disk")
   #save(exprs.miRNA, exprs.tRNA, exprs.piRNA, exprs.gencode, exprs.circRNA, exprs.exogenous_miRNA, exprs.exogenous_genomes, mapping.stats, libSizes, read.lengths, file=paste(output.dir, "exceRpt_smallRNAQuants_ReadCounts.RData", sep="/"))
-  save(exprs.miRNA, exprs.tRNA, exprs.piRNA, exprs.gencode, exprs.circRNA, exprs.exogenousGenomes_speciesSpecific, exprs.exogenousGenomes_kingdomSpecific, mapping.stats, libSizes, read.lengths, file=paste(output.dir, "exceRpt_smallRNAQuants_ReadCounts.RData", sep="/"))
+  save(exprs.miRNA, exprs.tRNA, exprs.piRNA, exprs.gencode, exprs.circRNA, exprs.exogenous_miRNA, exprs.exogenousGenomes_specific, exprs.exogenousGenomes_cumulative, mapping.stats, libSizes, read.lengths, run.duration, file=paste(output.dir, "exceRpt_smallRNAQuants_ReadCounts.RData", sep="/"))
   write.table(exprs.miRNA, file=paste(output.dir, "exceRpt_miRNA_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
   write.table(exprs.tRNA, file=paste(output.dir, "exceRpt_tRNA_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
   write.table(exprs.piRNA, file=paste(output.dir, "exceRpt_piRNA_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
   write.table(exprs.gencode, file=paste(output.dir, "exceRpt_gencode_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
   write.table(exprs.circRNA, file=paste(output.dir, "exceRpt_circularRNA_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
-  write.table(exprs.exogenousGenomes_speciesSpecific, file=paste(output.dir, "exceRpt_exogenousGenomes_speciesSpecific_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
-  write.table(exprs.exogenousGenomes_kingdomSpecific, file=paste(output.dir, "exceRpt_exogenousGenomes_kingdomSpecific_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+  write.table(exprs.exogenous_miRNA, file=paste(output.dir, "exceRpt_exogenous_miRNA_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+  write.table(exprs.exogenousGenomes_specific, file=paste(output.dir, "exceRpt_exogenousGenomes_taxonomySpecific_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+  write.table(exprs.exogenousGenomes_cumulative, file=paste(output.dir, "exceRpt_exogenousGenomes_taxonomyCumulative_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
   write.table(read.lengths, file=paste(output.dir, "exceRpt_ReadLengths.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+  
+  
+  ##
+  ## Keep a record of the adapter sequences for QC
+  ##
+  adapterSeq = unlist(lapply(sample.data, function(l){ l$adapterSeq }))
+  write.table(as.data.frame(adapterSeq), file=paste(output.dir, "exceRpt_adapterSequences.txt", sep="/"), sep="\t", col.names=NA, quote=F)
   
   
   ##
@@ -384,6 +520,50 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   ##
   write.table(mapping.stats, file=paste(output.dir,"exceRpt_readMappingSummary.txt",sep="/"), sep="\t", col.names=NA, quote=F)
   
+  
+  
+  ##
+  ## Calculate reads per million (RPM)
+  ##
+  printMessage("Normalising to RPM")
+  #libSize.use = libSizes$all
+  #libSize.use = libSizes$miRNA
+  libSize.use = libSizes$genome
+  exprs.miRNA.rpm = t(10^6 * t(exprs.miRNA) / libSize.use)
+  exprs.tRNA.rpm = t(10^6 * t(exprs.tRNA) / libSize.use)
+  exprs.piRNA.rpm = t(10^6 * t(exprs.piRNA) / libSize.use)
+  exprs.gencode.rpm = t(10^6 * t(exprs.gencode) / libSize.use)
+  #exprs.repElements.rpm = t(10^6 * t(exprs.repElements) / libSize.use)
+  exprs.exogenous_miRNA.rpm = t(10^6 * t(exprs.exogenous_miRNA) / libSizes$exogenous_miRNA)
+  exprs.exogenousGenomes_specific.rpm = t(10^6 * t(exprs.exogenousGenomes_specific) / libSizes$exogenous_genomes)
+  exprs.exogenousGenomes_cumulative.rpm = t(10^6 * t(exprs.exogenousGenomes_cumulative) / libSizes$exogenous_genomes)
+  
+  
+  ##
+  ## Save the RPM normalised data
+  ##
+  printMessage("Saving normalised data to disk")
+  save(exprs.miRNA.rpm, exprs.tRNA.rpm, exprs.piRNA.rpm, exprs.gencode.rpm, exprs.exogenous_miRNA.rpm, exprs.exogenousGenomes_specific.rpm, exprs.exogenousGenomes_cumulative.rpm, file=paste(output.dir, "exceRpt_smallRNAQuants_ReadsPerMillion.RData", sep="/"))
+  write.table(exprs.miRNA.rpm, file=paste(output.dir, "exceRpt_miRNA_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+  write.table(exprs.tRNA.rpm, file=paste(output.dir, "exceRpt_tRNA_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+  write.table(exprs.piRNA.rpm, file=paste(output.dir, "exceRpt_piRNA_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+  write.table(exprs.gencode.rpm, file=paste(output.dir, "exceRpt_gencode_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+  write.table(exprs.exogenous_miRNA.rpm, file=paste(output.dir, "exceRpt_exogenous_miRNA_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+  write.table(exprs.exogenousGenomes_specific, file=paste(output.dir, "exceRpt_exogenousGenomes_taxonomySpecific_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+  write.table(exprs.exogenousGenomes_cumulative, file=paste(output.dir, "exceRpt_exogenousGenomes_taxonomyCumulative_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+  
+  return(rownames(mapping.stats))
+}
+
+
+
+##
+##
+##
+PlotData = function(sampleIDs, output.dir, sampleGroups=rep(1,length(sampleIDs))){
+  
+  load(paste(output.dir, "exceRpt_smallRNAQuants_ReadCounts.RData", sep="/"))
+  load(paste(output.dir, "exceRpt_smallRNAQuants_ReadsPerMillion.RData", sep="/"))
   
   ##
   ## Order samples based on similarity of mapping statistics
@@ -431,6 +611,9 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   #}
   
   
+  
+  
+  
   ##
   ## Open PDF for diagnostic plots
   ##
@@ -445,8 +628,8 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
     ## plot distribution of clipped read lengths - read count
     ##
     tmp = melt(read.lengths); colnames(tmp) = c("sample","length","count")
-    #tmp = tmp[1:max(which(tmp$count > 0)), ]
-    p = ggplot(tmp, aes(x=length, y=count, colour=sample)) +geom_line(alpha=0.75) +xlab("read length (nt)") +ylab("# reads") +ggtitle("read-length distributions") +xlim(14,min(c(75,max(tmp$length))))
+    maxX = min(c(100,max(tmp$length)))
+    p = ggplot(tmp, aes(x=length, y=count, colour=sample)) +geom_line(alpha=0.75) +xlab("read length (nt)") +ylab("# reads") +ggtitle("read-length distributions") +scale_x_continuous(limits=c(0,maxX), minor_breaks=1:maxX)
     if(nrow(read.lengths) > 30){ p = p +guides(colour=FALSE) }
     print(p)
     #ggplot(tmp, aes(x=as.factor(length), y=count)) +geom_violin()
@@ -457,8 +640,8 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
     ## plot distribution of clipped read lengths - fraction
     ##
     tmp = melt(t(apply(read.lengths, 1, function(row){ row/sum(row) }))); colnames(tmp) = c("sample","length","fraction")
-    #tmp = tmp[1:max(which(tmp$fraction > 0)), ]
-    p = ggplot(tmp, aes(x=length, y=fraction, colour=sample)) +geom_line(alpha=0.75) +xlab("read length (nt)") +ylab("fraction of reads") +ggtitle("read-length distributions") +xlim(14,min(c(75,max(tmp$length))))
+    maxX = min(c(100,max(tmp$length)))
+    p = ggplot(tmp, aes(x=length, y=fraction, colour=sample)) +geom_line(alpha=0.75) +xlab("read length (nt)") +ylab("fraction of reads") +ggtitle("read-length distributions") +scale_x_continuous(limits=c(0,maxX), minor_breaks=1:maxX)
     if(nrow(read.lengths) > 30){ p = p +guides(colour=FALSE) }
     print(p)
   }
@@ -599,21 +782,7 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   
   
   
-  ##
-  ## Calculate reads per million (RPM)
-  ##
-  printMessage("Normalising to RPM")
-  #libSize.use = libSizes$all
-  #libSize.use = libSizes$miRNA
-  libSize.use = libSizes$genome
-  exprs.miRNA.rpm = t(10^6 * t(exprs.miRNA) / libSize.use)
-  exprs.tRNA.rpm = t(10^6 * t(exprs.tRNA) / libSize.use)
-  exprs.piRNA.rpm = t(10^6 * t(exprs.piRNA) / libSize.use)
-  exprs.gencode.rpm = t(10^6 * t(exprs.gencode) / libSize.use)
-  #exprs.repElements.rpm = t(10^6 * t(exprs.repElements) / libSize.use)
-  #exprs.exogenous_miRNA.rpm = t(10^6 * t(exprs.exogenous_miRNA) / libSize.use)
-  exprs.exogenousGenomes_speciesSpecific.rpm = t(10^6 * t(exprs.exogenousGenomes_speciesSpecific) / libSize.use)
-  exprs.exogenousGenomes_kingdomSpecific.rpm = t(10^6 * t(exprs.exogenousGenomes_kingdomSpecific) / libSize.use)
+ 
   
   #par(mfrow=c(1,2), oma=c(15,0,0,0))
   #boxplot(log10(exprs.miRNA[, sampleOrder]+1E-1), las=2, ylab="log10(miRNA counts)", main="miRNA read count")
@@ -626,7 +795,7 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
     tmp = melt(exprs.miRNA)
     colnames(tmp) = c("miRNA","sample","abundance")
     p = ggplot(tmp, aes(y=abundance, x=sample, colour=sample)) +geom_violin() +geom_boxplot(alpha=0.2) +ylab("Read count") +ggtitle("miRNA abundance distributions (raw counts)") +scale_y_log10()
-    if(ncol(exprs.miRNA.rpm) > 30){ 
+    if(ncol(exprs.miRNA) > 30){ 
       p = p + guides(colour=FALSE) +theme(axis.text.x=element_text(angle = 90, hjust = 1))
     }else{
       p = p+theme(axis.ticks = element_blank(), axis.text.x = element_blank())
@@ -657,34 +826,40 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   ##
   ## Finally, plot exogenous if there are any
   ##
-  if(nrow(exprs.exogenousGenomes_speciesSpecific) > 0  &&  ncol(exprs.exogenousGenomes_speciesSpecific) > 1){
+  if(nrow(exprs.exogenousGenomes_specific) > 0  &&  ncol(exprs.exogenousGenomes_specific) > 1){
     printMessage("Plotting exogenous counts")
-    par(oma=c(5,0,0,8))
-    tmp.order = order(apply(t(t(exprs.exogenousGenomes_speciesSpecific)/colSums(exprs.exogenousGenomes_speciesSpecific)), 1, median), decreasing=T)
-    heatmap.2(log10(exprs.exogenousGenomes_speciesSpecific[tmp.order, ][1:100,]+0.1),trace="none")
-    tmp.order = order(apply(t(t(exprs.exogenousGenomes_kingdomSpecific)/colSums(exprs.exogenousGenomes_kingdomSpecific)), 1, median), decreasing=T)
-    heatmap.2(log10(exprs.exogenousGenomes_kingdomSpecific[tmp.order, ][1:100,]+0.1),trace="none")
     
-    tmp.order = order(apply(t(t(exprs.exogenousGenomes_speciesSpecific.rpm)/colSums(exprs.exogenousGenomes_speciesSpecific.rpm)), 1, median), decreasing=T)
-    heatmap.2(log10(exprs.exogenousGenomes_speciesSpecific.rpm[tmp.order, ][1:100,]+0.1),trace="none")
-    tmp.order = order(apply(t(t(exprs.exogenousGenomes_kingdomSpecific.rpm)/colSums(exprs.exogenousGenomes_kingdomSpecific.rpm)), 1, median), decreasing=T)
-    heatmap.2(log10(exprs.exogenousGenomes_kingdomSpecific.rpm[tmp.order, ][1:100,]+0.1),trace="none") 
+    par(oma=c(20,2,0,0))
+    barplot(exprs.exogenousGenomes_cumulative[1,], las=2, main="Total # reads mapped to NCBI taxonomy")
+    
+    par(oma=c(20,0,0,8))
+    tmp.order = order(apply(t(t(exprs.exogenousGenomes_specific)/colSums(exprs.exogenousGenomes_specific)), 1, median), decreasing=T)
+    heatmap.2(log10(exprs.exogenousGenomes_specific[tmp.order, ][1:50,]+0.1),trace="none",main="top taxa nodes: specific normalised read count")
+    
+    tmp.order = order(apply(t(t(exprs.exogenousGenomes_specific)), 1, median), decreasing=T)
+    heatmap.2(log10(exprs.exogenousGenomes_specific[tmp.order, ][1:50,]+0.1),trace="none",main="top taxa nodes: specific absolute read count")
+    
+    tmp.order = order(apply(t(t(exprs.exogenousGenomes_cumulative)/libSizes$exogenous_genomes), 1, median), decreasing=T)
+    heatmap.2(log10(exprs.exogenousGenomes_cumulative[tmp.order, ][1:50,]+0.1),trace="none",main="top taxa nodes: cumulative normalised read count")
+    
+    tmp.order = order(apply(t(t(exprs.exogenousGenomes_cumulative)), 1, median), decreasing=T)
+    heatmap.2(log10(exprs.exogenousGenomes_cumulative[tmp.order, ][1:50,]+0.1),trace="none",main="top taxa nodes: cumulative absolute read count")
   }
   dev.off()
   
   
+
   ##
-  ## Save the RPM normalised data
+  ## Finally, plot exogenous if there are any
   ##
-  printMessage("Saving normalised data to disk")
-  #save(exprs.miRNA.rpm, exprs.tRNA.rpm, exprs.piRNA.rpm, exprs.gencode.rpm, exprs.exogenous_miRNA.rpm, exprs.exogenous_genomes.rpm, file=paste(output.dir, "exceRpt_smallRNAQuants_ReadsPerMillion.RData", sep="/"))
-  save(exprs.miRNA.rpm, exprs.tRNA.rpm, exprs.piRNA.rpm, exprs.gencode.rpm, exprs.exogenousGenomes_speciesSpecific.rpm, exprs.exogenousGenomes_kingdomSpecific.rpm, file=paste(output.dir, "exceRpt_smallRNAQuants_ReadsPerMillion.RData", sep="/"))
-  write.table(exprs.miRNA.rpm, file=paste(output.dir, "exceRpt_miRNA_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
-  write.table(exprs.tRNA.rpm, file=paste(output.dir, "exceRpt_tRNA_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
-  write.table(exprs.piRNA.rpm, file=paste(output.dir, "exceRpt_piRNA_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
-  write.table(exprs.gencode.rpm, file=paste(output.dir, "exceRpt_gencode_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
-  write.table(exprs.exogenousGenomes_speciesSpecific.rpm, file=paste(output.dir, "exceRpt_exogenousGenomes_speciesSpecific_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
-  write.table(exprs.exogenousGenomes_kingdomSpecific.rpm, file=paste(output.dir, "exceRpt_exogenousGenomes_kingdomSpecific_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+  if(nrow(exprs.exogenousGenomes_specific) > 0  &&  ncol(exprs.exogenousGenomes_specific) > 1){
+    printMessage("Making taxonomy trees using exogenous counts")
+    plotExogenousTaxonomyTrees(exprs.exogenousGenomes_specific, exprs.exogenousGenomes_cumulative, outPath=paste(output.dir,"exceRpt_exogenousGenomes_TaxonomyTrees.pdf",sep="/"))
+  }
   
   printMessage("All done!")
 }
+
+
+
+
