@@ -23,7 +23,8 @@ import annotation.NCBITaxonomy_Node;
 public class ProcessExogenousAlignments {
 
 	private NCBITaxonomy_Engine _taxonomy;
-
+	private boolean _topDownSearch = false;
+	private double _minFraction = 0.0;
 
 	/**
 	 * Main
@@ -32,7 +33,11 @@ public class ProcessExogenousAlignments {
 	 * @param alignmentsPath
 	 * @throws IOException
 	 */
-	public ProcessExogenousAlignments() throws IOException{  }
+	public ProcessExogenousAlignments(boolean topDown, double minFraction, int verbose) throws IOException{ 
+		_verbose = verbose; 
+		_topDownSearch = topDown;
+		_minFraction = minFraction;
+	}
 
 
 	/**
@@ -46,7 +51,7 @@ public class ProcessExogenousAlignments {
 
 
 
-	BufferedReader _alignmentReader;
+	private BufferedReader _alignmentReader;
 
 	/**
 	 * 
@@ -54,10 +59,10 @@ public class ProcessExogenousAlignments {
 	 * @throws IOException
 	 */
 	public void processAlignments(String alignmentsPath, int batchSize) throws IOException{
-		IO_utils.printLineErr("Reading alignments...");
+		//IO_utils.printLineErr("Reading alignments...");
 		_alignmentReader = new BufferedReader(new FileReader(alignmentsPath));
 		int batchCount = 1;
-		int readCounter = 0;
+		//int readCounter = 0;
 		//boolean hasMoreAlignments = false;
 		//System.out.println("batch "+batchCount);
 		while(readAlignments(batchSize)){
@@ -66,25 +71,40 @@ public class ProcessExogenousAlignments {
 			Iterator<String> it = _reads2species.keySet().iterator();
 			while(it.hasNext())
 				System.out.println("\t"+it.next());
-			*/
+			 */
+
+			int inputReadNumber = _reads2species.size();
+			int minReads = (int)Math.floor(_minFraction * (inputReadNumber+0.0));
 			
 			
 			IO_utils.printLineErr("Processing alignments in batch "+batchCount);
+			//System.err.println(" (batch "+batchCount+")");
 			if(_countIgnoredReads)
 				IO_utils.printLineErr(" - Ignored "+_ignoredReads.size()+" alignments to species that could not be found in the taxonomy ("+countIgnoredReads()+" reads removed entirely)");
-			IO_utils.printLineErr(" - Detected "+_species2reads.size()+" possible species from "+_reads2species.size()+" aligned reads");
-			readCounter += _reads2species.size();
-			
-			processAlignments(_taxonomy.getRootNode());
+			IO_utils.printLineErr(" - Detected "+_species2reads.size()+" possible species from "+inputReadNumber+" aligned reads (minReads="+minReads+")");
+			//readCounter += _reads2species.size();
 
-			//IO_utils.printLineErr(" - Assigned "+_readAssignment.size()+" of "+_reads2species.size()+" reads ("+Math.round((_readAssignment.size()+0.0)*1000.0/(_reads2species.size()+0.0))/10.0+"%) to a subset of the taxonomy");
-			IO_utils.printLineErr(" - Assigned "+_readAssignment.size()+" of "+readCounter+" reads ("+Math.round((_readAssignment.size()+0.0)*1000.0/(readCounter+0.0))/10.0+"%) to a subset of the taxonomy");
+
+
+			// top down
+			if(_topDownSearch){
+				//processAlignments(_taxonomy.getRootNode());
+				processAlignments(_taxonomy.getNode("cellular organisms"));
+				//processAlignments(_taxonomy.getNode("bacteria"));
+			}else{
+				// bottom up
+				processAlignments_bottomUP(new HashSet<String>(), minReads);
+				IO_utils.printLineErr(" - Done. Suppressed "+_reads2species.size()+" total reads ("+(Math.round((_reads2species.size()+0.0)*100000.0/(inputReadNumber+0.0))/1000.0)+"% of input reads) due to minimum read requirement.");
+			}
+
+
+			//IO_utils.printLineErr(" - Assigned "+_readAssignment.size()+" of "+readCounter+" reads ("+Math.round((_readAssignment.size()+0.0)*1000.0/(readCounter+0.0))/10.0+"%) to a subset of the taxonomy");
 			batchCount ++;
-			
+
 			// clean up ready for the next batch
 			_reads2species = new HashMap<String, HashSet<String>>();
 			_species2reads = new HashMap<String, HashSet<String>>();
-			
+
 			//if(hasMoreAlignments)
 			//	IO_utils.printLineErr("Reading more alignments...");
 		}
@@ -111,6 +131,8 @@ public class ProcessExogenousAlignments {
 	 */
 	private boolean readAlignments(int batchSize) throws IOException{
 
+		IO_utils.printLineErr("Reading alignments...");
+
 		boolean hasMoreAlignments = false;
 		int readCounter = 0;
 		String line;
@@ -129,7 +151,7 @@ public class ProcessExogenousAlignments {
 			String species = bits[2].replace("_", " ").toLowerCase().trim();
 
 			//if(count < 10){
-				//System.out.println(_lastReadID+"\t"+readID+"\t"+line);
+			//System.out.println(_lastReadID+"\t"+readID+"\t"+line);
 			//}
 			if(readID.equals(_lastReadID)  ||  _lastReadID == null){
 				addRead(readID, species);
@@ -146,38 +168,51 @@ public class ProcessExogenousAlignments {
 					break;
 			}
 		}
-		
+
 		if(!hasMoreAlignments)
 			_lastReadID = null;
 
-		
-		
+
+
 		//System.out.println(_maxCountSpecies+": "+_maxCount);
 		//br.close();
-		
+
 		return hasMoreAlignments;
 	}
-	
-	
+
+
 	private boolean _countIgnoredReads = false; // can cause high memory usage if there are a lot of these
 	HashSet<String> _ignoredReads = new HashSet<String>();
+	/**
+	 * 
+	 * @param readID
+	 * @param species
+	 */
 	private void addRead(String readID, String species){
 		// check that this species is in the taxonomy
 		//if(_taxonomy.getNodeName2nodeIndex().containsKey(species)){
 		if(_taxonomy.containsNode(species)){
 
-			if(!_reads2species.containsKey(readID))
-				_reads2species.put(readID, new HashSet<String>());
-			_reads2species.get(readID).add(species);
-
+			// add the species if we haven't seen it before
 			if(!_species2reads.containsKey(species)){
 				_species2reads.put(species, new HashSet<String>());
 				_species2readCounts.put(species, 0);
 			}
-			_species2reads.get(species).add(readID);
 
-			int thisCount = _species2readCounts.get(species)+1;
-			_species2readCounts.put(species, thisCount);
+			// add the read if we haven't seen it before
+			if(!_reads2species.containsKey(readID)){
+				_reads2species.put(readID, new HashSet<String>());
+			}
+			_reads2species.get(readID).add(species);
+
+			// if this read is not already assigned to this species, add it and increment the count
+			if(!_species2reads.get(species).contains(readID)){
+				_species2reads.get(species).add(readID);
+				int thisCount = _species2readCounts.get(species)+1;
+				_species2readCounts.put(species, thisCount);
+			}
+
+
 
 
 
@@ -198,11 +233,11 @@ public class ProcessExogenousAlignments {
 		}
 		return ignoredReadCount;
 	}
-	
 
-	
-	
-	
+
+
+
+
 
 	/**
 	 * recount reads so as to be cumulative going up the taxonomic tree 
@@ -245,6 +280,138 @@ public class ProcessExogenousAlignments {
 	public void setMinReadFractionForTreeDescent(double minFraction){
 		_minReaadFrac = minFraction;
 	}
+
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void processAlignments_bottomUP(HashSet<String> assignedReadsInThisBatch, int minReads){
+		// 1: sort species by # mapped reads
+		Object[] a = _species2readCounts.entrySet().toArray();
+		Arrays.sort(a, new Comparator() {
+			public int compare(Object o1, Object o2) {
+				return ((Map.Entry<String, Integer>) o2).getValue().compareTo(
+						((Map.Entry<String, Integer>) o1).getValue());
+			}
+		});
+
+		String mostAbundantSpecies = ((Map.Entry<String, Integer>) a[0]).getKey();
+
+		if(_species2readCounts.get(mostAbundantSpecies) >= minReads){
+
+			if(_verbose > 0)
+				IO_utils.printLineErr(" - Reads remaining: "+_reads2species.size()+"\tResolving alignments to "+mostAbundantSpecies+" ("+_species2readCounts.get(mostAbundantSpecies)+" reads)");
+			//IO_utils.printLineErr(" - Reads remaining: "+_reads2species.size()+"\tResolving alignments to "+mostAbundantSpecies+" ("+_species2reads.get(mostAbundantSpecies).size()+" reads)");
+
+			//if(_species2readCounts.get(mostAbundantSpecies) >= minReads)
+			assessNode(_taxonomy.getNode(mostAbundantSpecies), _species2reads.get(mostAbundantSpecies), assignedReadsInThisBatch);
+			//else
+			//	assessNode(_taxonomy.getNode("cellular organisms"), _species2reads.get(mostAbundantSpecies), assignedReadsInThisBatch);
+			//IO_utils.printLineErr("Reads remaining: "+_reads2species.size());
+
+			if(_reads2species.size() > 0)
+				processAlignments_bottomUP(assignedReadsInThisBatch, minReads);
+		}
+
+	}
+
+	private void assessNode(NCBITaxonomy_Node thisNode, HashSet<String> reads, HashSet<String> assignedreads){
+		//NCBITaxonomy_Node parent = thisNode.getParent();
+		//HashSet<String> leafNodes = parent.getAllLeafSpeciesForNode();
+		//System.out.println("parent: "+parent.getName()+"\tN leaf nodes: "+leafNodes.size());
+		HashSet<String> leafNodes = thisNode.getAllLeafSpeciesForNode();
+
+		if(_verbose == 2)
+			IO_utils.printErr("parent: "+thisNode.getName()+"\tlevel: "+thisNode.getLevel()+"\tN leaf nodes: "+leafNodes.size());
+
+		// loop over all reads, asking whether this parent can explain each set of alignments
+		Iterator<String> it;
+		//Iterator<String> reads = _reads2species.keySet().iterator();
+		Iterator<String> readIterator = reads.iterator();
+		while(readIterator.hasNext()){
+			String thisRead = readIterator.next();
+
+			int alignedSpeciesUnderCurrentParent = 0;
+			if(_reads2species.containsKey(thisRead)){
+				HashSet<String> theseSpecies = _reads2species.get(thisRead);
+				it = theseSpecies.iterator();
+				while(it.hasNext())
+					if(leafNodes.contains(it.next()))
+						alignedSpeciesUnderCurrentParent ++;
+
+				double frac = (alignedSpeciesUnderCurrentParent+0.0)/(theseSpecies.size()+0.0);
+
+				//System.out.println(thisRead+"\t"+thisChild.getName()+" ("+thisChild.getLevel()+"): "+frac);
+
+				if(frac >= _minReaadFrac){ // this read works at this level
+					_readAssignment.put(thisRead, thisNode);
+					assignedreads.add(thisRead);
+					//System.out.println(thisRead+"\t"+thisChild.getName()+" ("+thisChild.getLevel()+"): "+frac);
+				}
+			}
+		}
+
+		reads = tidyUp(reads, assignedreads);
+
+		// try the parent of this node		
+		//if(!thisNode.getParent().getName().equals("root"))
+		//if(thisNode.getParent().getName().equals("root")  ||  reads.size() == 0){
+		if(thisNode.getParent().getName().equals("cellular organisms")  ||  reads.size() == 0){
+			// if we've not yet assigned these reads, assign them all to cellular organisms
+			NCBITaxonomy_Node junkNode = _taxonomy.getNode("cellular organisms");
+
+			// if we've not yet assigned these reads, assign them all to cellular organisms
+			//NCBITaxonomy_Node junkNode = _taxonomy.getNode("root");
+
+			if(_verbose == 2)
+				IO_utils.printErr("parent: "+junkNode.getName()+"\tlevel: "+junkNode.getLevel());
+			readIterator = reads.iterator();
+			while(readIterator.hasNext()){
+				String thisRead = readIterator.next();
+				_readAssignment.put(thisRead, junkNode);
+				assignedreads.add(thisRead);
+			}
+			tidyUp(reads, assignedreads);
+		}else{
+			assessNode(thisNode.getParent(), reads, assignedreads);
+		}
+	}
+
+
+	private HashSet<String> tidyUp(HashSet<String> reads, HashSet<String> assignedreads){
+		// remove reads that have been assigned from the read2species map
+		int readsAssignedHere = 0;
+		//Iterator<String> it = _readAssignment.keySet().iterator();
+		Iterator<String> it = assignedreads.iterator();
+		while(it.hasNext()){
+			String thisReadID = it.next();
+
+			if(_reads2species.containsKey(thisReadID)){
+				Iterator<String> tmpSpeciesToModify = _reads2species.get(thisReadID).iterator();
+				while(tmpSpeciesToModify.hasNext()){
+					String thisSpecies = tmpSpeciesToModify.next();
+
+					// remove the read allocated to this species
+					if(_species2reads.get(thisSpecies).contains(thisReadID))
+						_species2reads.get(thisSpecies).remove(thisReadID);
+
+					// reduce read count for this species by 1
+					if(_species2readCounts.containsKey(thisSpecies))
+						_species2readCounts.put(thisSpecies, _species2readCounts.get(thisSpecies)-1);
+				}
+
+				_reads2species.remove(thisReadID);
+				readsAssignedHere ++;
+			}
+
+			//
+			if(reads.contains(thisReadID))
+				reads.remove(thisReadID);
+		}
+		if(_verbose == 2)
+			System.err.println("\tDone, assigned "+readsAssignedHere+" reads here, "+_readAssignment.size()+" in total");
+		return reads;
+	}
+
+
 
 
 	/**
@@ -316,14 +483,14 @@ public class ProcessExogenousAlignments {
 	private HashMap<String, Integer> _species2readCounts = new HashMap<String, Integer>();
 
 
-	
 
 
 
-	
-	
 
-	
+
+
+
+
 
 
 	/**
@@ -337,11 +504,15 @@ public class ProcessExogenousAlignments {
 		options.addOption(OptionBuilder.withArgName(".unique.txt").hasArg().withDescription("Path to the exogenous alignments output by exceRpt").create("alignments"));
 		options.addOption(OptionBuilder.withArgName("[min=0, max=1]").hasArg().withDescription("[optional] minimum fraction of reads that must be contained within a subtree before increasing resolution to that subtree [default: 0.95]").create("frac"));
 		options.addOption(OptionBuilder.withArgName("integer").hasArg().withDescription("[optional] process alignments in batches of reads [default: "+DEFAULT_BATCH_SIZE+"]").create("batchSize"));
+		options.addOption(OptionBuilder.withArgName("decimal").hasArg().withDescription("[optional] Rapid-run mode: do not resolve alignments for leaf-nodes with fewer than this % of total reads [default: 0.0] [suggested 0.001]").create("min"));
+		options.addOption(OptionBuilder.withDescription("[optional] Perform tree search \'top down\'.  This is guaranteed to find the correct assignment for each read, but can be very slow for a large number of alignments").create("topDown"));
+		options.addOption(OptionBuilder.withDescription("Print verbose status messages").create("v"));
+		options.addOption(OptionBuilder.withDescription("Print REALLY verbose status messages").create("vv"));
 		return options;
 	}
-	
-	public static final int DEFAULT_BATCH_SIZE = 100000;
 
+	public static final int DEFAULT_BATCH_SIZE = 200000;
+	public int _verbose = 0;
 
 	public static void main(String[] args) throws IOException, ParseException {
 		String alignmentsPath;
@@ -351,13 +522,28 @@ public class ProcessExogenousAlignments {
 		//alignmentsPath = "/Users/robk/WORK/YALE_offline/tmp/Lajos/exogenousTEST/A806WMABXX.unmapped_ExogenousGenomicAlignments.sorted.unique.txt";
 		//alignmentsPath = "/Users/robk/WORK/YALE_offline/tmp/Lajos/exogenousTEST/test.txt";
 
-		//args = new String[]{"--taxonomyPath","/Users/robk/WORK/YALE_offline/ANNOTATIONS/taxdump", "--alignments",alignmentsPath, "--batchSize","100000"};
-
+		//alignmentsPath = "/Users/robk/Downloads/TEST.txt";
+		//args = new String[]{"--taxonomyPath","/Users/robk/WORK/YALE_offline/ANNOTATIONS/taxdump", "--alignments",alignmentsPath, "--batchSize","200000", "-v", "-min","0.001"};
+		//args = new String[]{"--taxonomyPath","/Users/robk/WORK/YALE_offline/ANNOTATIONS/taxdump", "--alignments",alignmentsPath, "--batchSize","200000", "-v", "-topDown"};
 
 		CommandLine cmdArgs = ExceRpt_Tools.parseArgs(args, getCmdLineOptions());
 		if(cmdArgs.hasOption("taxonomyPath") && cmdArgs.hasOption("alignments")){
 
-			ProcessExogenousAlignments engine = new ProcessExogenousAlignments();
+			int verbose = 0;
+			if(cmdArgs.hasOption("v"))
+				verbose = 1;
+			if(cmdArgs.hasOption("vv"))
+				verbose = 2;
+
+			boolean topDown = false;
+			if(cmdArgs.hasOption("topDown"))
+				topDown = true;
+
+			double minPercentage = 0.0;
+			if(cmdArgs.hasOption("min"))
+				minPercentage = Double.valueOf(cmdArgs.getOptionValue("min")).doubleValue();
+
+			ProcessExogenousAlignments engine = new ProcessExogenousAlignments(topDown, minPercentage/100.0, verbose);
 
 			int batchSize = DEFAULT_BATCH_SIZE;
 			if(cmdArgs.hasOption("batchSize"))
@@ -371,7 +557,7 @@ public class ProcessExogenousAlignments {
 
 			IO_utils.printLineErr("Summarising alignments in: \'"+cmdArgs.getOptionValue("alignments")+"\'");
 			IO_utils.printLineErr("            in batches of: "+batchSize+" reads");
-			IO_utils.printLineErr("        using taxonomy in: \'"+cmdArgs.getOptionValue("taxonomyPath")+"\' and minFraction="+frac);
+			IO_utils.printLineErr("        using taxonomy in: \'"+cmdArgs.getOptionValue("taxonomyPath")+"\', minFraction="+frac+", top-down:"+topDown+", for alignments above "+minPercentage+"% of total reads");
 
 			engine.readTaxonomy(cmdArgs.getOptionValue("taxonomyPath"));
 
