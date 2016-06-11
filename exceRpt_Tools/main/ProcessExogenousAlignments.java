@@ -301,8 +301,12 @@ public class ProcessExogenousAlignments {
 				IO_utils.printLineErr(" - Reads remaining: "+_reads2species.size()+"\tResolving alignments to "+mostAbundantSpecies+" ("+_species2readCounts.get(mostAbundantSpecies)+" reads)");
 			//IO_utils.printLineErr(" - Reads remaining: "+_reads2species.size()+"\tResolving alignments to "+mostAbundantSpecies+" ("+_species2reads.get(mostAbundantSpecies).size()+" reads)");
 
-			//if(_species2readCounts.get(mostAbundantSpecies) >= minReads)
-			assessNode(_taxonomy.getNode(mostAbundantSpecies), _species2reads.get(mostAbundantSpecies), assignedReadsInThisBatch);
+			if(_species2reads.containsKey(mostAbundantSpecies)  &&  _species2reads.get(mostAbundantSpecies).size() > 0)
+				assessNode(_taxonomy.getNode(mostAbundantSpecies), _species2reads.get(mostAbundantSpecies), assignedReadsInThisBatch);
+			else{
+				IO_utils.printLineErr(" WARNING: failed to process reads for species:"+mostAbundantSpecies+ "(species2readCounts="+_species2readCounts.get(mostAbundantSpecies)+", in species2reads="+_species2reads.containsKey(mostAbundantSpecies));
+				_species2readCounts.put(mostAbundantSpecies, 0);
+			}
 			//else
 			//	assessNode(_taxonomy.getNode("cellular organisms"), _species2reads.get(mostAbundantSpecies), assignedReadsInThisBatch);
 			//IO_utils.printLineErr("Reads remaining: "+_reads2species.size());
