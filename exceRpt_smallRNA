@@ -863,8 +863,8 @@ $(OUTDIR)/EXOGENOUS_miRNA/exogenous_miRBase_Unmapped.R1.fastq.gz: $(OUTDIR)/endo
 	mkdir -p $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): Mapping reads to all miRNAs in miRBase:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) $(SMRNAPIPELINE): $(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_ --genomeDir $(DATABASE_PATH)/miRBase/STAR_INDEX_miRBaseAll --readFilesIn $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeGapped_Unmapped.R1.fastq.gz --outReadsUnmapped Fastx --parametersFiles $(DATABASE_PATH)/STAR_Parameters_Exogenous.in --outSAMtype BAM Unsorted $(STAR_EXOGENOUS_DYNAMIC_PARAMS) >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_ --genomeDir $(DATABASE_PATH)/miRBase/STAR_INDEX_miRBaseAll --readFilesIn $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeGapped_Unmapped.R1.fastq.gz --outReadsUnmapped Fastx --parametersFiles $(DATABASE_PATH)/STAR_Parameters_Exogenous.in --outSAMtype BAM Unsorted $(STAR_EXOGENOUS_DYNAMIC_PARAMS) >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
+	@echo -e "$(ts) $(SMRNAPIPELINE): $(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_ --genomeDir $(DATABASE_PATH)/miRBase/STAR_INDEX_miRBaseAll --readFilesIn $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeGapped_Unmapped.R1.fastq.gz --outReadsUnmapped Fastx --parametersFiles $(DATABASE_PATH)/STAR_Parameters_Exogenous.in $(STAR_EXOGENOUS_DYNAMIC_PARAMS) >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_ --genomeDir $(DATABASE_PATH)/miRBase/STAR_INDEX_miRBaseAll --readFilesIn $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeGapped_Unmapped.R1.fastq.gz --outReadsUnmapped Fastx --parametersFiles $(DATABASE_PATH)/STAR_Parameters_Exogenous.in $(STAR_EXOGENOUS_DYNAMIC_PARAMS) >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
 	@echo -e "$(ts) $(SMRNAPIPELINE): Finished mapping to all miRNAs in miRBase\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	gzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_Unmapped.out.mate1 > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_Unmapped.R1.fastq.gz
 	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_Unmapped.out.mate1
@@ -898,12 +898,12 @@ $(OUTDIR)/EXOGENOUS_rRNA/unaligned.fq.gz: $(OUTDIR)/EXOGENOUS_miRNA/exogenous_mi
 	## Input to exogenous rRNA alignment
 	grep "Number of input reads" $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_Log.final.out | tr '[:blank:]' ' ' | awk -F " \\\| " '{print "input_to_exogenous_rRNA\t"$$2}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	## Assigned non-redundantly to annotated exogenous rRNAs
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_Aligned.out.sam | grep -v "^@" | awk '{print $$1}' | sort | uniq | wc -l | awk '{print "exogenous_rRNA\t"$$0}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	$(SAMTOOLS_EXE) view $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_Aligned.out.bam | awk '{print $$1}' | sort | uniq | wc -l | awk '{print "exogenous_rRNA\t"$$0}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	## compress and tidy up
 	gzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_Unmapped.out.mate1 > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/unaligned.fq.gz
-	$(SAMTOOLS_EXE) view -@ $(N_THREADS) -b $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_Aligned.out.sam > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_Aligned.bam
+	#$(SAMTOOLS_EXE) view -@ $(N_THREADS) -b $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_Aligned.out.sam > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_Aligned.bam
 	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_Unmapped.out.mate1
-	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_Aligned.out.sam
+	#rm $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_Aligned.out.sam
 	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_Log.out
 	@echo -e "$(ts) $(SMRNAPIPELINE): Finished mapping to rRNA sequences in RDP\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
