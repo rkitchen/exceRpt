@@ -25,6 +25,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 import sequenceTools.Sequence;
+import utils.IO_utils;
 
 
 public class ProcessEndogenousAlignments {
@@ -215,7 +216,7 @@ public class ProcessEndogenousAlignments {
 					thisLib = "circRNA_antisense";
 			}
 
-			
+
 			readsByLibrary = addReadAssignment(readsByLibrary, thisLib, tmp.getKey());
 			//System.out.println(tmp.getKey().getReadName()+"\ttmp.getValue()="+tmp.getValue()+"\t"+tmp.getKey().getReferenceName()+"\t"+tmp.getValue()+"\t"+(!readNegativeStrand)+"\t"+readHasSenseAlignment+"\t"+thisLib);
 		}
@@ -271,7 +272,7 @@ public class ProcessEndogenousAlignments {
 				//index ++;
 				tmp2 = it2.next();
 				String[] refIDbits = tmp2.getReferenceName().split(":");
-				
+
 				String mapsTo = refIDbits[1];
 				int startAt = 2;
 				if(_forceLibrary != null){	
@@ -282,14 +283,18 @@ public class ProcessEndogenousAlignments {
 					mapsTo = mapsTo.concat(":"+refIDbits[i]);
 
 				// if this read maps to a mature miRNA, 
-				if(miRNAprecursors.get(mapsTo).getMatureOverlapForRead(tmp2.getReadName(), tmp2.getAlignmentStart(), tmp2.getAlignmentEnd(), keptLibrary.endsWith("_antisense")).length() > 0){
-					if(keptLibrary.endsWith("_sense"))
-						keptLibrary = "miRNAmature_sense";
-					else
-						keptLibrary = "miRNAmature_antisense";
-					break;
+				if(miRNAprecursors.containsKey(mapsTo)){
+					if(miRNAprecursors.get(mapsTo).getMatureOverlapForRead(tmp2.getReadName(), tmp2.getAlignmentStart(), tmp2.getAlignmentEnd(), keptLibrary.endsWith("_antisense")).length() > 0){
+						if(keptLibrary.endsWith("_sense"))
+							keptLibrary = "miRNAmature_sense";
+						else
+							keptLibrary = "miRNAmature_antisense";
+						break;
+					}else{
+						precursorAlignments.add(tmp2);
+					}
 				}else{
-					precursorAlignments.add(tmp2);
+					IO_utils.printLineErr("ERROR: unable to allocate "+tmp2.getReadName()+" (mapsTo="+mapsTo+", keptLibrary="+keptLibrary+")");
 				}
 			}
 
@@ -332,7 +337,7 @@ public class ProcessEndogenousAlignments {
 			 *   genome:gencode:ENST00000408108.1:miRNA:MIR486-201:GN=ENSG00000221035.1 
 			 */
 			String[] refIDbits = tmp2.getReferenceName().split(":");
-			
+
 			String mapsTo = refIDbits[1];
 			int startAt = 2;
 			if(_forceLibrary != null){	
@@ -440,13 +445,13 @@ public class ProcessEndogenousAlignments {
 
 			// put the SAM record into the map with the library type as the value
 			//thisRead.put(thisRecord, thisRecord.getReferenceName().split(":")[1]);
-			
+
 			if(_forceLibrary != null)
 				thisRead.put(thisRecord, _forceLibrary);
 			else
 				thisRead.put(thisRecord, thisRecord.getReferenceName().split(":")[0]);
 			lastReadID = thisRecord.getReadName();
-			
+
 		}
 		// assign the final read!
 		if(thisRead.size() > 0)
@@ -581,7 +586,7 @@ public class ProcessEndogenousAlignments {
 				"--dict",output_dictionary,
 				"--libPriority","miRNA,tRNA,piRNA,gencode,circRNA"
 		};*/
-		
+
 		/*String hairpin2genome = "/Users/robk/Downloads/miRNA_precursor2genome.sam";
 		String mature2hairpin = "/Users/robk/Downloads/miRNA_mature2precursor.sam";
 		String readsPath_T = "/Users/robk/Downloads/exogenous_miRBase_Aligned.out.bam";
@@ -606,7 +611,7 @@ public class ProcessEndogenousAlignments {
 				"--transcriptomeMappedReads",readsPath_T,
 				"--dict",output_dictionary
 		};*/
-		
+
 		CommandLine cmdArgs = ExceRpt_Tools.parseArgs(args, getCmdLineOptions());
 
 		if(cmdArgs.hasOption("hairpin2genome") && cmdArgs.hasOption("mature2hairpin") && cmdArgs.hasOption("transcriptomeMappedReads") && cmdArgs.hasOption("dict")){
@@ -632,7 +637,7 @@ public class ProcessEndogenousAlignments {
 
 			if(cmdArgs.hasOption("forceLib"))
 				engine.setForceLibrary(cmdArgs.getOptionValue("forceLib"));
-			
+
 			// Read hairpin alignments to the genome and mature alignments to the hairpins
 			ExceRpt_Tools.printLineErr("Reading miRNA annotation info");
 			engine.read_miRNAinfo(new File(cmdArgs.getOptionValue("hairpin2genome")), new File(cmdArgs.getOptionValue("mature2hairpin")));
@@ -654,7 +659,7 @@ public class ProcessEndogenousAlignments {
 			System.err.println();
 		}
 	}
-	
+
 	private String _forceLibrary = null;
 	public void setForceLibrary(String lib){ _forceLibrary = lib; }
 }

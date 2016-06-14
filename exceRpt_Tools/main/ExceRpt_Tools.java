@@ -13,6 +13,7 @@ import transcriptome.CIGAR_2_PWM;
 import fastaTools.Fasta2Fastq;
 import fastaTools.FastaHeaderGrep;
 import fastaTools.FastaRemoveDuplicates;
+import fastaTools.Fasta_U2T;
 import fastqTools.Fastq2Fasta;
 import fastqTools.FilterBySequenceLength;
 import fastqTools.FilterFastxByHeaderList;
@@ -95,7 +96,10 @@ public class ExceRpt_Tools {
 			FastaRemoveDuplicates.main(args);
 		}else if(main.equals("trimfastq")){
 			TrimFastq.main(args);
+		}else if(main.equals("fasta_u2t")){
+			Fasta_U2T.main(args);
 		}
+		
 		
 		
 		
@@ -112,6 +116,7 @@ public class ExceRpt_Tools {
 			System.out.println("         Fastq2Fasta                   | Convert FASTQ sequence(s) to FASTA sequence(s)");
 			System.out.println("         FastaHeaderGrep               | Filter fasta sequences based on the sequence ID");
 			System.out.println("         RemoveFastaDuplicates         | Filter fasta sequences to remove duplicate sequence headers");
+			System.out.println("         Fasta_U2T                     | Re-format fasta sequences from RNA to DNA by replacing all U bases with T");
 			System.out.println("         FilterFastxByIDList           | Filter fasta/q sequences based on a list of sequence IDs");
 			System.out.println("         FilterSequencesByLength       | Filter fasta or fastq sequences based on some maximum sequence length");
 			System.out.println("         TrimFastq                     | Trim bases from the 5' and/or 3' end of each read in a fastq file");
