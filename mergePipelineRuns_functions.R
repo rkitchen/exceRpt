@@ -4,10 +4,11 @@
 ##                                                                                      ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                           ##
 ##                                                                                      ##
-## Version 4.0.1 (2016-06-09)                                                           ##
+## Version 4.0.2 (2016-06-14)                                                           ##
 ##                                                                                      ##
 ##########################################################################################
 
+#data.dir="/Users/robk/WORK/YALE_offline/exRNA/Kendall/PlasmaUrineSaliva/Combined";output.dir=data.dir
 
 
 ##
@@ -31,7 +32,13 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   ## reads, normalises, and saves individual sample results
   sampleIDs = readData(samplePathList, output.dir)
   
+  ## sample groups?
+  #tmp=rep("plasma",length(sampleIDs))
+  #tmp[grep("Sample_S",sampleIDs)] = "saliva"
+  #sampleGroups = data.frame(sampleID=sampleIDs, sampleGroup=tmp)
+  
   ## plots the data
+  #PlotData(sampleIDs, output.dir, sampleGroups)
   PlotData(sampleIDs, output.dir)
   
   ## output warnings
@@ -128,10 +135,27 @@ printMessage = function(message=""){
 
 
 
+
+
+# thisgroup = "plasma"
+# tmpDat_uniq = rowMeans(data_uniq[, match(sampleGroups[sampleGroups$sampleGroup %in% thisgroup, ]$sampleID, colnames(data_uniq))])
+# tmpDat_cum = rowMeans(data_cum[, match(sampleGroups[sampleGroups$sampleGroup %in% thisgroup, ]$sampleID, colnames(data_cum))])
+# 
+# thisgroup = "saliva"
+# tmpDat_uniq = rowMeans(data_uniq[, match(sampleGroups[sampleGroups$sampleGroup %in% thisgroup, ]$sampleID, colnames(data_uniq))])
+# tmpDat_cum = rowMeans(data_cum[, match(sampleGroups[sampleGroups$sampleGroup %in% thisgroup, ]$sampleID, colnames(data_cum))])
+# 
+# title = thisgroup
+# counts_uniq = tmpDat_uniq
+# counts_cum = tmpDat_cum
+# range(sqrt(counts_cum/10))
+
+
+
 ##
 ## Plots a taxonomy tree for a give sample
 ##
-plotTree = function(rEG, counts_uniq, counts_cum, fontScale=2, title=""){
+plotTree = function(rEG, counts_uniq, counts_cum, fontScale=20, title=""){
   usenodes = nodes(rEG)
   names(usenodes) = nodes(rEG)
   nNodes = length(usenodes)
@@ -139,23 +163,47 @@ plotTree = function(rEG, counts_uniq, counts_cum, fontScale=2, title=""){
   nA <- list()
   nA$shape = rep("circle",nNodes)
   nA$fixedSize<-rep(FALSE, nNodes)
-  nA$height <- nA$width <- sqrt(counts_cum/10)
+  
+  nodeSizes = sqrt(counts_cum/10)
+  nodeSizes[nodeSizes < 0.02] = 0.02
+  #range(nodeSizes)
+  
+  nA$height <- nA$width <- nodeSizes
   nA$color <- rep(rgb(0,0,0,0.25),nNodes)
   nA$style <- rep("bold", nNodes)
   nA$fillcolor <- sapply(counts_uniq*10, function(val){ if(val>100){val=100}; rgb(100-val,100-val,100,maxColorValue=100)})
   nA$label <- paste(usenodes,"\\\n",round(counts_cum*10)/10,"%",sep="")
-  nA$fontsize <- (nA$height+(1.0-min(nA$height)))*fontScale
+  #nA$fontsize <- (nA$height+(1.0-max(1, min(nA$height))))*fontScale
+  #nA$fontsize <- (nA$height+(1.0-min(nA$height)))*fontScale
+  nA$fontsize <- nA$height*fontScale
+  
+  range(nA$height)
+  range(nA$fontsize)
   
   nA <- lapply(nA, function(x) { names(x) <- nodes(rEG); x})
   eA <- list()
   
-  plot(rEG, nodeAttrs=nA, edgeAttrs=eA, main=title)
+  attrs = list(graph=list(), node=list(), edge=list())
+  attrs$graph$size="5"
+  attrs$graph$ratio="expand"
+  attrs$graph$dim="1"
+  #attrs$graph$bgcolor="red"
+  attrs$graph$page="10"
+  
+  attrs$graph$size="5"
+  attrs$graph$ratio="expand"
+  attrs$graph$dim="1"
+  #attrs$graph$bgcolor="red" 
+  attrs$graph$page="10"
+  
+  plot(rEG, attrs=attrs, nodeAttrs=nA, edgeAttrs=eA, main=title)
 }
+
 
 ##
 ## Plot exogenous genomes
 ##
-plotExogenousTaxonomyTrees = function(counts, cumcounts, outPath, fontScale=2){
+plotExogenousTaxonomyTrees = function(counts, cumcounts, output.dir, fontScale=2, sampleGroups=NA){
   
   ## read the taxonomy
   load(paste("/Users/robk/WORK/YALE_offline/ANNOTATIONS/taxdump","/NCBI_Taxonomy.RData",sep=""))
@@ -211,10 +259,50 @@ plotExogenousTaxonomyTrees = function(counts, cumcounts, outPath, fontScale=2){
   #data_uniq = apply(data_uniq, 1, max)
   #data_cum = rowMeans(data_cum)
   
-  pdf(file=outPath, height=7, width=15)
+  nA <- list()
+  nA$shape = rep("circle",nNodes)
+  nA$fixedSize<-rep(FALSE, nNodes)
+  nA$height <- nA$width <- sqrt(rowMeans(data_cum)/10)
+  nA$color <- rep(rgb(0,0,0,0.25),nNodes)
+  nA$style <- rep("bold", nNodes)
+  nA$fillcolor <- sapply(apply(data_uniq, 1, max)*10, function(val){ if(val>100){val=100}; rgb(100-val,100-val,100,maxColorValue=100)})
+  nA$label <- paste(usenodes,"\\\n",round(rowMeans(data_cum)*10)/10,"%",sep="")
+  nA$fontsize <- (nA$height+(1.0-min(nA$height)))*fontScale
+  
+  nA <<- lapply(nA, function(x) { names(x) <- nodes(rEG); x})
+  eA <<- list()
+  
+  
+  ##
+  ## Write to PDF
+  ##
+  
+  ## plot samples individually
+  pdf(file=paste(output.dir,"exceRpt_exogenousGenomes_TaxonomyTrees_perSample.pdf",sep="/"), height=7, width=15)
   for(i in 1:ncol(data_uniq))
-    plotTree(rEG, data_uniq[,i], data_cum[,i], title=paste(colnames(data_uniq)[i]," (total reads: ",cumcounts[1,i],")", sep=""))
+    plotTree(rEG, data_uniq[,i], data_cum[,i], fontScale=fontScale, title=paste(colnames(data_uniq)[i]," (total reads: ",cumcounts[1,i],")", sep=""))
   dev.off()
+  
+  ## if there are groups of samples
+  if(is.data.frame(sampleGroups)){
+    pdf(file=paste(output.dir,"exceRpt_exogenousGenomes_TaxonomyTrees_perGroup.pdf",sep="/"), height=7, width=15)
+    #for(thisgroup in levels(sampleGroups$sampleGroup)){
+      
+      thisgroup = "plasma"
+      #thisgroup = "saliva"
+      tmpDat_uniq = rowMeans(data_uniq[, match(sampleGroups[sampleGroups$sampleGroup %in% thisgroup, ]$sampleID, colnames(data_uniq))])
+      tmpDat_cum = rowMeans(data_cum[, match(sampleGroups[sampleGroups$sampleGroup %in% thisgroup, ]$sampleID, colnames(data_cum))])
+      plotTree(rEG, tmpDat_uniq, tmpDat_cum, fontScale=2000, title=paste(thisgroup,sep=""))
+      
+    
+      thisgroup = "saliva"
+      tmpDat_uniq = rowMeans(data_uniq[, match(sampleGroups[sampleGroups$sampleGroup %in% thisgroup, ]$sampleID, colnames(data_uniq))])
+      tmpDat_cum = rowMeans(data_cum[, match(sampleGroups[sampleGroups$sampleGroup %in% thisgroup, ]$sampleID, colnames(data_cum))])
+      plotTree(rEG, tmpDat_uniq, tmpDat_cum, fontScale=4, title=paste(thisgroup,sep=""))
+    #}
+    dev.off()
+  }
+  
 }
 
 
@@ -268,7 +356,9 @@ readData = function(samplePathList, output.dir){
     }
     
     if(continue == T){
+      ##
       ## Read sample mapping stats
+      ##
       tmp.stats = read.table(paste(samplePathList[i],".stats",sep=""), stringsAsFactors=F, fill=T, header=T, sep="\t",skip=0)
       tmp.stats[tmp.stats[,1] %in% "clipped", 1] = "successfully_clipped"
       #mapping.stats[i, match(tmp.stats[,1], colnames(mapping.stats))] = as.numeric(tmp.stats[,2])
@@ -560,7 +650,7 @@ readData = function(samplePathList, output.dir){
 ##
 ##
 ##
-PlotData = function(sampleIDs, output.dir, sampleGroups=rep(1,length(sampleIDs))){
+PlotData = function(sampleIDs, output.dir, sampleGroups=NA){
   
   load(paste(output.dir, "exceRpt_smallRNAQuants_ReadCounts.RData", sep="/"))
   load(paste(output.dir, "exceRpt_smallRNAQuants_ReadsPerMillion.RData", sep="/"))
@@ -628,9 +718,11 @@ PlotData = function(sampleIDs, output.dir, sampleGroups=rep(1,length(sampleIDs))
     ## plot distribution of clipped read lengths - read count
     ##
     tmp = melt(read.lengths); colnames(tmp) = c("sample","length","count")
+    if(is.data.frame(sampleGroups)){ tmp$sampleGroup = sampleGroups[match(tmp$sample, sampleGroups$sampleID), 2] }
     maxX = min(c(100,max(tmp$length)))
-    p = ggplot(tmp, aes(x=length, y=count, colour=sample)) +geom_line(alpha=0.75) +xlab("read length (nt)") +ylab("# reads") +ggtitle("read-length distributions") +scale_x_continuous(limits=c(0,maxX), minor_breaks=1:maxX)
+    p = ggplot(tmp, aes(x=length, y=count, colour=sample)) +geom_line(alpha=0.75) +xlab("read length (nt)") +ylab("# reads") +ggtitle("read-length distributions: raw read count") +scale_x_continuous(limits=c(0,maxX), minor_breaks=1:maxX)
     if(nrow(read.lengths) > 30){ p = p +guides(colour=FALSE) }
+    if(is.data.frame(sampleGroups)){ p = p +facet_wrap(~sampleGroup,ncol=1)}
     print(p)
     #ggplot(tmp, aes(x=as.factor(length), y=count)) +geom_violin()
     #ggplot(tmp, aes(x=as.factor(length), y=count)) +geom_boxplot()
@@ -640,9 +732,11 @@ PlotData = function(sampleIDs, output.dir, sampleGroups=rep(1,length(sampleIDs))
     ## plot distribution of clipped read lengths - fraction
     ##
     tmp = melt(t(apply(read.lengths, 1, function(row){ row/sum(row) }))); colnames(tmp) = c("sample","length","fraction")
+    if(is.data.frame(sampleGroups)){ tmp$sampleGroup = sampleGroups[match(tmp$sample, sampleGroups$sampleID), 2] }
     maxX = min(c(100,max(tmp$length)))
-    p = ggplot(tmp, aes(x=length, y=fraction, colour=sample)) +geom_line(alpha=0.75) +xlab("read length (nt)") +ylab("fraction of reads") +ggtitle("read-length distributions") +scale_x_continuous(limits=c(0,maxX), minor_breaks=1:maxX)
+    p = ggplot(tmp, aes(x=length, y=fraction, colour=sample)) +geom_line(alpha=0.75) +xlab("read length (nt)") +ylab("fraction of reads") +ggtitle("read-length distributions: normalised read fraction") +scale_x_continuous(limits=c(0,maxX), minor_breaks=1:maxX)
     if(nrow(read.lengths) > 30){ p = p +guides(colour=FALSE) }
+    if(is.data.frame(sampleGroups)){ p = p +facet_wrap(~sampleGroup,ncol=1)}
     print(p)
   }
   
@@ -666,7 +760,9 @@ PlotData = function(sampleIDs, output.dir, sampleGroups=rep(1,length(sampleIDs))
   p = ggplot(tmp, aes(x=sampleID,y=runDuration_seconds,fill=colour)) +geom_bar(stat="identity") +facet_grid(~category,scales="free_x",space="free_x") +guides(fill=FALSE) +theme(axis.text.x=element_text(angle=90, hjust=1,vjust=0.5))
   print(p)
   
+  if(is.data.frame(sampleGroups)){ tmp$sampleGroup = sampleGroups[match(tmp$sampleID, sampleGroups$sampleID), 2] }
   p = ggplot(tmp, aes(x=inputReadCount,y=runDuration_seconds,colour=colour)) +geom_point(size=10) +guides(colour=FALSE) +scale_y_log10(limits=c(1,10^ceiling(log10(max(tmp$runDuration_seconds)))), breaks=10^seq(1:ceiling(log10(max(tmp$runDuration_seconds))))) +scale_x_log10(limits=c(min(c(100000,10^floor(log10(min(tmp$inputReadCount+1))))),10^ceiling(log10(max(tmp$inputReadCount)))), breaks=10^seq(min(c(100000,floor(log10(min(tmp$inputReadCount+1))))),ceiling(log10(max(tmp$inputReadCount)))))
+  if(is.data.frame(sampleGroups)){ p = p +facet_wrap(~sampleGroup,ncol=1)}
   print(p)
   
   
@@ -699,8 +795,10 @@ PlotData = function(sampleIDs, output.dir, sampleGroups=rep(1,length(sampleIDs))
   toplot = melt(as.matrix(mapping.stats / mapping.stats$input)); colnames(toplot) = c("Sample","Stage","ReadFraction")
   toplot$Stage = with(toplot, factor(Stage, levels = rev(levels(Stage))))
   toplot$Sample = factor(as.character(toplot$Sample), levels=rownames(mapping.stats)[sampleOrder])
+  if(is.data.frame(sampleGroups)){ toplot$sampleGroup = sampleGroups[match(toplot$Sample, sampleGroups$sampleID), 2] }
   p = ggplot(toplot, aes(x=Sample, y=Stage, group=Sample, fill=ReadFraction, label=sprintf("%1.1f%%",ReadFraction*100))) +geom_tile() +scale_fill_gradient2(low="white",high="yellow",mid="steelblue", midpoint=0.5) +theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5)) +ggtitle("fraction aligned reads (normalised by # input reads)")
   if(nrow(mapping.stats) < 50){ p = p +geom_text(size=3) }
+  if(is.data.frame(sampleGroups)){ p = p +facet_grid(~sampleGroup, scales="free_x")}
   print(p)
   
   ##
@@ -711,8 +809,10 @@ PlotData = function(sampleIDs, output.dir, sampleGroups=rep(1,length(sampleIDs))
     toplot = melt(as.matrix(mapping.stats / mapping.stats$successfully_clipped)[,-1,drop=F]); colnames(toplot) = c("Sample","Stage","ReadFraction")
     toplot$Stage = with(toplot, factor(Stage, levels = rev(levels(Stage))))
     toplot$Sample = factor(as.character(toplot$Sample), levels=rownames(mapping.stats)[sampleOrder])
+    if(is.data.frame(sampleGroups)){ toplot$sampleGroup = sampleGroups[match(toplot$Sample, sampleGroups$sampleID), 2] }
     p = ggplot(toplot, aes(x=Sample, y=Stage, group=Sample, fill=ReadFraction, label=sprintf("%1.1f%%",ReadFraction*100))) +geom_tile() +scale_fill_gradient2(low="white",high="yellow",mid="steelblue", midpoint=0.5) +theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5)) +ggtitle("fraction aligned reads (normalised by # adapter-clipped reads)")
     if(nrow(mapping.stats) < 50){ p = p +geom_text(size=3) }
+    if(is.data.frame(sampleGroups)){ p = p +facet_grid(~sampleGroup, scales="free_x")}
     print(p)
   }
   
@@ -723,8 +823,10 @@ PlotData = function(sampleIDs, output.dir, sampleGroups=rep(1,length(sampleIDs))
   toplot = melt(as.matrix(mapping.stats / mapping.stats$reads_used_for_alignment)[,-c(1:7),drop=F]); colnames(toplot) = c("Sample","Stage","ReadFraction")
   toplot$Stage = with(toplot, factor(Stage, levels = rev(levels(Stage))))
   toplot$Sample = factor(as.character(toplot$Sample), levels=rownames(mapping.stats)[sampleOrder])
+  if(is.data.frame(sampleGroups)){ toplot$sampleGroup = sampleGroups[match(toplot$Sample, sampleGroups$sampleID), 2] }
   p = ggplot(toplot, aes(x=Sample, y=Stage, group=Sample, fill=ReadFraction, label=sprintf("%1.1f%%",ReadFraction*100))) +geom_tile() +scale_fill_gradient2(low="white",high="yellow",mid="steelblue", midpoint=0.5) +theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5)) +ggtitle("fraction aligned reads (normalised by # non-contaminant reads)")
   if(nrow(mapping.stats) < 50){ p = p +geom_text(size=3) }
+  if(is.data.frame(sampleGroups)){ p = p +facet_grid(~sampleGroup, scales="free_x")}
   print(p)
   
   
@@ -777,7 +879,9 @@ PlotData = function(sampleIDs, output.dir, sampleGroups=rep(1,length(sampleIDs))
   sampleTotals = sampleTotals[order(apply(sampleTotals, 1, median, na.rm=T), decreasing=F), ,drop=F]
   tmp = melt(as.matrix(sampleTotals))
   colnames(tmp) = c("biotype","sampleID","readCount")
+  if(is.data.frame(sampleGroups)){ tmp$sampleGroup = sampleGroups[match(tmp$sampleID, sampleGroups$sampleID), 2] }
   p = ggplot(na.omit(tmp), aes(y=readCount,x=biotype, colour=biotype)) +geom_hline(aes(yintercept=1),linetype="dashed") +geom_boxplot() +scale_y_log10(breaks=c(0.01,0.1,1,10,100,1000,10000,100000,1000000,10000000,100000000)) +guides(colour=FALSE) +coord_flip()
+  if(is.data.frame(sampleGroups)){ p = p +facet_grid(~sampleGroup, scales="free_x")}
   print(p)
   
   
@@ -794,30 +898,36 @@ PlotData = function(sampleIDs, output.dir, sampleGroups=rep(1,length(sampleIDs))
     printMessage("Plotting miRNA expression distributions")
     tmp = melt(exprs.miRNA)
     colnames(tmp) = c("miRNA","sample","abundance")
+    if(is.data.frame(sampleGroups)){ tmp$sampleGroup = sampleGroups[match(tmp$sample, sampleGroups$sampleID), 2] }
     p = ggplot(tmp, aes(y=abundance, x=sample, colour=sample)) +geom_violin() +geom_boxplot(alpha=0.2) +ylab("Read count") +ggtitle("miRNA abundance distributions (raw counts)") +scale_y_log10()
     if(ncol(exprs.miRNA) > 30){ 
       p = p + guides(colour=FALSE) +theme(axis.text.x=element_text(angle = 90, hjust = 1))
     }else{
       p = p+theme(axis.ticks = element_blank(), axis.text.x = element_blank())
     }
+    if(is.data.frame(sampleGroups)){ p = p +facet_grid(~sampleGroup, scales="free_x")}
     print(p)
     
     p = ggplot(tmp, aes(x=abundance, colour=sample)) +geom_density() +xlab("Read count") +ggtitle("miRNA abundance distributions (raw counts)") +scale_x_log10()
     #if(ncol(exprs.miRNA.rpm) > 30){ p = p +guides(colour=FALSE) }
+    if(is.data.frame(sampleGroups)){ p = p +facet_grid(~sampleGroup)}
     print(p)
     
     tmp = melt(exprs.miRNA.rpm)
     colnames(tmp) = c("miRNA","sample","abundance")
+    if(is.data.frame(sampleGroups)){ tmp$sampleGroup = sampleGroups[match(tmp$sample, sampleGroups$sampleID), 2] }
     p = ggplot(tmp, aes(y=abundance, x=sample, colour=sample)) +geom_violin() +geom_boxplot(alpha=0.2) +ylab("Reads per million (RPM)") +ggtitle("miRNA abundance distributions (RPM)") +theme(axis.ticks = element_blank(), axis.text.x = element_blank()) +scale_y_log10()
     if(ncol(exprs.miRNA.rpm) > 30){ 
       p = p + guides(colour=FALSE) +theme(axis.text.x=element_text(angle = 90, hjust = 1))
     }else{
       p = p+theme(axis.ticks = element_blank(), axis.text.x = element_blank())
     }
+    if(is.data.frame(sampleGroups)){ p = p +facet_grid(~sampleGroup, scales="free_x")}
     print(p)
     
     p = ggplot(tmp, aes(x=abundance, colour=sample)) +geom_density() +xlab("Reads per million (RPM)") +ggtitle("miRNA abundance distributions (RPM)") +scale_x_log10()
     #if(ncol(exprs.miRNA.rpm) > 30){ p = p +guides(colour=FALSE) }
+    if(is.data.frame(sampleGroups)){ p = p +facet_grid(~sampleGroup)}
     print(p)
   }
   
@@ -832,18 +942,18 @@ PlotData = function(sampleIDs, output.dir, sampleGroups=rep(1,length(sampleIDs))
     par(oma=c(20,2,0,0))
     barplot(exprs.exogenousGenomes_cumulative[1,], las=2, main="Total # reads mapped to NCBI taxonomy")
     
-    par(oma=c(20,0,0,8))
+    par(oma=c(8,0,0,20))
     tmp.order = order(apply(t(t(exprs.exogenousGenomes_specific)/colSums(exprs.exogenousGenomes_specific)), 1, median), decreasing=T)
-    heatmap.2(log10(exprs.exogenousGenomes_specific[tmp.order, ][1:50,]+0.1),trace="none",main="top taxa nodes: specific normalised read count")
+    heatmap.2(t(log10(exprs.exogenousGenomes_specific[tmp.order, ][1:50,]+0.1)),trace="none",main="top taxa nodes: specific normalised read count")
     
     tmp.order = order(apply(t(t(exprs.exogenousGenomes_specific)), 1, median), decreasing=T)
-    heatmap.2(log10(exprs.exogenousGenomes_specific[tmp.order, ][1:50,]+0.1),trace="none",main="top taxa nodes: specific absolute read count")
+    heatmap.2(t(log10(exprs.exogenousGenomes_specific[tmp.order, ][1:50,]+0.1)),trace="none",main="top taxa nodes: specific absolute read count")
     
     tmp.order = order(apply(t(t(exprs.exogenousGenomes_cumulative)/libSizes$exogenous_genomes), 1, median), decreasing=T)
-    heatmap.2(log10(exprs.exogenousGenomes_cumulative[tmp.order, ][1:50,]+0.1),trace="none",main="top taxa nodes: cumulative normalised read count")
+    heatmap.2(t(log10(exprs.exogenousGenomes_cumulative[tmp.order, ][1:50,]+0.1)),trace="none",main="top taxa nodes: cumulative normalised read count")
     
     tmp.order = order(apply(t(t(exprs.exogenousGenomes_cumulative)), 1, median), decreasing=T)
-    heatmap.2(log10(exprs.exogenousGenomes_cumulative[tmp.order, ][1:50,]+0.1),trace="none",main="top taxa nodes: cumulative absolute read count")
+    heatmap.2(t(log10(exprs.exogenousGenomes_cumulative[tmp.order, ][1:50,]+0.1)),trace="none",main="top taxa nodes: cumulative absolute read count")
   }
   dev.off()
   
@@ -854,7 +964,7 @@ PlotData = function(sampleIDs, output.dir, sampleGroups=rep(1,length(sampleIDs))
   ##
   if(nrow(exprs.exogenousGenomes_specific) > 0  &&  ncol(exprs.exogenousGenomes_specific) > 1){
     printMessage("Making taxonomy trees using exogenous counts")
-    plotExogenousTaxonomyTrees(exprs.exogenousGenomes_specific, exprs.exogenousGenomes_cumulative, outPath=paste(output.dir,"exceRpt_exogenousGenomes_TaxonomyTrees.pdf",sep="/"))
+    plotExogenousTaxonomyTrees(exprs.exogenousGenomes_specific, exprs.exogenousGenomes_cumulative, output.dir, sampleGroups=sampleGroups)
   }
   
   printMessage("All done!")
