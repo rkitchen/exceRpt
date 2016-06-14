@@ -4,7 +4,7 @@
 ##                                                                                      ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                           ##
 ##                                                                                      ##
-## Version 4.0.2 (2016-06-14)                                                           ##
+## Version 4.0.3 (2016-06-14)                                                           ##
 ##                                                                                      ##
 ##########################################################################################
 
@@ -326,6 +326,7 @@ readData = function(samplePathList, output.dir){
   allIDs.exogenous_miRNA = NULL
   allIDs.exogenous_genomes = NULL
   mapping.stats = matrix(0,nrow=length(samplePathList),ncol=30, dimnames=list(1:length(samplePathList), c("input","successfully_clipped","failed_quality_filter","failed_homopolymer_filter","calibrator","UniVec_contaminants","rRNA","reads_used_for_alignment","genome","miRNA_sense","miRNA_antisense","miRNAprecursor_sense","miRNAprecursor_antisense","tRNA_sense","tRNA_antisense","piRNA_sense","piRNA_antisense","gencode_sense","gencode_antisense","circularRNA_sense","circularRNA_antisense","not_mapped_to_genome_or_libs","repetitiveElements","endogenous_gapped","input_to_exogenous_miRNA","exogenous_miRNA","input_to_exogenous_rRNA","exogenous_rRNA","input_to_exogenous_genomes","exogenous_genomes")))
+  qc.results = matrix(0,nrow=length(samplePathList),ncol=5, dimnames=list(1:length(samplePathList), c("InputReads","GenomeReads","TranscriptomeReads","TranscriptomeGenomeRatio","TranscriptomeComplexity")))
   maxReadLength = 1000
   read.lengths = matrix(0,nrow=length(samplePathList),ncol=maxReadLength+1,dimnames=list(1:length(samplePathList), 0:maxReadLength))
   
@@ -364,6 +365,13 @@ readData = function(samplePathList, output.dir){
       #mapping.stats[i, match(tmp.stats[,1], colnames(mapping.stats))] = as.numeric(tmp.stats[,2])
       mapping.stats[i, match(tmp.stats[,1], colnames(mapping.stats))] = as.numeric(tmp.stats[,2])
       rownames(mapping.stats)[i] = thisSampleID
+      
+      ##
+      ## Read the QC result
+      ##
+      tmp.qc = read.table(paste(samplePathList[i],".qcResult",sep=""), stringsAsFactors=F, fill=T, header=F, sep=" ",skip=0)
+      qc.results[i, ] = as.numeric(tmp.qc[-1,2])
+      rownames(qc.results)[i] = thisSampleID
       
       ##
       ## Read the clipped read lengths  
@@ -520,6 +528,7 @@ readData = function(samplePathList, output.dir){
     read.lengths = read.lengths[-removeSamples, ]
     sample.data = sample.data[-removeSamples]
     mapping.stats = mapping.stats[-removeSamples,]
+    qc.results = qc.results[-removeSamples,]
   }
   
   
@@ -586,7 +595,7 @@ readData = function(samplePathList, output.dir){
   ##
   printMessage("Saving raw data to disk")
   #save(exprs.miRNA, exprs.tRNA, exprs.piRNA, exprs.gencode, exprs.circRNA, exprs.exogenous_miRNA, exprs.exogenous_genomes, mapping.stats, libSizes, read.lengths, file=paste(output.dir, "exceRpt_smallRNAQuants_ReadCounts.RData", sep="/"))
-  save(exprs.miRNA, exprs.tRNA, exprs.piRNA, exprs.gencode, exprs.circRNA, exprs.exogenous_miRNA, exprs.exogenousGenomes_specific, exprs.exogenousGenomes_cumulative, mapping.stats, libSizes, read.lengths, run.duration, file=paste(output.dir, "exceRpt_smallRNAQuants_ReadCounts.RData", sep="/"))
+  save(exprs.miRNA, exprs.tRNA, exprs.piRNA, exprs.gencode, exprs.circRNA, exprs.exogenous_miRNA, exprs.exogenousGenomes_specific, exprs.exogenousGenomes_cumulative, mapping.stats, qc.results, libSizes, read.lengths, run.duration, file=paste(output.dir, "exceRpt_smallRNAQuants_ReadCounts.RData", sep="/"))
   write.table(exprs.miRNA, file=paste(output.dir, "exceRpt_miRNA_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
   write.table(exprs.tRNA, file=paste(output.dir, "exceRpt_tRNA_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
   write.table(exprs.piRNA, file=paste(output.dir, "exceRpt_piRNA_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
@@ -606,10 +615,10 @@ readData = function(samplePathList, output.dir){
   
   
   ##
-  ## Calculate the fractions of reads mapping at each stage
+  ## Write the numbers of reads mapping at each stage and the QC results
   ##
   write.table(mapping.stats, file=paste(output.dir,"exceRpt_readMappingSummary.txt",sep="/"), sep="\t", col.names=NA, quote=F)
-  
+  write.table(qc.results, file=paste(output.dir,"exceRpt_QCresults.txt",sep="/"), sep="\t", col.names=NA, quote=F)
   
   
   ##
@@ -644,6 +653,10 @@ readData = function(samplePathList, output.dir){
   
   return(rownames(mapping.stats))
 }
+
+
+
+
 
 
 
@@ -786,8 +799,6 @@ PlotData = function(sampleIDs, output.dir, sampleGroups=NA){
   mapping.stats.orig = mapping.stats
   mapping.stats = mapping.stats[,-grep("input_to_",colnames(mapping.stats))]
   
-  
-  
   ##
   ## Plot heatmap of mapping percentages through the pipeline
   ##
@@ -829,6 +840,37 @@ PlotData = function(sampleIDs, output.dir, sampleGroups=NA){
   if(is.data.frame(sampleGroups)){ p = p +facet_grid(~sampleGroup, scales="free_x")}
   print(p)
   
+  
+  ##
+  ## Plot QC results
+  ##
+  printMessage("Plotting QC result")
+  toplot = as.data.frame(qc.results)
+  toplot$Sample = factor(rownames(toplot), levels=rownames(mapping.stats)[sampleOrder])
+  if(is.data.frame(sampleGroups)){ toplot$sampleGroup = sampleGroups[match(toplot$Sample, sampleGroups$sampleID), 2] }
+  p = ggplot(as.data.frame(qc.results), aes(x=TranscriptomeReads, y=TranscriptomeGenomeRatio)) +scale_x_log10(breaks=10^c(0:8)) +coord_cartesian(xlim=c(1,1E8),ylim=c(0,1)) +geom_vline(xintercept=100000,col="red",alpha=0.5) +geom_hline(yintercept=0.5,col="red",alpha=0.5) +annotate("rect",xmin=0,xmax=Inf,ymin=-1,ymax=0.5,alpha=0.2,fill="red") +annotate("rect",xmin=0,xmax=100000,ymin=-1,ymax=1.1,alpha=0.2,fill="red") +geom_point() +ylab("# transcriptome reads / # genome reads") +xlab("# transcriptome reads (log10)") +ggtitle("QC result: overall")
+  if(is.data.frame(sampleGroups)){ p = p +facet_grid(~sampleGroup)}
+  print(p)
+  
+  ##
+  ## Heatmap
+  ##
+  qc.results[,4] = round(qc.results[,4]*100)/100
+  qc.results[,5] = round(qc.results[,5]*1000)/1000
+  tmp.mat = qc.results
+  tmp.mat[,1] = rep(1,nrow(tmp.mat))
+  tmp.mat[,2] = rep(1,nrow(tmp.mat))
+  tmp.mat[,5] = rep(1,nrow(tmp.mat))
+  tmp.pass=tmp.mat[,3] >= 100000;  tmp.mat[tmp.pass,3] = 1; tmp.mat[!tmp.pass,3] = 0
+  tmp.pass=tmp.mat[,4] >= 0.5;  tmp.mat[tmp.pass,4] = 1; tmp.mat[!tmp.pass,4] = 0
+
+  toplot=cbind(melt(tmp.mat), Actual=melt(qc.results)[,3]); colnames(toplot)[1:3]=c("Sample","Stage","Value")
+  #toplot$Stage = with(toplot, factor(Stage, levels = rev(levels(Stage))))
+  toplot$Sample = factor(as.character(toplot$Sample), levels=rownames(mapping.stats)[sampleOrder])
+  if(is.data.frame(sampleGroups)){ toplot$sampleGroup = sampleGroups[match(toplot$Sample, sampleGroups$sampleID), 2] }
+  p = ggplot(toplot, aes(y=Sample, x=Stage, fill=Value, label=Actual)) +scale_fill_gradient2(low="red",high="white", midpoint=0.5) +geom_label() +theme(plot.background=element_rect(fill="white"),panel.background=element_rect(fill=rgb(0.97,0.97,0.97)), axis.text.x=element_text(angle=90, hjust=1, vjust=0.5), legend.position="none") +ggtitle("QC result: per-sample results") +xlab("") +ylab("")
+  if(is.data.frame(sampleGroups)){ p = p +facet_grid(~sampleGroup, scales="free_x")}
+  print(p)
   
   
   ##
