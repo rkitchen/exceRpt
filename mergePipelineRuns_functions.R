@@ -4,7 +4,7 @@
 ##                                                                                      ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                           ##
 ##                                                                                      ##
-## Version 4.0.4 (2016-06-14)                                                           ##
+## Version 4.0.5 (2016-06-15)                                                           ##
 ##                                                                                      ##
 ##########################################################################################
 
@@ -289,20 +289,20 @@ plotExogenousTaxonomyTrees = function(counts, cumcounts, output.dir, fontScale=2
   ## if there are groups of samples
   if(is.data.frame(sampleGroups)){
     pdf(file=paste(output.dir,"exceRpt_exogenousGenomes_TaxonomyTrees_perGroup.pdf",sep="/"), height=7, width=15)
-    #for(thisgroup in levels(sampleGroups$sampleGroup)){
-      
-      thisgroup = "plasma"
-      #thisgroup = "saliva"
-      tmpDat_uniq = rowMeans(data_uniq[, match(sampleGroups[sampleGroups$sampleGroup %in% thisgroup, ]$sampleID, colnames(data_uniq))])
-      tmpDat_cum = rowMeans(data_cum[, match(sampleGroups[sampleGroups$sampleGroup %in% thisgroup, ]$sampleID, colnames(data_cum))])
-      plotTree(rEG, tmpDat_uniq, tmpDat_cum, fontScale=2000, title=paste(thisgroup,sep=""))
-      
+    for(thisgroup in levels(sampleGroups$sampleGroup)){
     
-      thisgroup = "saliva"
-      tmpDat_uniq = rowMeans(data_uniq[, match(sampleGroups[sampleGroups$sampleGroup %in% thisgroup, ]$sampleID, colnames(data_uniq))])
-      tmpDat_cum = rowMeans(data_cum[, match(sampleGroups[sampleGroups$sampleGroup %in% thisgroup, ]$sampleID, colnames(data_cum))])
-      plotTree(rEG, tmpDat_uniq, tmpDat_cum, fontScale=4, title=paste(thisgroup,sep=""))
-    #}
+    #thisgroup = "plasma"
+    #thisgroup = "saliva"
+    tmpDat_uniq = rowMeans(data_uniq[, match(sampleGroups[sampleGroups$sampleGroup %in% thisgroup, ]$sampleID, colnames(data_uniq))])
+    tmpDat_cum = rowMeans(data_cum[, match(sampleGroups[sampleGroups$sampleGroup %in% thisgroup, ]$sampleID, colnames(data_cum))])
+    plotTree(rEG, tmpDat_uniq, tmpDat_cum, fontScale=2000, title=paste(thisgroup,sep=""))
+    
+    
+    #thisgroup = "saliva"
+    #tmpDat_uniq = rowMeans(data_uniq[, match(sampleGroups[sampleGroups$sampleGroup %in% thisgroup, ]$sampleID, colnames(data_uniq))])
+    #tmpDat_cum = rowMeans(data_cum[, match(sampleGroups[sampleGroups$sampleGroup %in% thisgroup, ]$sampleID, colnames(data_cum))])
+    #plotTree(rEG, tmpDat_uniq, tmpDat_cum, fontScale=4, title=paste(thisgroup,sep=""))
+    }
     dev.off()
   }
   
@@ -651,8 +651,8 @@ readData = function(samplePathList, output.dir){
   write.table(exprs.piRNA.rpm, file=paste(output.dir, "exceRpt_piRNA_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
   write.table(exprs.gencode.rpm, file=paste(output.dir, "exceRpt_gencode_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
   write.table(exprs.exogenous_miRNA.rpm, file=paste(output.dir, "exceRpt_exogenous_miRNA_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
-  write.table(exprs.exogenousGenomes_specific, file=paste(output.dir, "exceRpt_exogenousGenomes_taxonomySpecific_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
-  write.table(exprs.exogenousGenomes_cumulative, file=paste(output.dir, "exceRpt_exogenousGenomes_taxonomyCumulative_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+  write.table(exprs.exogenousGenomes_specific.rpm, file=paste(output.dir, "exceRpt_exogenousGenomes_taxonomySpecific_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+  write.table(exprs.exogenousGenomes_cumulative.rpm, file=paste(output.dir, "exceRpt_exogenousGenomes_taxonomyCumulative_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
   
   return(rownames(mapping.stats))
 }
@@ -866,7 +866,7 @@ PlotData = function(sampleIDs, output.dir, sampleGroups=NA){
   tmp.mat[,5] = rep(1,nrow(tmp.mat))
   tmp.pass=tmp.mat[,3] >= 100000;  tmp.mat[tmp.pass,3] = 1; tmp.mat[!tmp.pass,3] = 0
   tmp.pass=tmp.mat[,4] >= 0.5;  tmp.mat[tmp.pass,4] = 1; tmp.mat[!tmp.pass,4] = 0
-
+  
   toplot=cbind(melt(tmp.mat), Actual=melt(qc.results)[,3]); colnames(toplot)[1:3]=c("Sample","Stage","Value")
   #toplot$Stage = with(toplot, factor(Stage, levels = rev(levels(Stage))))
   toplot$Sample = factor(as.character(toplot$Sample), levels=rownames(mapping.stats)[sampleOrder])
@@ -931,7 +931,7 @@ PlotData = function(sampleIDs, output.dir, sampleGroups=NA){
   
   
   
- 
+  
   
   #par(mfrow=c(1,2), oma=c(15,0,0,0))
   #boxplot(log10(exprs.miRNA[, sampleOrder]+1E-1), las=2, ylab="log10(miRNA counts)", main="miRNA read count")
@@ -981,29 +981,31 @@ PlotData = function(sampleIDs, output.dir, sampleGroups=NA){
   ##
   ## Finally, plot exogenous if there are any
   ##
-  if(nrow(exprs.exogenousGenomes_specific) > 0  &&  ncol(exprs.exogenousGenomes_specific) > 1){
+  if(nrow(exprs.exogenousGenomes_specific) > 0){
     printMessage("Plotting exogenous counts")
-    
     par(oma=c(20,2,0,0))
-    barplot(exprs.exogenousGenomes_cumulative[1,], las=2, main="Total # reads mapped to NCBI taxonomy")
+    barplot(exprs.exogenousGenomes_cumulative[1,,drop=F], las=2, main="Total # reads mapped to NCBI taxonomy")
     
-    par(oma=c(8,0,0,20))
-    tmp.order = order(apply(t(t(exprs.exogenousGenomes_specific)/colSums(exprs.exogenousGenomes_specific)), 1, median), decreasing=T)
-    heatmap.2(t(log10(exprs.exogenousGenomes_specific[tmp.order, ][1:50,]+0.1)),trace="none",main="top taxa nodes: specific normalised read count")
-    
-    tmp.order = order(apply(t(t(exprs.exogenousGenomes_specific)), 1, median), decreasing=T)
-    heatmap.2(t(log10(exprs.exogenousGenomes_specific[tmp.order, ][1:50,]+0.1)),trace="none",main="top taxa nodes: specific absolute read count")
-    
-    tmp.order = order(apply(t(t(exprs.exogenousGenomes_cumulative)/libSizes$exogenous_genomes), 1, median), decreasing=T)
-    heatmap.2(t(log10(exprs.exogenousGenomes_cumulative[tmp.order, ][1:50,]+0.1)),trace="none",main="top taxa nodes: cumulative normalised read count")
-    
-    tmp.order = order(apply(t(t(exprs.exogenousGenomes_cumulative)), 1, median), decreasing=T)
-    heatmap.2(t(log10(exprs.exogenousGenomes_cumulative[tmp.order, ][1:50,]+0.1)),trace="none",main="top taxa nodes: cumulative absolute read count")
+    ## if we have more than one sample, plot some heatmaps
+    if(ncol(exprs.exogenousGenomes_specific) > 1){
+      par(oma=c(8,0,0,20))
+      tmp.order = order(apply(t(t(exprs.exogenousGenomes_specific)/colSums(exprs.exogenousGenomes_specific)), 1, median), decreasing=T)
+      heatmap.2(t(log10(exprs.exogenousGenomes_specific[tmp.order, ][1:50,]+0.1)),trace="none",main="top taxa nodes: specific normalised read count")
+      
+      tmp.order = order(apply(t(t(exprs.exogenousGenomes_specific)), 1, median), decreasing=T)
+      heatmap.2(t(log10(exprs.exogenousGenomes_specific[tmp.order, ][1:50,]+0.1)),trace="none",main="top taxa nodes: specific absolute read count")
+      
+      tmp.order = order(apply(t(t(exprs.exogenousGenomes_cumulative)/libSizes$exogenous_genomes), 1, median), decreasing=T)
+      heatmap.2(t(log10(exprs.exogenousGenomes_cumulative[tmp.order, ][1:50,]+0.1)),trace="none",main="top taxa nodes: cumulative normalised read count")
+      
+      tmp.order = order(apply(t(t(exprs.exogenousGenomes_cumulative)), 1, median), decreasing=T)
+      heatmap.2(t(log10(exprs.exogenousGenomes_cumulative[tmp.order, ][1:50,]+0.1)),trace="none",main="top taxa nodes: cumulative absolute read count")
+    }
   }
   dev.off()
   
   
-
+  
   ##
   ## Finally, plot exogenous if there are any
   ##
