@@ -1047,7 +1047,7 @@ $(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.txt.gz: $(OUTDIR)/
 	gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/unaligned.fq.gz | wc -l | awk '{print "input_to_exogenous_genomes\t"$$1/4}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	## Count reads mapped to exogenous genomes:
 	#cat $@ | awk '{print $$1}' | uniq | awk -F "#" '{SUM += $$2} END {print "exogenous_genomes\t"SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	cat $@ | awk '{print $$1}' | uniq | wc -l | awk '{print "exogenous_genomes\t"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	gunzip -c $@ | awk '{print $$1}' | uniq | wc -l | awk '{print "exogenous_genomes\t"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	#
 	@echo -e "\n$(ts) $(SMRNAPIPELINE): Finished collecting all alignments to exogenous GENOMES\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
