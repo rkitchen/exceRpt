@@ -4,7 +4,7 @@
 ##                                                                                      ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                           ##
 ##                                                                                      ##
-## Version 4.0.3 (2016-06-14)                                                           ##
+## Version 4.0.4 (2016-06-14)                                                           ##
 ##                                                                                      ##
 ##########################################################################################
 
@@ -14,7 +14,7 @@
 ##
 ##
 ##
-processSamplesInDir = function(data.dir, output.dir=data.dir){
+processSamplesInDir = function(data.dir, output.dir=data.dir, scriptDir){
   
   ##  Look for samples to merge
   printMessage("Searching for valid exceRpt pipeline output...")
@@ -36,6 +36,9 @@ processSamplesInDir = function(data.dir, output.dir=data.dir){
   #tmp=rep("plasma",length(sampleIDs))
   #tmp[grep("Sample_S",sampleIDs)] = "saliva"
   #sampleGroups = data.frame(sampleID=sampleIDs, sampleGroup=tmp)
+  
+  ## load the taxonomy
+  load(paste(scriptDir,"/NCBI_Taxonomy.RData",sep=""))
   
   ## plots the data
   #PlotData(sampleIDs, output.dir, sampleGroups)
@@ -206,7 +209,7 @@ plotTree = function(rEG, counts_uniq, counts_cum, fontScale=20, title=""){
 plotExogenousTaxonomyTrees = function(counts, cumcounts, output.dir, fontScale=2, sampleGroups=NA){
   
   ## read the taxonomy
-  load(paste("/Users/robk/WORK/YALE_offline/ANNOTATIONS/taxdump","/NCBI_Taxonomy.RData",sep=""))
+  #load(paste("/Users/robk/WORK/YALE_offline/ANNOTATIONS/taxdump","/NCBI_Taxonomy.RData",sep=""))
   
   ## add direct count to the cumulative counts matrix
   cumcounts = cumcounts+counts

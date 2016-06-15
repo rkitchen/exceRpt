@@ -52,7 +52,7 @@ if(length(args) == 0){
   ##
   ## Process all samples under this directory
   ##
-  processSamplesInDir(data.dir, output.dir)
+  processSamplesInDir(data.dir, output.dir, scriptDir=script.basename)
 }
 
 
