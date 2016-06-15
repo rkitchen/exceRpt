@@ -1009,7 +1009,7 @@ PlotData = function(sampleIDs, output.dir, sampleGroups=NA){
   ##
   ## Finally, plot exogenous if there are any
   ##
-  if(nrow(exprs.exogenousGenomes_specific) > 0  &&  ncol(exprs.exogenousGenomes_specific) > 1){
+  if(nrow(exprs.exogenousGenomes_specific) > 0  &&  ncol(exprs.exogenousGenomes_specific) > 0){
     printMessage("Making taxonomy trees using exogenous counts")
     plotExogenousTaxonomyTrees(exprs.exogenousGenomes_specific, exprs.exogenousGenomes_cumulative, output.dir, sampleGroups=sampleGroups)
   }
