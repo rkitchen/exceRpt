@@ -898,7 +898,8 @@ $(OUTDIR)/EXOGENOUS_rRNA/unaligned.fq.gz: $(OUTDIR)/EXOGENOUS_miRNA/exogenous_mi
 	## Input to exogenous rRNA alignment
 	grep "Number of input reads" $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_Log.final.out | tr '[:blank:]' ' ' | awk -F " \\\| " '{print "input_to_exogenous_rRNA\t"$$2}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	## Assigned non-redundantly to annotated exogenous rRNAs
-	$(SAMTOOLS_EXE) view $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_Aligned.out.bam | awk '{print $$1}' | sort | uniq | wc -l | awk '{print "exogenous_rRNA\t"$$0}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_Log.final.out | grep "Uniquely mapped reads number\|Number of reads mapped to multiple loci" | awk -F "|\t" '{SUM+=$$2}END{print "exogenous_rRNA\t"SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	#$(SAMTOOLS_EXE) view $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_Aligned.out.bam | awk '{print $$1}' | sort | uniq | wc -l | awk '{print "exogenous_rRNA\t"$$0}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	## compress and tidy up
 	gzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_Unmapped.out.mate1 > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/unaligned.fq.gz
 	#$(SAMTOOLS_EXE) view -@ $(N_THREADS) -b $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_Aligned.out.sam > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_Aligned.bam
