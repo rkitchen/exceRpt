@@ -16,10 +16,10 @@
 ##                                                                                   ##
 ## Learn more at github.gersteinlab.org/exceRpt                                      ##
 ##                                                                                   ##
-## Version 4.2.8 (2016-06-15)                                                        ##
+## Version 4.2.9 (2016-06-18)                                                        ##
 ##                                                                                   ##
 #######################################################################################
-EXCERPT_VERSION := 4.2.8
+EXCERPT_VERSION := 4.2.9
 
 
 ##
@@ -103,7 +103,9 @@ ifeq ($(LOCAL_EXECUTION),true)
 	SAMTOOLS_SORT_MEM 	:= 2G
 	## NB: The 'EXE_DIR' MUST be an ABSOLUTE PATH or sRNABench will fail!
 	EXE_DIR   := /gpfs/scratch/fas/gerstein/rrk24/bin/smallRNAPipeline
-	
+	mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
+	#current_dir_rel := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
+	EXE_DIR := $(dir $(mkfile_path))
 	
 	##
 	## 6) Check that the paths to the required 3rd party executables work!
@@ -434,7 +436,6 @@ help:
 	@echo -e "*Required* OPTIONs:"	
 	@echo -e "  INPUT_FILE_PATH                  | Path to the input fastq/fasta/sra file"
 	@echo -e "  OUTPUT_DIR                       | Path to store the output results"
-	@echo -e "  EXE_DIR                          | Path to the exceRpt executables.  This *must* be an *absolute* path (e.g. '/path/from/root/to/smallRNAPipeline')"
 	@echo -e ""
 	@echo -e "Main analysis OPTIONs:"
 	@echo -e "  DATABASE_PATH                    | <Path>                           | [default: '$(DATABASE_PATH)''] change the location of the exceRpt database [by default this is within the EXE_DIR specified above]" 
@@ -468,6 +469,8 @@ help:
 	@echo -e "  STAR_outFilterMismatchNmax       | <int>                            | [default: $(STAR_outFilterMismatchNmax)] maximum allowed mismatched bases in the aligned portion of the read" 	
 	@echo -e "  MAX_MISMATCHES_EXOGENOUS         | <int>                            | [default: $(MAX_MISMATCHES_EXOGENOUS)] maximum allowed mismatched bases in the *entire* read when aligning to exogenous sequences" 
 	@echo -e "" 
+
+
 
 
 ##
