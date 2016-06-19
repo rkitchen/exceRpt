@@ -81,9 +81,9 @@ public class QuantifyEndogenousAlignments {
 	/**
 	 * Write the insert counts, read counts, and adjusted counts for each of the observed libraries 
 	 * @param basePath
-	 * @throws IOException
+	 * @throws Exception 
 	 */
-	public void writeCounts(String basePath) throws IOException{
+	public void writeCounts(String basePath, String annotationPath) throws Exception{
 		Iterator<String> libraryIterator = _library2referenceID2counts.keySet().iterator();
 		while(libraryIterator.hasNext()){
 			String thisLibrary = libraryIterator.next();
@@ -109,6 +109,9 @@ public class QuantifyEndogenousAlignments {
 				// If this is the gencode library, compute gene level expressions (as this is slow to do in post-processing 
 				if(thisLibrary.startsWith("gencode_")){
 
+					//read gencode gtf and collapse to gene id
+					//TranscriptAnnotation annotation = ReadGTF.readGTF(annotationPath);
+					
 					out = new BufferedWriter(new FileWriter(basePath+"/readCounts_"+thisLibrary+"_geneLevel.txt"));
 					out.write("ReferenceID\tuniqueReadCount\ttotalReadCount\tmultimapAdjustedReadCount\tmultimapAdjustedBarcodeCount\n");
 
@@ -120,16 +123,20 @@ public class QuantifyEndogenousAlignments {
 						/*   [library]:[referenceID]
 						 *   ENST00000431311.1:lincRNA:RP11-214L19.1-001:GN=ENSG00000237290.1  */
 						String[] refIDbits = thisID.split(":");
-						if(refIDbits.length < 4){
+						if(refIDbits.length < 3){
 							// TODO: figure this out!!!
 							//System.err.println("ERROR parsing "+thisID+" from library "+thisLibrary);
 						}else{
+							//String geneID = annotation.getGeneForTranscript(refIDbits[0]);
+							//annotation.getTranscript(refIDbits[0]).get
+							
 							String[] geneNameBits = refIDbits[2].split("-");
 							String geneName = geneNameBits[0];
 							for(int i=1;i<geneNameBits.length-1;i++)
-								geneName.concat("-"+geneNameBits[i]);
+								geneName = geneName.concat("-"+geneNameBits[i]);
 							//String newID = geneName+":"+refIDbits[3].substring(3)+":"+refIDbits[1];
-							String newID = geneName+":"+refIDbits[1];
+							//String newID = geneName+":"+refIDbits[1];
+							String newID = geneName;
 
 							if(!geneLevelQuants.containsKey(newID))
 								geneLevelQuants.put(newID, new double[]{0.0,0.0,0.0,0.0});
@@ -187,12 +194,13 @@ public class QuantifyEndogenousAlignments {
 		options.addOption(OptionBuilder.withArgName(".dict").hasArg().withDescription("Path to the dictionary of alignments output by 'ProcessEndogenousAlignments'").create("dict"));
 		//options.addOption(OptionBuilder.withArgName(".stats").hasArg().withDescription("[optional] Path to random barcode stats").create("randombarcode"));
 		options.addOption(OptionBuilder.withArgName("directory").hasArg().withDescription("Base path to write the results into").create("outputPath"));
+		options.addOption(OptionBuilder.withArgName("annotationPath").hasArg().withDescription("Path to the GTF file containing the transcript/gene relationship").create(Thunder.OPT_PATH_ANNOTATION));
 		return options;
 	}
 
 
 
-	public static void main(String[] args) throws ParseException {
+	public static void main(String[] args) throws Exception {
 		/*
 		//String input_path = "/Users/robk/WORK/YALE_offline/exRNA/TESTING/newEndogenousQuants/endogenousAlignments_Accepted.sorted.txt";
 		String input_path = "/Users/robk/WORK/YALE_offline/exRNA/TESTING/newEndogenousQuants/acceptedAlignments_NEW.sorted.txt";		
@@ -207,7 +215,7 @@ public class QuantifyEndogenousAlignments {
 		CommandLine cmdArgs = ExceRpt_Tools.parseArgs(args, getCmdLineOptions());
 
 		//if(cmdArgs.hasOption("acceptedAlignments") && cmdArgs.hasOption("outputPath")){
-		if(cmdArgs.hasOption("acceptedAlignments") && cmdArgs.hasOption("outputPath") && cmdArgs.hasOption("dict")){
+		if(cmdArgs.hasOption("acceptedAlignments") && cmdArgs.hasOption("outputPath") && cmdArgs.hasOption("dict")){// && cmdArgs.hasOption(Thunder.OPT_PATH_ANNOTATION)){
 
 			ExceRpt_Tools.printLineErr("Reading alignments in: "+cmdArgs.getOptionValue("acceptedAlignments"));
 			ExceRpt_Tools.printLineErr("Using alignment dictionary: "+cmdArgs.getOptionValue("dict"));
@@ -223,8 +231,8 @@ public class QuantifyEndogenousAlignments {
 				engine.readAndCountInserts();
 
 				ExceRpt_Tools.printLineErr("Writing read counts...");
-				engine.writeCounts(cmdArgs.getOptionValue("outputPath"));
-
+				engine.writeCounts(cmdArgs.getOptionValue("outputPath"), cmdArgs.getOptionValue(Thunder.OPT_PATH_ANNOTATION));
+				
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
