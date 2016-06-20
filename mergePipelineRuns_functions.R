@@ -4,7 +4,7 @@
 ##                                                                                      ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                           ##
 ##                                                                                      ##
-## Version 4.0.5 (2016-06-15)                                                           ##
+## Version 4.0.6 (2016-06-20)                                                           ##
 ##                                                                                      ##
 ##########################################################################################
 
@@ -330,7 +330,7 @@ readData = function(samplePathList, output.dir){
   allIDs.exogenous_genomes = NULL
   mapping.stats = matrix(0,nrow=length(samplePathList),ncol=30, dimnames=list(1:length(samplePathList), c("input","successfully_clipped","failed_quality_filter","failed_homopolymer_filter","calibrator","UniVec_contaminants","rRNA","reads_used_for_alignment","genome","miRNA_sense","miRNA_antisense","miRNAprecursor_sense","miRNAprecursor_antisense","tRNA_sense","tRNA_antisense","piRNA_sense","piRNA_antisense","gencode_sense","gencode_antisense","circularRNA_sense","circularRNA_antisense","not_mapped_to_genome_or_libs","repetitiveElements","endogenous_gapped","input_to_exogenous_miRNA","exogenous_miRNA","input_to_exogenous_rRNA","exogenous_rRNA","input_to_exogenous_genomes","exogenous_genomes")))
   qc.results = matrix(0,nrow=length(samplePathList),ncol=5, dimnames=list(1:length(samplePathList), c("InputReads","GenomeReads","TranscriptomeReads","TranscriptomeGenomeRatio","TranscriptomeComplexity")))
-  maxReadLength = 1000
+  maxReadLength = 10000
   read.lengths = matrix(0,nrow=length(samplePathList),ncol=maxReadLength+1,dimnames=list(1:length(samplePathList), 0:maxReadLength))
   
   
@@ -369,21 +369,19 @@ readData = function(samplePathList, output.dir){
       mapping.stats[i, match(tmp.stats[,1], colnames(mapping.stats))] = as.numeric(tmp.stats[,2])
       rownames(mapping.stats)[i] = thisSampleID
       
+      
       ##
       ## Read the QC result
       ##
       tmp.qc = read.table(paste(samplePathList[i],".qcResult",sep=""), stringsAsFactors=F, fill=T, header=F, sep=" ",skip=0)
+      adapterConfidence = NA
+      if(tmp.qc[1,1] == "Adapter_confidence:"){
+        adapterConfidence = tmp.qc[1,2]
+        tmp.qc = tmp.qc[-1,]
+      }
+      qcOutcome = tmp.qc[1,2]
       qc.results[i, ] = as.numeric(tmp.qc[-1,2])
       rownames(qc.results)[i] = thisSampleID
-      
-      ##
-      ## Read the clipped read lengths  
-      ##
-      if(length(grep(".readLengths.txt$", dir(samplePathList[i]))) == 1){
-        tmp = read.table(paste(samplePathList[i], dir(samplePathList[i])[grep(".readLengths.txt$", dir(samplePathList[i]))], sep="/"))
-        read.lengths[i, 1:ncol(tmp)] = as.numeric(tmp[2,])
-        rownames(read.lengths)[i] = thisSampleID
-      }
       
       
       ##
@@ -398,6 +396,16 @@ readData = function(samplePathList, output.dir){
         }
       }
       
+      
+      ##
+      ## Read the clipped read lengths  
+      ##
+      if(length(grep(".readLengths.txt$", dir(samplePathList[i]))) == 1){
+        tmp = read.table(paste(samplePathList[i], dir(samplePathList[i])[grep(".readLengths.txt$", dir(samplePathList[i]))], sep="/"))
+        read.lengths[i, 1:ncol(tmp)] = as.numeric(tmp[2,])
+        rownames(read.lengths)[i] = thisSampleID
+      }
+     
       
       ##
       ## Read sample data
@@ -513,7 +521,7 @@ readData = function(samplePathList, output.dir){
       allIDs.exogenous_miRNA = unique(c(allIDs.exogenous_miRNA, rownames(exogenous_miRNA_sense)))
       allIDs.exogenous_genomes = unique(c(allIDs.exogenous_genomes, exogenous_genomes$name))
       
-      sample.data[[i]] = list("miRNA_sense"=miRNA_sense,"miRNA_antisense"=miRNA_antisense, "tRNA_sense"=tRNA_sense,"tRNA_antisense"=tRNA_antisense, "piRNA_sense"=piRNA_sense,"piRNA_antisense"=piRNA_antisense, "gencode_sense"=gencode_sense,"gencode_antisense"=gencode_antisense, "circRNA_sense"=circRNA_sense,"circRNA_antisense"=circRNA_antisense, "exogenous_miRNA_sense"=exogenous_miRNA_sense, "exogenous_genomes"=exogenous_genomes, "adapterSeq"=adapterSeq, "runTiming"=runTiming)
+      sample.data[[i]] = list("miRNA_sense"=miRNA_sense,"miRNA_antisense"=miRNA_antisense, "tRNA_sense"=tRNA_sense,"tRNA_antisense"=tRNA_antisense, "piRNA_sense"=piRNA_sense,"piRNA_antisense"=piRNA_antisense, "gencode_sense"=gencode_sense,"gencode_antisense"=gencode_antisense, "circRNA_sense"=circRNA_sense,"circRNA_antisense"=circRNA_antisense, "exogenous_miRNA_sense"=exogenous_miRNA_sense, "exogenous_genomes"=exogenous_genomes, "adapterSeq"=adapterSeq, "adapterConfidence"=adapterConfidence, "qcOutcome"=qcOutcome, "runTiming"=runTiming)
       names(sample.data)[i] = thisSampleID
       
       

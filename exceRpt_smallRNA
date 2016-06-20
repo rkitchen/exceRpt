@@ -16,10 +16,10 @@
 ##                                                                                   ##
 ## Learn more at github.gersteinlab.org/exceRpt                                      ##
 ##                                                                                   ##
-## Version 4.3.0 (2016-06-20)                                                        ##
+## Version 4.3.1 (2016-06-20)                                                        ##
 ##                                                                                   ##
 #######################################################################################
-EXCERPT_VERSION := 4.3.0
+EXCERPT_VERSION := 4.3.1
 
 
 ##
@@ -293,7 +293,7 @@ endif
 #	LOGENTRY_WRITE_ADAPTER := $(ts) $(SMRNAPIPELINE): Identifying unknown 3' adapter sequence. Removing 3' adapter sequence using fastX:\n
 #else ifeq ($(ADAPTER_SEQ),guessKnown)
 ifeq ($(ADAPTER_SEQ),guessKnown)
-	COMMAND_WRITE_ADAPTER_SEQ := $(COMMAND_CONVERT_SRA) 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err | $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) FindAdapter -n 10000 -m 1000000 -s 7 -a $(DATABASE_PATH)/adapters/adapters.fa - > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).adapterSeq 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	COMMAND_WRITE_ADAPTER_SEQ := $(COMMAND_CONVERT_SRA) 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err | $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) FindAdapter -n 10000 -m 1000000 -s 4 -a $(DATABASE_PATH)/adapters/adapters.fa - > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).adapterSeq 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	LOGENTRY_WRITE_ADAPTER := $(ts) $(SMRNAPIPELINE): Identifying 3' adapter from list of known sequences.  Removing 3' adapter sequence using fastX:\n
 else ifeq ($(ADAPTER_SEQ),none)
 	COMMAND_WRITE_ADAPTER_SEQ := echo 'no adapter' > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).adapterSeq;
@@ -502,15 +502,21 @@ processSample: $(OUTDIR)/$(PROCESS_SAMPLE_REQFILE)
 	@echo -e "$(ts) $(SMRNAPIPELINE): END\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).err
 	@echo -e "#END OF STATS from the exceRpt smallRNA-seq pipeline. Run completed at $(ts)" >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	#
+	## Adapter confidence
+	echo -e "known: " >> $(OUTPUT_DIR)/$(SAMPLE_ID).qctmp
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).knownAdapterSeq >> $(OUTPUT_DIR)/$(SAMPLE_ID).qctmp
+	echo -e "used: " >> $(OUTPUT_DIR)/$(SAMPLE_ID).qctmp
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).adapterSeq >> $(OUTPUT_DIR)/$(SAMPLE_ID).qctmp
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID).qctmp | tr '\n' ' ' | awk -F ' ' '{if($$2=="used:"){ if(NF==2){print "Adapter_confidence: LOW"}else{print "Adapter_confidence: WARN_unableToGuessAdapter_usingProvided("$$3")"}}else{if($$2==$$4){print "Adapter_confidence: HIGH"}else{print "Adapter_confidence: WARN_providedAdapter("$$4")DisagreesWithGuessed("$$2")"}}}' > $(OUTPUT_DIR)/$(SAMPLE_ID).qcResult
+	#
 	## Calculate QC result
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID).stats | grep "^input" | head -n 1 | awk '{print $$2}' > $(OUTPUT_DIR)/$(SAMPLE_ID).qctmp
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID).stats | grep "^genome" | awk '{print $$2}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).qctmp
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID).stats | grep "sense" | awk '{SUM+=$$2}END{print SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).qctmp
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID).qctmp | tr '\n' '\t' | awk '{result="FAIL"; ratio=0; if($$2>0){ratio=$$3/$$2}; if(ratio>$(MIN_GENOME_TRANSCRIPTOME_RATIO) && $$3>$(MIN_TRANSCRIPTOME_MAPPED))result="PASS"}END{print "QC_result: "result"\nInputReads: "$$1"\nGenomeReads: "$$2"\nTranscriptomeReads: "$$3"\nTranscriptomeGenomeRatio: "ratio}' > $(OUTPUT_DIR)/$(SAMPLE_ID).qcResult
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID).qctmp | tr '\n' '\t' | awk '{result="FAIL"; ratio=0; if($$2>0){ratio=$$3/$$2}; if(ratio>$(MIN_GENOME_TRANSCRIPTOME_RATIO) && $$3>$(MIN_TRANSCRIPTOME_MAPPED))result="PASS"}END{print "QC_result: "result"\nInputReads: "$$1"\nGenomeReads: "$$2"\nTranscriptomeReads: "$$3"\nTranscriptomeGenomeRatio: "ratio}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).qcResult
 	gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.txt.gz | wc -l > $(OUTPUT_DIR)/$(SAMPLE_ID).qctmp
 	gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_Accepted.txt.gz | awk '{print $$2}' | uniq | wc -l >> $(OUTPUT_DIR)/$(SAMPLE_ID).qctmp
 	#
-	#cat $(OUTPUT_DIR)/$(SAMPLE_ID).qctmp | tr '\n' '\t' | awk '{print "TranscriptomeComplexity: "($$2/$$1)}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).qcResult
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID).qctmp | tr '\n' '\t' | awk '{if($$1>0){print "TranscriptomeComplexity: "($$2/$$1)}else{print "TranscriptomeComplexity: 0"}}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).qcResult
 	rm $(OUTPUT_DIR)/$(SAMPLE_ID).qctmp
 	#
