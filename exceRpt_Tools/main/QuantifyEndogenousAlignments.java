@@ -17,7 +17,8 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
+
+import utils.IO_utils;
 
 public class QuantifyEndogenousAlignments {
 
@@ -113,7 +114,7 @@ public class QuantifyEndogenousAlignments {
 					//TranscriptAnnotation annotation = ReadGTF.readGTF(annotationPath);
 					
 					out = new BufferedWriter(new FileWriter(basePath+"/readCounts_"+thisLibrary+"_geneLevel.txt"));
-					out.write("ReferenceID\tuniqueReadCount\ttotalReadCount\tmultimapAdjustedReadCount\tmultimapAdjustedBarcodeCount\n");
+					out.write("GeneSymbol\tuniqueReadCount\ttotalReadCount\tmultimapAdjustedReadCount\tmultimapAdjustedBarcodeCount\n");
 
 					HashMap<String, double[]> geneLevelQuants = new HashMap<String, double[]>(); 
 					it = _library2referenceID2counts.get(thisLibrary).keySet().iterator();
@@ -179,9 +180,14 @@ public class QuantifyEndogenousAlignments {
 		BufferedReader reader = new BufferedReader(new FileReader(new File(path)));
 		String line;
 		String[] bits;
+		int lineCounter = 1;
 		while((line=reader.readLine())!=null){
 			bits = line.trim().split("\t");
-			_alignmentDictionary.put(Integer.valueOf(bits[0]), bits[1]);
+			if(bits.length != 2)
+				IO_utils.printLineErr("WARNING: Invalid dictionary entry on line "+lineCounter+": \'"+line+"\'");
+			else
+				_alignmentDictionary.put(Integer.valueOf(bits[0]), bits[1]);
+			lineCounter ++;
 		}
 		reader.close();
 	}
@@ -330,21 +336,29 @@ public class QuantifyEndogenousAlignments {
 	private void readAndCountInserts() throws IOException{
 		ArrayList<String> thisInsert = new ArrayList<String>();
 		int count = 0;
-
+		int lineCounter = 0;
+		
 		try{
 			while((_thisLine=_alignmentReader.readLine()) != null){
+				lineCounter ++;
 				//System.out.println(">"+_thisLine);
-				_thisInsert = _thisLine.trim().split("\t")[1]; 
-				if(_lastInsert == null  ||  _thisInsert.equals(_lastInsert)){ // this is the same insert sequence, add it and keep going!
-					thisInsert.add(_thisLine);
-					_lastInsert = _thisInsert;
-				}else{ // this is a new insert, keep the line, but return the current ArrayList
-					addInsert(thisInsert);
-					count ++;
-					thisInsert = new ArrayList<String>();
-
-					thisInsert.add(_thisLine);
-					_lastInsert = _thisInsert;
+				
+				String[] lineBits = _thisLine.trim().split("\t");
+				if(lineBits.length == 5){
+					_thisInsert = _thisLine.trim().split("\t")[1]; 
+					if(_lastInsert == null  ||  _thisInsert.equals(_lastInsert)){ // this is the same insert sequence, add it and keep going!
+						thisInsert.add(_thisLine);
+						_lastInsert = _thisInsert;
+					}else{ // this is a new insert, keep the line, but return the current ArrayList
+						addInsert(thisInsert);
+						count ++;
+						thisInsert = new ArrayList<String>();
+						
+						thisInsert.add(_thisLine);
+						_lastInsert = _thisInsert;
+					}
+				}else{
+					IO_utils.printLineErr("WARNING: Ignoring invalid alignment on line "+lineCounter+": \'"+_thisLine+"\'");
 				}
 			}
 			// add final insert:
