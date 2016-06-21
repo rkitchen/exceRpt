@@ -4,7 +4,7 @@
 ##                                                                                      ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                           ##
 ##                                                                                      ##
-## Version 4.0.7 (2016-06-21)                                                           ##
+## Version 4.0.8 (2016-06-21)                                                           ##
 ##                                                                                      ##
 ##########################################################################################
 
@@ -476,7 +476,7 @@ readData = function(samplePathList, output.dir){
       ## Read exogenous miRNA alignments (if applicable)
       ##
       exogenous_miRNA_sense = NA
-      exogenous_miRNA_IDs = ""
+      exogenous_miRNA_IDs = NULL
       if("EXOGENOUS_miRNA" %in% availableFiles){
         tmp.dir = paste(samplePathList[i],"EXOGENOUS_miRNA",sep="/")
         if("readCounts_miRNAmature_sense.txt" %in% dir(tmp.dir)){
@@ -503,7 +503,7 @@ readData = function(samplePathList, output.dir){
       ## Read exogenous genome alignments (if applicable)
       ##
       exogenous_genomes = NA
-      exogenous_genomes_IDs = ""
+      exogenous_genomes_IDs = NULL
       if("EXOGENOUS_genomes" %in% availableFiles){
         tmp.dir = paste(samplePathList[i],"EXOGENOUS_genomes",sep="/")
         if("ExogenousGenomicAlignments.result.taxaAnnotated.txt" %in% dir(tmp.dir)){
