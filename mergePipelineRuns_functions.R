@@ -4,15 +4,13 @@
 ##                                                                                      ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                           ##
 ##                                                                                      ##
-## Version 4.0.6 (2016-06-20)                                                           ##
+## Version 4.0.7 (2016-06-21)                                                           ##
 ##                                                                                      ##
 ##########################################################################################
 
-#data.dir="/Users/robk/WORK/YALE_offline/exRNA/Kendall/PlasmaUrineSaliva/Combined";output.dir=data.dir
-
 
 ##
-##
+## Main function to read and plot exceRpt output in a given directory
 ##
 processSamplesInDir = function(data.dir, output.dir=data.dir, scriptDir){
   
@@ -478,10 +476,12 @@ readData = function(samplePathList, output.dir){
       ## Read exogenous miRNA alignments (if applicable)
       ##
       exogenous_miRNA_sense = NA
+      exogenous_miRNA_IDs = ""
       if("EXOGENOUS_miRNA" %in% availableFiles){
         tmp.dir = paste(samplePathList[i],"EXOGENOUS_miRNA",sep="/")
         if("readCounts_miRNAmature_sense.txt" %in% dir(tmp.dir)){
           exogenous_miRNA_sense = read.table(paste(tmp.dir,"readCounts_miRNAmature_sense.txt",sep="/"), header=T, sep="\t", comment.char="", stringsAsFactors=F,colClasses=c("character","numeric","numeric","numeric","numeric"), row.names=1)
+          exogenous_miRNA_IDs = rownames(exogenous_miRNA_sense)
         }
         if("readCounts_miRNAmature_antisense.txt" %in% dir(tmp.dir)){
           exogenous_miRNA_antisense = read.table(paste(tmp.dir,"readCounts_miRNAmature_antisense.txt",sep="/"), header=T, sep="\t", comment.char="", stringsAsFactors=F,colClasses=c("character","numeric","numeric","numeric","numeric"), row.names=1)
@@ -503,10 +503,12 @@ readData = function(samplePathList, output.dir){
       ## Read exogenous genome alignments (if applicable)
       ##
       exogenous_genomes = NA
+      exogenous_genomes_IDs = ""
       if("EXOGENOUS_genomes" %in% availableFiles){
         tmp.dir = paste(samplePathList[i],"EXOGENOUS_genomes",sep="/")
         if("ExogenousGenomicAlignments.result.taxaAnnotated.txt" %in% dir(tmp.dir)){
           exogenous_genomes = read.table(paste(tmp.dir,"/ExogenousGenomicAlignments.result.taxaAnnotated.txt",sep=""), sep="\t", stringsAsFactors = F, quote="", comment.char=""); colnames(exogenous_genomes) = c("indent","distFromRoot","level","name","uniqueReads","allSumReads")
+          exogenous_genomes_IDs = exogenous_genomes$name
         }
       }
       
@@ -518,8 +520,8 @@ readData = function(samplePathList, output.dir){
       allIDs.piRNA = unique(c(allIDs.piRNA, rownames(piRNA_sense)))
       allIDs.gencode = unique(c(allIDs.gencode, as.character(gencode_sense$ID)))
       allIDs.circularRNA = unique(c(allIDs.circularRNA, rownames(circRNA_sense)))
-      allIDs.exogenous_miRNA = unique(c(allIDs.exogenous_miRNA, rownames(exogenous_miRNA_sense)))
-      allIDs.exogenous_genomes = unique(c(allIDs.exogenous_genomes, exogenous_genomes$name))
+      allIDs.exogenous_miRNA = unique(c(allIDs.exogenous_miRNA, exogenous_miRNA_IDs))
+      allIDs.exogenous_genomes = unique(c(allIDs.exogenous_genomes, exogenous_genomes_IDs))
       
       sample.data[[i]] = list("miRNA_sense"=miRNA_sense,"miRNA_antisense"=miRNA_antisense, "tRNA_sense"=tRNA_sense,"tRNA_antisense"=tRNA_antisense, "piRNA_sense"=piRNA_sense,"piRNA_antisense"=piRNA_antisense, "gencode_sense"=gencode_sense,"gencode_antisense"=gencode_antisense, "circRNA_sense"=circRNA_sense,"circRNA_antisense"=circRNA_antisense, "exogenous_miRNA_sense"=exogenous_miRNA_sense, "exogenous_genomes"=exogenous_genomes, "adapterSeq"=adapterSeq, "adapterConfidence"=adapterConfidence, "qcOutcome"=qcOutcome, "runTiming"=runTiming)
       names(sample.data)[i] = thisSampleID
@@ -579,9 +581,12 @@ readData = function(samplePathList, output.dir){
     exprs.piRNA[match(rownames(sample.data[[i]]$piRNA_sense), rownames(exprs.piRNA)),i] = as.numeric(sample.data[[i]]$piRNA_sense$multimapAdjustedReadCount)
     exprs.gencode[match(sample.data[[i]]$gencode_sense$ID, rownames(exprs.gencode)),i] = as.numeric(sample.data[[i]]$gencode_sense$multimapAdjustedReadCount)
     exprs.circRNA[match(rownames(sample.data[[i]]$circRNA_sense), rownames(exprs.circRNA)),i] = as.numeric(sample.data[[i]]$circRNA_sense$multimapAdjustedReadCount)
-    exprs.exogenous_miRNA[match(rownames(sample.data[[i]]$exogenous_miRNA), rownames(exprs.exogenous_miRNA)),i] = as.numeric(sample.data[[i]]$exogenous_miRNA$multimapAdjustedReadCount)
-    exprs.exogenousGenomes_specific[match(sample.data[[i]]$exogenous_genomes$name, rownames(exprs.exogenousGenomes_specific)),i] = as.numeric(sample.data[[i]]$exogenous_genomes$uniqueReads)
-    exprs.exogenousGenomes_cumulative[match(sample.data[[i]]$exogenous_genomes$name, rownames(exprs.exogenousGenomes_cumulative)),i] = as.numeric(sample.data[[i]]$exogenous_genomes$allSumReads)
+    if(!is.null(nrow(sample.data[[i]]$exogenous_miRNA)))
+      exprs.exogenous_miRNA[match(rownames(sample.data[[i]]$exogenous_miRNA), rownames(exprs.exogenous_miRNA)),i] = as.numeric(sample.data[[i]]$exogenous_miRNA$multimapAdjustedReadCount)
+    if(!is.null(nrow(sample.data[[i]]$exogenous_genomes))){
+      exprs.exogenousGenomes_specific[match(sample.data[[i]]$exogenous_genomes$name, rownames(exprs.exogenousGenomes_specific)),i] = as.numeric(sample.data[[i]]$exogenous_genomes$uniqueReads)
+      exprs.exogenousGenomes_cumulative[match(sample.data[[i]]$exogenous_genomes$name, rownames(exprs.exogenousGenomes_cumulative)),i] = as.numeric(sample.data[[i]]$exogenous_genomes$allSumReads)
+    }
   }
   
   
