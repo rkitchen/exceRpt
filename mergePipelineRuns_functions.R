@@ -40,7 +40,11 @@ processSamplesInDir = function(data.dir, output.dir=data.dir, scriptDir="~/Box S
   PlotData(sampleIDs, output.dir, taxonomyPath=paste(scriptDir,"/NCBI_Taxonomy.RData",sep=""))
   
   ## output warnings
-  warnings()
+  w = warnings()
+  if(!is.null(w)){
+    printMessage("Warning messages:")
+    print(w)
+  }
 }
 
 
@@ -65,7 +69,7 @@ require(marray)
 require(reshape2)
 require(ggplot2)
 require(tools)
-
+require(Rgraphviz)
 
 
 ##
@@ -235,7 +239,7 @@ plotExogenousTaxonomyTrees = function(counts, cumcounts, output.dir, taxonomyPat
   #}
   
   
-  require(Rgraphviz)
+  
   directNodes = names[names[,2] %in% rownames(data_cum), ]
   useEdges = edges[which(edges[,1] %in% directNodes$tax_id), ]
   useNodes = directNodes
@@ -249,7 +253,7 @@ plotExogenousTaxonomyTrees = function(counts, cumcounts, output.dir, taxonomyPat
       if(from != to)
         rEG <- addEdge(from, to, rEG, 1)
     }else{
-      cat(i,"\n")
+      #cat(i,"\n")
     }
   }
   
