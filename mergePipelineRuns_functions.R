@@ -4,7 +4,7 @@
 ##                                                                                      ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                           ##
 ##                                                                                      ##
-## Version 4.0.8 (2016-06-21)                                                           ##
+## Version 4.0.9 (2016-06-23)                                                           ##
 ##                                                                                      ##
 ##########################################################################################
 
@@ -12,7 +12,7 @@
 ##
 ## Main function to read and plot exceRpt output in a given directory
 ##
-processSamplesInDir = function(data.dir, output.dir=data.dir, scriptDir){
+processSamplesInDir = function(data.dir, output.dir=data.dir, scriptDir="~/Box Sync/Work/exRNA/Pipeline/smallRNApipe"){
   
   ##  Look for samples to merge
   printMessage("Searching for valid exceRpt pipeline output...")
@@ -35,12 +35,9 @@ processSamplesInDir = function(data.dir, output.dir=data.dir, scriptDir){
   #tmp[grep("Sample_S",sampleIDs)] = "saliva"
   #sampleGroups = data.frame(sampleID=sampleIDs, sampleGroup=tmp)
   
-  ## load the taxonomy
-  load(paste(scriptDir,"/NCBI_Taxonomy.RData",sep=""))
-  
   ## plots the data
-  #PlotData(sampleIDs, output.dir, sampleGroups)
-  PlotData(sampleIDs, output.dir)
+  #PlotData(sampleIDs, output.dir, taxonomyPath=paste(scriptDir,"/NCBI_Taxonomy.RData",sep=""), sampleGroups)
+  PlotData(sampleIDs, output.dir, taxonomyPath=paste(scriptDir,"/NCBI_Taxonomy.RData",sep=""))
   
   ## output warnings
   warnings()
@@ -57,6 +54,11 @@ if(!"marray" %in% rownames(installed.packages())) { source("http://bioconductor.
 if(!"reshape2" %in% rownames(installed.packages())) { install.packages("reshape2",repos='http://cran.us.r-project.org') }
 if(!"ggplot2" %in% rownames(installed.packages())) { install.packages("ggplot2",repos='http://cran.us.r-project.org') }
 if(!"tools" %in% rownames(installed.packages())) { install.packages("tools",repos='http://cran.us.r-project.org') }
+if(!"Rgraphviz" %in% rownames(installed.packages())) { source("http://bioconductor.org/biocLite.R"); biocLite("Rgraphviz") }
+
+
+update.packages(repos='http://cran.us.r-project.org',ask=F)
+
 require(plyr)
 require(gplots)
 require(marray)
@@ -204,10 +206,13 @@ plotTree = function(rEG, counts_uniq, counts_cum, fontScale=20, title=""){
 ##
 ## Plot exogenous genomes
 ##
-plotExogenousTaxonomyTrees = function(counts, cumcounts, output.dir, fontScale=2, sampleGroups=NA){
+plotExogenousTaxonomyTrees = function(counts, cumcounts, output.dir, taxonomyPath, fontScale=2, sampleGroups=NA){
   
   ## read the taxonomy
+  printMessage(c("Reading NCBI taxonomy information from ",taxonomyPath,""))
   #load(paste("/Users/robk/WORK/YALE_offline/ANNOTATIONS/taxdump","/NCBI_Taxonomy.RData",sep=""))
+  load(taxonomyPath)
+  printMessage(c("Done, read ",nrow(edges)," taxonomy edges"))
   
   ## add direct count to the cumulative counts matrix
   cumcounts = cumcounts+counts
@@ -679,7 +684,7 @@ readData = function(samplePathList, output.dir){
 ##
 ##
 ##
-PlotData = function(sampleIDs, output.dir, sampleGroups=NA){
+PlotData = function(sampleIDs, output.dir, taxonomyPath, sampleGroups=NA){
   
   load(paste(output.dir, "exceRpt_smallRNAQuants_ReadCounts.RData", sep="/"))
   load(paste(output.dir, "exceRpt_smallRNAQuants_ReadsPerMillion.RData", sep="/"))
@@ -1024,7 +1029,7 @@ PlotData = function(sampleIDs, output.dir, sampleGroups=NA){
   ##
   if(nrow(exprs.exogenousGenomes_specific) > 0  &&  ncol(exprs.exogenousGenomes_specific) > 0){
     printMessage("Making taxonomy trees using exogenous counts")
-    plotExogenousTaxonomyTrees(exprs.exogenousGenomes_specific, exprs.exogenousGenomes_cumulative, output.dir, sampleGroups=sampleGroups)
+    plotExogenousTaxonomyTrees(exprs.exogenousGenomes_specific, exprs.exogenousGenomes_cumulative, output.dir, taxonomyPath, sampleGroups=sampleGroups)
   }
   
   printMessage("All done!")

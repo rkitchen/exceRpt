@@ -44,7 +44,7 @@ if(length(args) == 0){
   }else{
 	  other.name = "mergePipelineRuns_functions.R"
   }
-  print(paste("Sourcing",other.name,"from",script.name))
+  print(paste("Sourcing",other.name,"from",script.basename))
   source(other.name)
   cat("\n")
   
