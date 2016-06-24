@@ -60,9 +60,10 @@ if(!"ggplot2" %in% rownames(installed.packages())) { install.packages("ggplot2",
 if(!"tools" %in% rownames(installed.packages())) { install.packages("tools",repos='http://cran.us.r-project.org') }
 if(!"Rgraphviz" %in% rownames(installed.packages())) { source("http://bioconductor.org/biocLite.R"); biocLite("Rgraphviz") }
 
-
+## update
 update.packages(repos='http://cran.us.r-project.org',ask=F)
 
+## load
 require(plyr)
 require(gplots)
 require(marray)
@@ -657,10 +658,12 @@ readData = function(samplePathList, output.dir){
   exprs.tRNA.rpm = t(10^6 * t(exprs.tRNA) / libSize.use)
   exprs.piRNA.rpm = t(10^6 * t(exprs.piRNA) / libSize.use)
   exprs.gencode.rpm = t(10^6 * t(exprs.gencode) / libSize.use)
-  #exprs.repElements.rpm = t(10^6 * t(exprs.repElements) / libSize.use)
   exprs.exogenous_miRNA.rpm = t(10^6 * t(exprs.exogenous_miRNA) / libSizes$exogenous_miRNA)
-  exprs.exogenousGenomes_specific.rpm = t(10^6 * t(exprs.exogenousGenomes_specific) / libSizes$exogenous_genomes)
-  exprs.exogenousGenomes_cumulative.rpm = t(10^6 * t(exprs.exogenousGenomes_cumulative) / libSizes$exogenous_genomes)
+  
+  if(nrow(exprs.exogenousGenomes_specific) > 0){
+    exprs.exogenousGenomes_specific.rpm = t(10^6 * t(exprs.exogenousGenomes_specific) / libSizes$exogenous_genomes)
+    exprs.exogenousGenomes_cumulative.rpm = t(10^6 * t(exprs.exogenousGenomes_cumulative) / libSizes$exogenous_genomes)
+  }
   
   
   ##
