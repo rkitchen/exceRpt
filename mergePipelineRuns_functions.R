@@ -660,6 +660,8 @@ readData = function(samplePathList, output.dir){
   exprs.gencode.rpm = t(10^6 * t(exprs.gencode) / libSize.use)
   exprs.exogenous_miRNA.rpm = t(10^6 * t(exprs.exogenous_miRNA) / libSizes$exogenous_miRNA)
   
+  exprs.exogenousGenomes_specific.rpm = exprs.exogenousGenomes_specific
+  exprs.exogenousGenomes_cumulative.rpm = exprs.exogenousGenomes_cumulative
   if(nrow(exprs.exogenousGenomes_specific) > 0){
     exprs.exogenousGenomes_specific.rpm = t(10^6 * t(exprs.exogenousGenomes_specific) / libSizes$exogenous_genomes)
     exprs.exogenousGenomes_cumulative.rpm = t(10^6 * t(exprs.exogenousGenomes_cumulative) / libSizes$exogenous_genomes)
