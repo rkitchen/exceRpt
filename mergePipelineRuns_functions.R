@@ -678,8 +678,10 @@ readData = function(samplePathList, output.dir){
   write.table(exprs.piRNA.rpm, file=paste(output.dir, "exceRpt_piRNA_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
   write.table(exprs.gencode.rpm, file=paste(output.dir, "exceRpt_gencode_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
   write.table(exprs.exogenous_miRNA.rpm, file=paste(output.dir, "exceRpt_exogenous_miRNA_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
-  write.table(exprs.exogenousGenomes_specific.rpm, file=paste(output.dir, "exceRpt_exogenousGenomes_taxonomySpecific_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
-  write.table(exprs.exogenousGenomes_cumulative.rpm, file=paste(output.dir, "exceRpt_exogenousGenomes_taxonomyCumulative_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+  if(nrow(exprs.exogenousGenomes_specific) > 0){
+    write.table(exprs.exogenousGenomes_specific.rpm, file=paste(output.dir, "exceRpt_exogenousGenomes_taxonomySpecific_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+    write.table(exprs.exogenousGenomes_cumulative.rpm, file=paste(output.dir, "exceRpt_exogenousGenomes_taxonomyCumulative_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+  }
   
   return(rownames(mapping.stats))
 }
