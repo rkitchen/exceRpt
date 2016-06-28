@@ -16,10 +16,10 @@
 ##                                                                                   ##
 ## Learn more at github.gersteinlab.org/exceRpt                                      ##
 ##                                                                                   ##
-## Version 4.3.1 (2016-06-20)                                                        ##
+## Version 4.3.2 (2016-06-28)                                                        ##
 ##                                                                                   ##
 #######################################################################################
-EXCERPT_VERSION := 4.3.1
+EXCERPT_VERSION := 4.3.2
 
 
 ##
@@ -631,6 +631,7 @@ $(OUTDIR)/$(SAMPLE_ID).clipped.trimmed.filtered.fastq.gz: $(OUTDIR)/$(SAMPLE_ID)
 	@echo -e "$(ts) $(SMRNAPIPELINE): Filtering homopolymer repeat reads:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) RemoveHomopolymerRepeats -m 0.66 -i $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.tmp -o $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.fastq\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
 	$(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) RemoveHomopolymerRepeats --verbose -m 0.66 -i $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.tmp -o $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.fastq >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.REMOVEDRepeatReads.fastq
+	gzip $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.REMOVEDRepeatReads.fastq
 	gzip $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.fastq
 	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.tmp
 	@echo -e "$(ts) $(SMRNAPIPELINE): Finished filtering homopolymer repeat reads\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
@@ -738,6 +739,8 @@ $(OUTDIR)/endogenousAlignments_genomeUnmapped_transcriptome_Unmapped.R1.fastq.gz
 	@echo -e "$(ts) $(SMRNAPIPELINE): $(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_transcriptome_ --readFilesIn $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genome_Mapped.out.mate1 --genomeDir $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/STAR_INDEX_transcriptome --parametersFiles $(DATABASE_PATH)/STAR_Parameters_Endogenous_smallRNA.in $(STAR_ENDOGENOUS_DYNAMIC_PARAMS) --readFilesCommand - >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	$(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_transcriptome_ --readFilesIn $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genome_Mapped.out.mate1 --genomeDir $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/STAR_INDEX_transcriptome --parametersFiles $(DATABASE_PATH)/STAR_Parameters_Endogenous_smallRNA.in $(STAR_ENDOGENOUS_DYNAMIC_PARAMS) --readFilesCommand - >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
 	@echo -e "$(ts) $(SMRNAPIPELINE): Finished mapping genome-aligned reads to the transcriptome of the primary organism\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	gzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_transcriptome_Unmapped.out.mate1 > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_transcriptome_Unmapped.R1.fastq.gz
+
 	#
 	@echo -e "$(ts) $(SMRNAPIPELINE): Mapping genome-unaligned reads to the transcriptome of the primary organism:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(SMRNAPIPELINE): $(STAR_EXE) --runThreadN $(N_THREADS) --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_transcriptome_ --readFilesIn $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genome_Unmapped.out.mate1 --outReadsUnmapped Fastx --genomeDir $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/STAR_INDEX_transcriptome --parametersFiles $(DATABASE_PATH)/STAR_Parameters_Endogenous_smallRNA.in $(STAR_ENDOGENOUS_DYNAMIC_PARAMS) --readFilesCommand - >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
@@ -750,11 +753,16 @@ $(OUTDIR)/endogenousAlignments_genomeUnmapped_transcriptome_Unmapped.R1.fastq.gz
 	#cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genome_Log.final.out | grep "Uniquely mapped reads number\|Number of reads mapped to multiple loci" | awk -F "|\t" '{SUM+=$$2}END{print "reads_used_for_alignment\t"SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genome*apped_transcriptome_Log.final.out | grep "Number of input reads\|Uniquely mapped reads number\|Number of reads mapped to multiple loci" | sed '2,4d' | awk -F "|\t" '{SUM+=$$2}END{print "genome\t"SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	#
+	## Compress STAR logs
+	gzip $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_transcriptome_Log.out
+	gzip $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_transcriptome_Log.out
+	#
 	## Tidy up
 	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genome_SJ.out.tab
 	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_transcriptome_SJ.out.tab
 	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genome_Mapped.out.mate1
 	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genome_Unmapped.out.mate1
+	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_transcriptome_Unmapped.out.mate1
 	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_transcriptome_Unmapped.out.mate1
 
 
