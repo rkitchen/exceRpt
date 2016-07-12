@@ -21,6 +21,6 @@ Please see the exceRpt mainpage (http://github.gersteinlab.org/exceRpt) for inst
 
 INSTALLATION:
 
-exceRpt_smallRNA -- requires numerous dependences that require some familiarity with UNIX.  The software is installed on the Genboree Workbench (www.genboree.org) which provides a graphical interface to the pipeline that is free for academic use.  Alternatively, development of a Docker image for this software is ongoing, if you are interested in this please feel free browse the documentation (http://github.gersteinlab.org/exceRpt) or get in touch using the email address above.
+exceRpt_smallRNA -- requires numerous dependences that require some familiarity with UNIX.  The software is installed on the Genboree Workbench (www.genboree.org) which provides a graphical interface to the pipeline that is free for academic use.  Alternatively, development of a Docker image (https://hub.docker.com/r/rkitchen/excerpt) for this software is available, if you are interested in this please feel free browse the documentation (http://github.gersteinlab.org/exceRpt) or get in touch using the email address above.
 
 mergePipelineRuns.R -- is comparatively much simpler to install.  Once the R software (http://cran.r-project.org/) is set up on your system the script should automatically identify and install all required dependencies.  Again, this script is available on the Genboree Workbench (www.genboree.org) and is also free for academic use.
