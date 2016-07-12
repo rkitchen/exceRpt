@@ -246,7 +246,16 @@ MAX_MISMATCHES_EXOGENOUS         | &lt;int&gt;              | [default: 0] maxim
 [sampleID]/endogenousAlignments_Accepted.dict   | Contains the ID(s) of the RNA annotations indexed in the fifth column of the .txt.gz file above
 </code></pre>
 
-<p>Finally, the quantifications are stored in the various readCounts_*.txt files.</p>
+<p>Finally, the quantifications are stored in the various readCounts_*.txt files.  The format of these tab-delimited files is as follows:</p>
+
+<pre><code>ReferenceID                                         uniqueReadCount totalReadCount multimapAdjustedReadCount multimapAdjustedBarcodeCount
+hsa-miR-143-3p:MIMAT0000435:Homo:sapiens:miR-143-3p 1235            4147219        4147219.0            0.0
+hsa-miR-10b-5p:MIMAT0000254:Homo:sapiens:miR-10b-5p 1430            2420500        2420241.0            0.0
+hsa-miR-10a-5p:MIMAT0000253:Homo:sapiens:miR-10a-5p 1115            784863         784600.5                 0.0
+hsa-miR-192-5p:MIMAT0000222:Homo:sapiens:miR-192-5p 759             559068         558542.5                 0.0
+</code></pre>
+
+<p>Where <code>ReferenceID</code> is the <strong>ID of this annotated RNA</strong>, <code>uniqueReadCount</code> is the <strong>number of unique insert sequences</strong> attributed to this annotated RNA, <code>totalReadCount</code> is the <strong>total number of reads</strong> attributable to this annotated RNA, <code>multimapAdjustedReadCount</code> is the <strong>count after adjusting for multi-mapped reads</strong>, and <code>multimapAdjustedBarcodeCount</code> (available only for samples prepped with randomly barcoded 5' and/or 3' adapters such as Bioo) is the number of <strong>unique N-mer barcodes</strong> adjusted for multimapping ambiguity in the insert sequence.</p>
 
 <hr>
 
