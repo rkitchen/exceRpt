@@ -121,7 +121,8 @@ wget ftp://ftp.ddbj.nig.ac.jp/ddbj_database/dra/sralite/ByExp/litesra/SRX/SRX010
            -v ~/DirectoryContainingMyexceRptDatabase:/exceRpt_DB \
            -t rkitchen/excerpt \
            INPUT_FILE_PATH=/exceRptInput/SRR026761.sra \
-           MAIN_ORGANISM_GENOME_ID=mm10
+           MAIN_ORGANISM_GENOME_ID=mm10 \
+           [OPTION]=[VALUE]
 </code></pre>
 
 <h2>
@@ -129,16 +130,47 @@ wget ftp://ftp.ddbj.nig.ac.jp/ddbj_database/dra/sralite/ByExp/litesra/SRX/SRX010
 
 <p>There are a number of options available for customising the analysis that are specified using the command-line.  These are a list of the most commonly-modified options and their default values.</p>
 
-<pre><code>OUTPUT_DIR                  [default 'NULL']
-INPUT_FILE_PATH             [default 'NULL']
-CALIBRATOR_LIBRARY          [default 'NULL'] [path to bowtie2 index containing spiked-in sequences]
-RANDOM_BARCODE_LENGTH       [default '0'] [options: any integer. '0' disables random barcode removal]
-RANDOM_BARCODE_LOCATION     [default '-5p -3p'] [options: '-5p', '-3p', or '-5p -3p']
-ENDOGENOUS_LIB_PRIORITY     [default 'miRNA,tRNA,piRNA,gencode,circRNA']
-MAIN_ORGANISM_GENOME_ID     [default 'hg38'] [options: 'hg19', 'hg38', or 'mm10']
-ADAPTER_SEQ                 [default 'guessKnown'] [options: 'none', 'guessKnown', or the actual nucleotide sequence of the 3' adapter]
-MAP_EXOGENOUS               [default 'off'] [options: 'off', 'miRNA', or 'on']
-N_THREADS                   [default '4']
+<p><em>Required</em> OPTIONs:</p>
+
+<pre><code>INPUT_FILE_PATH                  | Path to the input fastq/fasta/sra file
+</code></pre>
+
+<p>Main analysis OPTIONs:</p>
+
+<pre><code>ADAPTER_SEQ                      | 'guessKnown'/'none'/&lt;String&gt;     | [default: 'guessKnown'] will attempt to guess the 3 adapter using known sequences.  The actual adapter can be input here if known, or specify 'none' if the adapter is already removed
+SAMPLE_NAME                      | &lt;String&gt;                         | add an optional ID to the input file specified above
+MAIN_ORGANISM_GENOME_ID          | 'hg38'/'hg19'/'mm10'             | [default: 'hg38'] changes the organism/genome build used for alignment
+CALIBRATOR_LIBRARY               | &lt;Path&gt;                           | path to a bowtie2 index of calibrator oligos used for QC or normalisation
+ENDOGENOUS_LIB_PRIORITY          | &lt;comma,separated,list,no,spaces&gt; | [default: 'miRNA,tRNA,piRNA,gencode,circRNA'] choose the priority of each library during read assignment and quantification
+</code></pre>
+
+<p>Additional analysis OPTIONs:</p>
+
+<pre><code>TRIM_N_BASES_5p                  | &lt;int&gt;                 | [default: '0'] remove N bases from the 5' end of every read
+TRIM_N_BASES_3p                  | &lt;int&gt;                 | [default: '0'] remove N bases from the 3' end of every read
+RANDOM_BARCODE_LENGTH            | &lt;int&gt;                 | [default: 0] identify and remove random barcodes of this number of nucleotides.  For a Bioo prep with a 4N random barcode on both the 3' and 5' adapter, this value should be '4'.
+RANDOM_BARCODE_LOCATION          | '-5p -3p'/'-5p'/'-3p' | [default: '-5p -3p'] specify where to look for the random barcode(s)
+KEEP_RANDOM_BARCODE_STATS        | 'false'/'true'        | [default: 'false'] specify whether or not to calculate overrepresentation statistics using the random barcodes (this may be slow and memory intensive!)
+DOWNSAMPLE_RNA_READS             | &lt;int&gt;                 | [default: NULL] choose whether to downsample to this number of reads after assigning reads to the various transcriptome libraries (may be useful for normalising very different yields)
+</code></pre>
+
+<p>Hardware-specific OPTIONs:</p>
+
+<pre><code>N_THREADS                        | &lt;int&gt;          | [default: 4] change the number of threads used in the alignments performed by exceRpt
+JAVA_RAM                         | &lt;String&gt;       | [default: '10G'] change the amount of memory (RAM) available to Java. This may need to be higher if crashes occur during quantification or random barcode stats calculation
+REMOVE_LARGE_INTERMEDIATE_FILES  | 'false'/'true' | [default: 'false'] when exceRpt finishes, choose whether to remove the large alignment files that can take a lot of disk space
+</code></pre>
+
+<p>Alignment/QC OPTIONs:</p>
+
+<pre><code>MIN_READ_LENGTH                  | &lt;int&gt;              | [default: 18] minimum read-length to use after adapter (+ random barcode) removal
+QFILTER_MIN_QUAL                 | &lt;int&gt;              | [default: 20] minimum base-call quality of the read
+QFILTER_MIN_READ_FRAC            | &lt;double&gt;           | [default: 80] read must have base-calls higher than the value above for at least this fraction of its length
+STAR_alignEndsType               | 'Local'/'EndToEnd' | [default: Local] defines the alignment mode; local alignment is recommended to allow for isomiRs
+STAR_outFilterMatchNmin          | &lt;int&gt;              | [default: 18] minimum number of bases to include in the alignment (should match the minimum read length defined above)
+STAR_outFilterMatchNminOverLread | &lt;double&gt;           | [default: 0.9] minimum fraction of the read that *must* remain following soft-clipping in a local alignment
+STAR_outFilterMismatchNmax       | &lt;int&gt;              | [default: 1] maximum allowed mismatched bases in the aligned portion of the read
+MAX_MISMATCHES_EXOGENOUS         | &lt;int&gt;              | [default: 0] maximum allowed mismatched bases in the *entire* read when aligning to exogenous sequences
 </code></pre>
 
 <h2>
@@ -148,12 +180,73 @@ N_THREADS                   [default '4']
 
 <p>Once all dependencies are installed, the exceRpt pipeline can be run on a human sample (here an SRA binary file) using default parameters using the following skeleton command:</p>
 
-<pre><code>make -f smallRNA_pipeline.mk \
+<pre><code>make -f exceRpt_smallRNA \
     INPUT_FILE_PATH=~/DirectoryContainingMyInputSample/SRR026761.sra \
     OUTPUT_DIR=~/DirectoryInWhichToPutMyResults
 </code></pre>
 
 <p>It is important to properly configure the makefile for this to work.  It is probably a good idea to get in touch with the maintainers using the email address listed at the bottom of the page before embarking on this yourself!</p>
+
+<hr>
+
+<h1>
+<a id="understanding-the-excerpt-output-contained-in-output_dir" class="anchor" href="#understanding-the-excerpt-output-contained-in-output_dir" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Understanding the exceRpt output contained in OUTPUT_DIR</h1>
+
+<p>A variety of output files are created for each sample as they are run through the exceRpt pipeline.  At the highest level, 5 files and one directory are output to the OUTPUT_DIR:</p>
+
+<pre><code>[sampleID]/                    | Directory containing the complete set of output files for this sample
+[sampleID]_CORE_RESULTS_v*.tgz | Archive containing only the most commonly used results for this sample
+[sampleID].err                 | Text file containing error logging information for this run
+[sampleID].log                 | Text file containing normal logging information for this run
+[sampleID].qcResult            | Text file containing a variety of QC metrics for this sample
+[sampleID].stats               | Text file containing a variety of alignment statistics for this sample
+</code></pre>
+
+<h2>
+<a id="sampleid_core_results_v4tgz" class="anchor" href="#sampleid_core_results_v4tgz" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>[sampleID]_CORE_RESULTS_v4.*.tgz</h2>
+
+<p>This archive contains the <strong>most commonly used results</strong> for this sample and is the only file required to run the mergePipelineRuns.R script described below for processing the output from multiple runs of the exceRpt pipeline (i.e. for multiple samples).  The contents of this archive are as follows:</p>
+
+<pre><code>[sampleID].log                               | Same as above
+[sampleID].stats                             | Same as above
+[sampleID].qcResult                          | Same as above
+[sampleID]/[sampleID].readCounts_*_sense.txt | Read counts of each annotated RNA using sense alignments
+[sampleID]/[sampleID].readCounts_*_sense.txt | Read counts of each annotated RNA using antisense alignments
+[sampleID]/[sampleID].*.coverage.txt         | Contains read-depth across all gencode transcripts
+[sampleID]/[sampleID].*.CIGARstats.txt       | Summary of the alignment characteristics for genome-mapped reads
+[sampleID]/[sampleID].*_fastqc.zip           | FastQC output both before and after UniVec/rRNA contaminant removal
+[sampleID]/[sampleID].*.readLengths.txt      | Counts of the number of reads of each length following adapter removal
+[sampleID]/[sampleID].*.counts               | Read counts mapped to UniVec &amp; rRNA (and calibrator oligo, if used) sequences
+[sampleID]/[sampleID].*.knownAdapterSeq      | 3' adapter sequence guessed (from known adapters) in this sample
+[sampleID]/[sampleID].*.adapterSeq           | 3' adapter used to clip the reads in this run
+[sampleID]/[sampleID].*.qualityEncoding      | PHRED encoding guessed for the input sequence reads 
+</code></pre>
+
+<h2>
+<a id="sampleid" class="anchor" href="#sampleid" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>[sampleID]/</h2>
+
+<p>The main results directory contains all files above as well as the following:</p>
+
+<p>Intermediate files containing reads 'surviving' each stage, in the following order of 1) 3' adapter clipping, 2) 5'/3' end trimming, 3) read-quality and homopolymer filtering, 4) UniVec contaminant removal, and 5) rRNA removal:</p>
+
+<pre><code>[sampleID]/[sampleID].*.fastq.gz | Reads remaining after each QC / filtering / alignment step
+</code></pre>
+
+<p>Reads aligned at each step of the pipeline in the following order 1) UniVec, 2) rRNA, 3) endogenous genome, 4) endogenous transcriptome:</p>
+
+<pre><code>[sampleID]/filteringAlignments_*.bam                              | Alignments to the UniVec and rRNA sequences
+[sampleID]/endogenousAlignments_genome*.bam                       | Alignments (ungapped) to the endogenous genome
+[sampleID]/endogenousAlignments_genomeMapped_transcriptome*.bam   | Transcriptome alignments (ungapped) of reads mapped to the genome
+[sampleID]/endogenousAlignments_genomeUnmapped_transcriptome*.bam | Transcriptome alignments (ungapped) of reads **not** mapped to the genome
+</code></pre>
+
+<p>Alignment summary information obtained after invoking the library priority.  In the default setting, this will choose a miRBase alignment over any other alignment, for example if it is aligned to both a miRNA in miRBase and a miRNA in Gencode, the miRBase alignment is kept and all others discarded.  It is especially important for tRNAs to be chosen in favour of piRNAs, as the latter have quite a large number of mis-annotations to the former.</p>
+
+<pre><code>[sampleID]/endogenousAlignments_Accepted.txt.gz | All compatible alignments against the transcriptome after invoking the library priority
+[sampleID]/endogenousAlignments_Accepted.dict   | Contains the ID(s) of the RNA annotations indexed in the fifth column of the .txt.gz file above
+</code></pre>
+
+<p>Finally, the quantifications are stored in the various readCounts_*.txt files.</p>
 
 <hr>
 
@@ -311,9 +404,10 @@ N_THREADS                   [default '4']
 <ul>
 <li><a href="https://java.com/en/download">Java v1.6+</a></li>
 <li><a href="http://hannonlab.cshl.edu/fastx_toolkit">fastx v0.0.14+</a></li>
-<li><a href="http://bowtie-bio.sourceforge.net/index.shtml">bowtie v1.1.1+</a></li>
+<li>
+<a href="https://github.com/alexdobin/STAR/releases">STAR v2.4.2a+</a> - required for most exogenous alignments</li>
 <li><a href="http://bowtie-bio.sourceforge.net/bowtie2/index.shtml">bowtie2 v2.2.4+</a></li>
-<li><a href="http://sourceforge.net/projects/samtools/files/samtools">samtools v1.1+</a></li>
+<li><a href="http://sourceforge.net/projects/samtools/files/samtools">samtools v1.3+</a></li>
 <li><a href="http://www.bioinformatics.babraham.ac.uk/projects/fastqc">fastQC v0.11.2+</a></li>
 </ul>
 
@@ -323,8 +417,6 @@ N_THREADS                   [default '4']
 <ul>
 <li>
 <a href="https://github.com/ncbi/sra-tools">sratoolkit v2.5.1+</a> - required for processing .sra files from NCBI archival data</li>
-<li>
-<a href="https://github.com/alexdobin/STAR/releases">STAR v2.4.2a+</a> - required for most exogenous alignments</li>
 </ul>
 
 <h2>
