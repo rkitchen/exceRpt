@@ -16,10 +16,10 @@
 ##                                                                                   ##
 ## Learn more at github.gersteinlab.org/exceRpt                                      ##
 ##                                                                                   ##
-## Version 4.3.2 (2016-06-28)                                                        ##
+## Version 4.3.3 (2016-07-13)                                                        ##
 ##                                                                                   ##
 #######################################################################################
-EXCERPT_VERSION := 4.3.2
+EXCERPT_VERSION := 4.3.3
 
 
 ##
@@ -122,7 +122,7 @@ ifeq ($(LOCAL_EXECUTION),true)
 	EXCERPT_TOOLS_EXE     := $(EXE_DIR)/exceRpt_Tools.jar
 	DATABASE_PATH         := $(EXE_DIR)/DATABASE
 	STAR_EXE              := $(EXE_DIR)/STAR_2.4.2a/bin/Linux_x86_64/STAR
-	STAR_GENOMES_DIR      := /gpfs/scratch/fas/gerstein/rrk24/ANNOTATIONS/Genomes_BacteriaFungiMammalPlantProtistVirus
+	STAR_GENOMES_DIR      := $(DATABASE_PATH)/Genomes_BacteriaFungiMammalPlantProtistVirus
 	STAR_PARAMS_FILE_PATH := $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in
 	EXPRESS_EXE           := $(EXE_DIR)/express-1.5.1-linux_x86_64/express
 
@@ -833,8 +833,8 @@ $(OUTDIR)/endogenousAlignments_Accepted.txt.gz: $(OUTDIR)/endogenousAlignments_g
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_piRNA_antisense.txt | awk '{SUM+=$$4}END{printf "piRNA_antisense\t%.0f\n",SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_gencode_sense.txt | awk '{SUM+=$$4}END{printf "gencode_sense\t%.0f\n",SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_gencode_antisense.txt | awk '{SUM+=$$4}END{printf "gencode_antisense\t%.0f\n",SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_circularRNA_sense.txt | awk '{SUM+=$$4}END{printf "circularRNA_sense\t%.0f\n",SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_circularRNA_antisense.txt | awk '{SUM+=$$4}END{printf "circularRNA_antisense\t%.0f\n",SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_circRNA_sense.txt | awk '{SUM+=$$4}END{printf "circularRNA_sense\t%.0f\n",SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/readCounts_circRNA_antisense.txt | awk '{SUM+=$$4}END{printf "circularRNA_antisense\t%.0f\n",SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	## Count reads not mapping to the genome or to the libraries
 	gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_transcriptome_Unmapped.R1.fastq.gz | wc -l | awk '{print "not_mapped_to_genome_or_libs\t"($$1/4)}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	#
