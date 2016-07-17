@@ -4,7 +4,7 @@
 ##                                                                                      ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                           ##
 ##                                                                                      ##
-## Version 4.0.9 (2016-06-23)                                                           ##
+## Version 4.1.0 (2016-07-17)                                                           ##
 ##                                                                                      ##
 ##########################################################################################
 
@@ -12,7 +12,7 @@
 ##
 ## Main function to read and plot exceRpt output in a given directory
 ##
-processSamplesInDir = function(data.dir, output.dir=data.dir, scriptDir="~/Box Sync/Work/exRNA/Pipeline/smallRNApipe"){
+processSamplesInDir = function(data.dir, output.dir=data.dir, scriptDir="~/Dropbox/Work/YALE/exRNA/exceRpt"){
   
   ##  Look for samples to merge
   printMessage("Searching for valid exceRpt pipeline output...")
@@ -52,16 +52,18 @@ processSamplesInDir = function(data.dir, output.dir=data.dir, scriptDir="~/Box S
 ##
 ## check dependencies
 ##
-if(!"plyr" %in% rownames(installed.packages())) { install.packages("plyr",repos='http://cran.us.r-project.org') }
-if(!"gplots" %in% rownames(installed.packages())) { install.packages("gplots",repos='http://cran.us.r-project.org') }
-if(!"marray" %in% rownames(installed.packages())) { source("http://bioconductor.org/biocLite.R"); biocLite("marray") }
-if(!"reshape2" %in% rownames(installed.packages())) { install.packages("reshape2",repos='http://cran.us.r-project.org') }
-if(!"ggplot2" %in% rownames(installed.packages())) { install.packages("ggplot2",repos='http://cran.us.r-project.org') }
-if(!"tools" %in% rownames(installed.packages())) { install.packages("tools",repos='http://cran.us.r-project.org') }
-if(!"Rgraphviz" %in% rownames(installed.packages())) { source("http://bioconductor.org/biocLite.R"); biocLite("Rgraphviz") }
+#baseURL = "https://cran.us.r-project.org"
+baseURL = "https://cran.r-project.org"
+if(!"plyr" %in% rownames(installed.packages())) { install.packages("plyr",repos=baseURL) }
+if(!"gplots" %in% rownames(installed.packages())) { install.packages("gplots",repos=baseURL) }
+if(!"marray" %in% rownames(installed.packages())) { source("http://bioconductor.org/biocLite.R"); biocLite("marray",ask=F) }
+if(!"reshape2" %in% rownames(installed.packages())) { install.packages("reshape2",repos=baseURL) }
+if(!"ggplot2" %in% rownames(installed.packages())) { install.packages("ggplot2",repos=baseURL) }
+if(!"tools" %in% rownames(installed.packages())) { install.packages("tools",repos=baseURL) }
+if(!"Rgraphviz" %in% rownames(installed.packages())) { source("http://bioconductor.org/biocLite.R"); biocLite("Rgraphviz",ask=F) }
 
 ## update
-update.packages(repos='http://cran.us.r-project.org',ask=F)
+update.packages(repos=baseURL,ask=F)
 
 ## load
 require(plyr)
@@ -71,6 +73,7 @@ require(reshape2)
 require(ggplot2)
 require(tools)
 require(Rgraphviz)
+
 
 
 ##
@@ -141,70 +144,38 @@ printMessage = function(message=""){
 }
 
 
-
-
-
-
-# thisgroup = "plasma"
-# tmpDat_uniq = rowMeans(data_uniq[, match(sampleGroups[sampleGroups$sampleGroup %in% thisgroup, ]$sampleID, colnames(data_uniq))])
-# tmpDat_cum = rowMeans(data_cum[, match(sampleGroups[sampleGroups$sampleGroup %in% thisgroup, ]$sampleID, colnames(data_cum))])
-# 
-# thisgroup = "saliva"
-# tmpDat_uniq = rowMeans(data_uniq[, match(sampleGroups[sampleGroups$sampleGroup %in% thisgroup, ]$sampleID, colnames(data_uniq))])
-# tmpDat_cum = rowMeans(data_cum[, match(sampleGroups[sampleGroups$sampleGroup %in% thisgroup, ]$sampleID, colnames(data_cum))])
-# 
-# title = thisgroup
-# counts_uniq = tmpDat_uniq
-# counts_cum = tmpDat_cum
-# range(sqrt(counts_cum/10))
-
-
-
 ##
-## Plots a taxonomy tree for a give sample
+## Plots a taxonomy tree with a given set of weights
 ##
-plotTree = function(rEG, counts_uniq, counts_cum, fontScale=20, title=""){
-  usenodes = nodes(rEG)
-  names(usenodes) = nodes(rEG)
-  nNodes = length(usenodes)
+plotTree = function(rEG, counts_uniq, counts_cum, title=""){
   
+  ## node parameters
+  nNodes = length(nodes(rEG))
   nA <- list()
   nA$shape = rep("circle",nNodes)
   nA$fixedSize<-rep(FALSE, nNodes)
-  
-  nodeSizes = sqrt(counts_cum/10)
-  nodeSizes[nodeSizes < 0.02] = 0.02
-  #range(nodeSizes)
-  
-  nA$height <- nA$width <- nodeSizes
+  nA$height <- nA$width <- rescale(sqrt(counts_cum/10), newrange=c(0.5,10))
   nA$color <- rep(rgb(0,0,0,0.25),nNodes)
   nA$style <- rep("bold", nNodes)
   nA$fillcolor <- sapply(counts_uniq*10, function(val){ if(val>100){val=100}; rgb(100-val,100-val,100,maxColorValue=100)})
-  nA$label <- paste(usenodes,"\\\n",round(counts_cum*10)/10,"%",sep="")
-  #nA$fontsize <- (nA$height+(1.0-max(1, min(nA$height))))*fontScale
-  #nA$fontsize <- (nA$height+(1.0-min(nA$height)))*fontScale
-  nA$fontsize <- nA$height*fontScale
-  
-  range(nA$height)
-  range(nA$fontsize)
-  
+  newNodeIDs = sapply(nodes(rEG), function(id){ newID=unlist(strsplit(id," ")); if(length(newID) == 1){id}else{paste(newID[1], "\n", paste(newID[-1],collapse=" "), sep="") }})
+  nA$label <- paste(newNodeIDs,"\n",round(counts_cum*10)/10,"%",sep="")
   nA <- lapply(nA, function(x) { names(x) <- nodes(rEG); x})
-  eA <- list()
   
-  attrs = list(graph=list(), node=list(), edge=list())
-  attrs$graph$size="5"
-  attrs$graph$ratio="expand"
-  attrs$graph$dim="1"
-  #attrs$graph$bgcolor="red"
-  attrs$graph$page="10"
+  ## edge parameters
+  eA <- list(arrowsize=rep(0.1,length(names(rEG@edgeData))), arrowhead=rep("none",length(names(rEG@edgeData))))
+  eA <- lapply(eA, function(x) { names(x) <- names(rEG@edgeData); x})
   
-  attrs$graph$size="5"
-  attrs$graph$ratio="expand"
-  attrs$graph$dim="1"
-  #attrs$graph$bgcolor="red" 
-  attrs$graph$page="10"
+  ## layout the graph
+  tmp = layoutGraph(rEG, nodeAttrs=nA, edgeAttrs=eA)
   
-  plot(rEG, attrs=attrs, nodeAttrs=nA, edgeAttrs=eA, main=title)
+  ## hack to make sure the node labels are visible!
+  sizes = rescale(tmp@renderInfo@nodes$rWidth, c(0.2,1.5))
+  names(sizes) = nodes(rEG)
+  nodeRenderInfo(tmp) <- list(cex=sizes)
+  
+  ## plot the graph
+  renderGraph(tmp)
 }
 
 
@@ -240,12 +211,12 @@ plotExogenousTaxonomyTrees = function(counts, cumcounts, output.dir, taxonomyPat
   #}
   
   
-  
   directNodes = names[names[,2] %in% rownames(data_cum), ]
   useEdges = edges[which(edges[,1] %in% directNodes$tax_id), ]
   useNodes = directNodes
   
   
+  printMessage(c("Building graph"))
   rEG <<- new("graphNEL", nodes=unique(useNodes[,2]), edgemode="directed")
   for(i in 2:nrow(useEdges)){
     if(useEdges[i,1] %in% useNodes[,1]  &  useEdges[i,2] %in% useNodes[,1]){
@@ -267,49 +238,40 @@ plotExogenousTaxonomyTrees = function(counts, cumcounts, output.dir, taxonomyPat
   data_uniq[is.na(data_uniq)] = 0
   data_cum[is.na(data_cum)] = 0
   
-  #data_uniq = apply(data_uniq, 1, max)
-  #data_cum = rowMeans(data_cum)
-  
-  nA <- list()
-  nA$shape = rep("circle",nNodes)
-  nA$fixedSize<-rep(FALSE, nNodes)
-  nA$height <- nA$width <- sqrt(rowMeans(data_cum)/10)
-  nA$color <- rep(rgb(0,0,0,0.25),nNodes)
-  nA$style <- rep("bold", nNodes)
-  nA$fillcolor <- sapply(apply(data_uniq, 1, max)*10, function(val){ if(val>100){val=100}; rgb(100-val,100-val,100,maxColorValue=100)})
-  nA$label <- paste(usenodes,"\\\n",round(rowMeans(data_cum)*10)/10,"%",sep="")
-  nA$fontsize <- (nA$height+(1.0-min(nA$height)))*fontScale
-  
-  nA <<- lapply(nA, function(x) { names(x) <- nodes(rEG); x})
-  eA <<- list()
-  
   
   ##
   ## Write to PDF
   ##
+  ## plot an average tree over all samples
+  printMessage(c("Plotting a taxonomy tree based on the average of all samples "))
+  pdf(file=paste(output.dir,"exceRpt_exogenousGenomes_TaxonomyTrees_aggregateSamples.pdf",sep="/"),height=7,width=15)
+  plotTree(rEG, apply(data_uniq, 1, max), rowMeans(data_cum))
+  dev.off()
   
   ## plot samples individually
+  printMessage(c("Plotting a separate taxonomy tree for each sample"))
   pdf(file=paste(output.dir,"exceRpt_exogenousGenomes_TaxonomyTrees_perSample.pdf",sep="/"), height=7, width=15)
   for(i in 1:ncol(data_uniq))
-    plotTree(rEG, data_uniq[,i], data_cum[,i], fontScale=fontScale, title=paste(colnames(data_uniq)[i]," (total reads: ",cumcounts[1,i],")", sep=""))
+    plotTree(rEG, data_uniq[,i], data_cum[,i], title=paste(colnames(data_uniq)[i]," (total reads: ",cumcounts[1,i],")", sep=""))
   dev.off()
   
   ## if there are groups of samples
   if(is.data.frame(sampleGroups)){
+    printMessage(c("Plotting a separate taxonomy tree for each sample-group"))
     pdf(file=paste(output.dir,"exceRpt_exogenousGenomes_TaxonomyTrees_perGroup.pdf",sep="/"), height=7, width=15)
     for(thisgroup in levels(sampleGroups$sampleGroup)){
-    
-    #thisgroup = "plasma"
-    #thisgroup = "saliva"
-    tmpDat_uniq = rowMeans(data_uniq[, match(sampleGroups[sampleGroups$sampleGroup %in% thisgroup, ]$sampleID, colnames(data_uniq))])
-    tmpDat_cum = rowMeans(data_cum[, match(sampleGroups[sampleGroups$sampleGroup %in% thisgroup, ]$sampleID, colnames(data_cum))])
-    plotTree(rEG, tmpDat_uniq, tmpDat_cum, fontScale=2000, title=paste(thisgroup,sep=""))
-    
-    
-    #thisgroup = "saliva"
-    #tmpDat_uniq = rowMeans(data_uniq[, match(sampleGroups[sampleGroups$sampleGroup %in% thisgroup, ]$sampleID, colnames(data_uniq))])
-    #tmpDat_cum = rowMeans(data_cum[, match(sampleGroups[sampleGroups$sampleGroup %in% thisgroup, ]$sampleID, colnames(data_cum))])
-    #plotTree(rEG, tmpDat_uniq, tmpDat_cum, fontScale=4, title=paste(thisgroup,sep=""))
+      
+      #thisgroup = "plasma"
+      #thisgroup = "saliva"
+      tmpDat_uniq = rowMeans(data_uniq[, match(sampleGroups[sampleGroups$sampleGroup %in% thisgroup, ]$sampleID, colnames(data_uniq))])
+      tmpDat_cum = rowMeans(data_cum[, match(sampleGroups[sampleGroups$sampleGroup %in% thisgroup, ]$sampleID, colnames(data_cum))])
+      plotTree(rEG, tmpDat_uniq, tmpDat_cum, title=paste(thisgroup,sep=""))
+      
+      
+      #thisgroup = "saliva"
+      #tmpDat_uniq = rowMeans(data_uniq[, match(sampleGroups[sampleGroups$sampleGroup %in% thisgroup, ]$sampleID, colnames(data_uniq))])
+      #tmpDat_cum = rowMeans(data_cum[, match(sampleGroups[sampleGroups$sampleGroup %in% thisgroup, ]$sampleID, colnames(data_cum))])
+      #plotTree(rEG, tmpDat_uniq, tmpDat_cum, fontScale=4, title=paste(thisgroup,sep=""))
     }
     dev.off()
   }
@@ -413,7 +375,7 @@ readData = function(samplePathList, output.dir){
         read.lengths[i, 1:ncol(tmp)] = as.numeric(tmp[2,])
         rownames(read.lengths)[i] = thisSampleID
       }
-     
+      
       
       ##
       ## Read sample data
@@ -627,9 +589,14 @@ readData = function(samplePathList, output.dir){
   write.table(exprs.piRNA, file=paste(output.dir, "exceRpt_piRNA_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
   write.table(exprs.gencode, file=paste(output.dir, "exceRpt_gencode_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
   write.table(exprs.circRNA, file=paste(output.dir, "exceRpt_circularRNA_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
-  write.table(exprs.exogenous_miRNA, file=paste(output.dir, "exceRpt_exogenous_miRNA_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
-  write.table(exprs.exogenousGenomes_specific, file=paste(output.dir, "exceRpt_exogenousGenomes_taxonomySpecific_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
-  write.table(exprs.exogenousGenomes_cumulative, file=paste(output.dir, "exceRpt_exogenousGenomes_taxonomyCumulative_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+  
+  if(nrow(exprs.exogenous_miRNA) > 0)
+    write.table(exprs.exogenous_miRNA, file=paste(output.dir, "exceRpt_exogenous_miRNA_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+  
+  if(nrow(exprs.exogenousGenomes_specific) > 0){
+    write.table(exprs.exogenousGenomes_specific, file=paste(output.dir, "exceRpt_exogenousGenomes_taxonomySpecific_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+    write.table(exprs.exogenousGenomes_cumulative, file=paste(output.dir, "exceRpt_exogenousGenomes_taxonomyCumulative_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+  }
   write.table(read.lengths, file=paste(output.dir, "exceRpt_ReadLengths.txt", sep="/"), sep="\t", col.names=NA, quote=F)
   
   
@@ -677,7 +644,10 @@ readData = function(samplePathList, output.dir){
   write.table(exprs.tRNA.rpm, file=paste(output.dir, "exceRpt_tRNA_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
   write.table(exprs.piRNA.rpm, file=paste(output.dir, "exceRpt_piRNA_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
   write.table(exprs.gencode.rpm, file=paste(output.dir, "exceRpt_gencode_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
-  write.table(exprs.exogenous_miRNA.rpm, file=paste(output.dir, "exceRpt_exogenous_miRNA_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+  
+  if(nrow(exprs.exogenous_miRNA.rpm) > 0)
+    write.table(exprs.exogenous_miRNA.rpm, file=paste(output.dir, "exceRpt_exogenous_miRNA_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+  
   if(nrow(exprs.exogenousGenomes_specific) > 0){
     write.table(exprs.exogenousGenomes_specific.rpm, file=paste(output.dir, "exceRpt_exogenousGenomes_taxonomySpecific_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
     write.table(exprs.exogenousGenomes_cumulative.rpm, file=paste(output.dir, "exceRpt_exogenousGenomes_taxonomyCumulative_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
