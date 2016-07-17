@@ -4,10 +4,11 @@
 ##                                                                                      ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                           ##
 ##                                                                                      ##
-## Version 4.1.0 (2016-07-17)                                                           ##
+## Version 4.1.1 (2016-07-17)                                                           ##
 ##                                                                                      ##
 ##########################################################################################
 
+data.dir="/Users/robk/WORK/YALE_offline/exRNA/Kendall/PlasmaUrineSaliva/Combined"
 
 ##
 ## Main function to read and plot exceRpt output in a given directory
@@ -30,14 +31,26 @@ processSamplesInDir = function(data.dir, output.dir=data.dir, scriptDir="~/Dropb
   ## reads, normalises, and saves individual sample results
   sampleIDs = readData(samplePathList, output.dir)
   
-  ## sample groups?
-  #tmp=rep("plasma",length(sampleIDs))
-  #tmp[grep("Sample_S",sampleIDs)] = "saliva"
-  #sampleGroups = data.frame(sampleID=sampleIDs, sampleGroup=tmp)
-  
-  ## plots the data
-  #PlotData(sampleIDs, output.dir, taxonomyPath=paste(scriptDir,"/NCBI_Taxonomy.RData",sep=""), sampleGroups)
-  PlotData(sampleIDs, output.dir, taxonomyPath=paste(scriptDir,"/NCBI_Taxonomy.RData",sep=""))
+  ## do we have sample groups?
+  sampleGroups = data.frame(sampleID=sampleIDs, sampleGroup=rep("noGroup",length(sampleIDs)),stringsAsFactors=F)
+  if("exceRpt_sampleGroupDefinitions.txt" %in% dir(output.dir)){
+    ## read new groups
+    groups.tmp = read.table(paste(output.dir,"/exceRpt_sampleGroupDefinitions.txt",sep=""), stringsAsFactors=F,header=T)
+    ## remove samples that are not present in this sample set
+    groups.tmp = groups.tmp[groups.tmp$sampleID %in% sampleGroups$sampleID, ]
+    ## apply new sample groups to these samples
+    sampleGroups[match(groups.tmp$sampleID, sampleGroups$sampleID), ]$sampleGroup = groups.tmp$sampleGroup
+  }else{
+    # if not, write a template
+    write.table(sampleGroups, file=paste(output.dir,"/exceRpt_sampleGroupDefinitions.txt",sep=""), sep="\t",row.names=F,col.names=T,quote=F)
+  }
+  ## if there's only one sample group, don't bother
+  if(length(unique(sampleGroups$sampleGroup))==1){
+    sampleGroups = NA
+  }
+
+  ## plot the data
+  PlotData(sampleIDs, output.dir, taxonomyPath=paste(scriptDir,"/NCBI_Taxonomy.RData",sep=""), sampleGroups)
   
   ## output warnings
   w = warnings()
@@ -61,6 +74,7 @@ if(!"reshape2" %in% rownames(installed.packages())) { install.packages("reshape2
 if(!"ggplot2" %in% rownames(installed.packages())) { install.packages("ggplot2",repos=baseURL) }
 if(!"tools" %in% rownames(installed.packages())) { install.packages("tools",repos=baseURL) }
 if(!"Rgraphviz" %in% rownames(installed.packages())) { source("http://bioconductor.org/biocLite.R"); biocLite("Rgraphviz",ask=F) }
+if(!"scales" %in% rownames(installed.packages())) { install.packages("scales",repos=baseURL) }
 
 ## update
 update.packages(repos=baseURL,ask=F)
@@ -73,7 +87,7 @@ require(reshape2)
 require(ggplot2)
 require(tools)
 require(Rgraphviz)
-
+require(scales)
 
 
 ##
@@ -154,7 +168,7 @@ plotTree = function(rEG, counts_uniq, counts_cum, title=""){
   nA <- list()
   nA$shape = rep("circle",nNodes)
   nA$fixedSize<-rep(FALSE, nNodes)
-  nA$height <- nA$width <- rescale(sqrt(counts_cum/10), newrange=c(0.5,10))
+  nA$height <- nA$width <- rescale(sqrt(counts_cum/10), to=c(0.5,10))
   nA$color <- rep(rgb(0,0,0,0.25),nNodes)
   nA$style <- rep("bold", nNodes)
   nA$fillcolor <- sapply(counts_uniq*10, function(val){ if(val>100){val=100}; rgb(100-val,100-val,100,maxColorValue=100)})
@@ -170,9 +184,11 @@ plotTree = function(rEG, counts_uniq, counts_cum, title=""){
   tmp = layoutGraph(rEG, nodeAttrs=nA, edgeAttrs=eA)
   
   ## hack to make sure the node labels are visible!
-  sizes = rescale(tmp@renderInfo@nodes$rWidth, c(0.2,1.5))
+  sizes = rescale(tmp@renderInfo@nodes$rWidth, to=c(0.2,1.5))
   names(sizes) = nodes(rEG)
   nodeRenderInfo(tmp) <- list(cex=sizes)
+  
+  graphRenderInfo(tmp) <- list(main=title)
   
   ## plot the graph
   renderGraph(tmp)
@@ -259,19 +275,10 @@ plotExogenousTaxonomyTrees = function(counts, cumcounts, output.dir, taxonomyPat
   if(is.data.frame(sampleGroups)){
     printMessage(c("Plotting a separate taxonomy tree for each sample-group"))
     pdf(file=paste(output.dir,"exceRpt_exogenousGenomes_TaxonomyTrees_perGroup.pdf",sep="/"), height=7, width=15)
-    for(thisgroup in levels(sampleGroups$sampleGroup)){
-      
-      #thisgroup = "plasma"
-      #thisgroup = "saliva"
+    for(thisgroup in levels(as.factor(sampleGroups$sampleGroup))){
       tmpDat_uniq = rowMeans(data_uniq[, match(sampleGroups[sampleGroups$sampleGroup %in% thisgroup, ]$sampleID, colnames(data_uniq))])
       tmpDat_cum = rowMeans(data_cum[, match(sampleGroups[sampleGroups$sampleGroup %in% thisgroup, ]$sampleID, colnames(data_cum))])
       plotTree(rEG, tmpDat_uniq, tmpDat_cum, title=paste(thisgroup,sep=""))
-      
-      
-      #thisgroup = "saliva"
-      #tmpDat_uniq = rowMeans(data_uniq[, match(sampleGroups[sampleGroups$sampleGroup %in% thisgroup, ]$sampleID, colnames(data_uniq))])
-      #tmpDat_cum = rowMeans(data_cum[, match(sampleGroups[sampleGroups$sampleGroup %in% thisgroup, ]$sampleID, colnames(data_cum))])
-      #plotTree(rEG, tmpDat_uniq, tmpDat_cum, fontScale=4, title=paste(thisgroup,sep=""))
     }
     dev.off()
   }
@@ -735,7 +742,7 @@ PlotData = function(sampleIDs, output.dir, taxonomyPath, sampleGroups=NA){
     tmp = melt(read.lengths); colnames(tmp) = c("sample","length","count")
     if(is.data.frame(sampleGroups)){ tmp$sampleGroup = sampleGroups[match(tmp$sample, sampleGroups$sampleID), 2] }
     maxX = min(c(100,max(tmp$length)))
-    p = ggplot(tmp, aes(x=length, y=count, colour=sample)) +geom_line(alpha=0.75) +xlab("read length (nt)") +ylab("# reads") +ggtitle("read-length distributions: raw read count") +scale_x_continuous(limits=c(0,maxX), minor_breaks=1:maxX)
+    p = ggplot(tmp, aes(x=length, y=count, colour=sample)) +geom_line(alpha=0.75) +xlab("read length (nt)") +ylab("# reads") +ggtitle("read-length distributions: raw read count") +scale_x_continuous(limits=c(15,maxX), minor_breaks=1:maxX)
     if(nrow(read.lengths) > 30){ p = p +guides(colour=FALSE) }
     if(is.data.frame(sampleGroups)){ p = p +facet_wrap(~sampleGroup,ncol=1)}
     print(p)
@@ -749,7 +756,7 @@ PlotData = function(sampleIDs, output.dir, taxonomyPath, sampleGroups=NA){
     tmp = melt(t(apply(read.lengths, 1, function(row){ row/sum(row) }))); colnames(tmp) = c("sample","length","fraction")
     if(is.data.frame(sampleGroups)){ tmp$sampleGroup = sampleGroups[match(tmp$sample, sampleGroups$sampleID), 2] }
     maxX = min(c(100,max(tmp$length)))
-    p = ggplot(tmp, aes(x=length, y=fraction, colour=sample)) +geom_line(alpha=0.75) +xlab("read length (nt)") +ylab("fraction of reads") +ggtitle("read-length distributions: normalised read fraction") +scale_x_continuous(limits=c(0,maxX), minor_breaks=1:maxX)
+    p = ggplot(tmp, aes(x=length, y=fraction, colour=sample)) +geom_line(alpha=0.75) +xlab("read length (nt)") +ylab("fraction of reads") +ggtitle("read-length distributions: normalised read fraction") +scale_x_continuous(limits=c(15,maxX), minor_breaks=1:maxX)
     if(nrow(read.lengths) > 30){ p = p +guides(colour=FALSE) }
     if(is.data.frame(sampleGroups)){ p = p +facet_wrap(~sampleGroup,ncol=1)}
     print(p)
@@ -850,8 +857,8 @@ PlotData = function(sampleIDs, output.dir, taxonomyPath, sampleGroups=NA){
   toplot = as.data.frame(qc.results)
   toplot$Sample = factor(rownames(toplot), levels=rownames(mapping.stats)[sampleOrder])
   if(is.data.frame(sampleGroups)){ toplot$sampleGroup = sampleGroups[match(toplot$Sample, sampleGroups$sampleID), 2] }
-  p = ggplot(as.data.frame(qc.results), aes(x=TranscriptomeReads, y=TranscriptomeGenomeRatio)) +scale_x_log10(breaks=10^c(0:8)) +coord_cartesian(xlim=c(1,1E8),ylim=c(0,1)) +geom_vline(xintercept=100000,col="red",alpha=0.5) +geom_hline(yintercept=0.5,col="red",alpha=0.5) +annotate("rect",xmin=0,xmax=Inf,ymin=-1,ymax=0.5,alpha=0.2,fill="red") +annotate("rect",xmin=0,xmax=100000,ymin=-1,ymax=1.1,alpha=0.2,fill="red") +geom_point() +ylab("# transcriptome reads / # genome reads") +xlab("# transcriptome reads (log10)") +ggtitle("QC result: overall")
-  if(is.data.frame(sampleGroups)){ p = p +facet_grid(~sampleGroup)}
+  p = ggplot(toplot, aes(x=TranscriptomeReads, y=TranscriptomeGenomeRatio)) +scale_x_log10(breaks=10^c(0:8)) +coord_cartesian(xlim=c(1,1E8),ylim=c(0,1)) +geom_vline(xintercept=100000,col="red",alpha=0.5) +geom_hline(yintercept=0.5,col="red",alpha=0.5) +annotate("rect",xmin=0,xmax=Inf,ymin=-1,ymax=0.5,alpha=0.2,fill="red") +annotate("rect",xmin=0,xmax=100000,ymin=-1,ymax=1.1,alpha=0.2,fill="red") +geom_point() +ylab("# transcriptome reads / # genome reads") +xlab("# transcriptome reads (log10)") +ggtitle("QC result: overall")
+  if(is.data.frame(sampleGroups)){ p = p +facet_wrap(~sampleGroup)}
   print(p)
   
   ##
@@ -871,7 +878,7 @@ PlotData = function(sampleIDs, output.dir, taxonomyPath, sampleGroups=NA){
   toplot$Sample = factor(as.character(toplot$Sample), levels=rownames(mapping.stats)[sampleOrder])
   if(is.data.frame(sampleGroups)){ toplot$sampleGroup = sampleGroups[match(toplot$Sample, sampleGroups$sampleID), 2] }
   p = ggplot(toplot, aes(y=Sample, x=Stage, fill=Value, label=Actual)) +scale_fill_gradient2(low="red",high="white", midpoint=0.5) +geom_label() +theme(plot.background=element_rect(fill="white"),panel.background=element_rect(fill=rgb(0.97,0.97,0.97)), axis.text.x=element_text(angle=90, hjust=1, vjust=0.5), legend.position="none") +ggtitle("QC result: per-sample results") +xlab("") +ylab("")
-  if(is.data.frame(sampleGroups)){ p = p +facet_grid(~sampleGroup, scales="free_x")}
+  if(is.data.frame(sampleGroups)){ p = p +facet_wrap(~sampleGroup, scales="free_y", ncol=1)}
   print(p)
   
   
@@ -930,13 +937,6 @@ PlotData = function(sampleIDs, output.dir, taxonomyPath, sampleGroups=NA){
   
   
   
-  
-  
-  #par(mfrow=c(1,2), oma=c(15,0,0,0))
-  #boxplot(log10(exprs.miRNA[, sampleOrder]+1E-1), las=2, ylab="log10(miRNA counts)", main="miRNA read count")
-  #boxplot(log10(exprs.miRNA.rpm[, sampleOrder]+1E-1), las=2, ylab="log10(miRNA RPM)", main="miRNA RPM")
-  
-  
   ## Plot miRNA expression distributions
   if(nrow(exprs.miRNA) > 0){
     printMessage("Plotting miRNA expression distributions")
@@ -944,7 +944,7 @@ PlotData = function(sampleIDs, output.dir, taxonomyPath, sampleGroups=NA){
     colnames(tmp) = c("miRNA","sample","abundance")
     if(is.data.frame(sampleGroups)){ tmp$sampleGroup = sampleGroups[match(tmp$sample, sampleGroups$sampleID), 2] }
     p = ggplot(tmp, aes(y=abundance, x=sample, colour=sample)) +geom_violin() +geom_boxplot(alpha=0.2) +ylab("Read count") +ggtitle("miRNA abundance distributions (raw counts)") +scale_y_log10()
-    if(ncol(exprs.miRNA) > 30){ 
+    if(ncol(exprs.miRNA) < 30){ 
       p = p + guides(colour=FALSE) +theme(axis.text.x=element_text(angle = 90, hjust = 1))
     }else{
       p = p+theme(axis.ticks = element_blank(), axis.text.x = element_blank())
@@ -961,7 +961,7 @@ PlotData = function(sampleIDs, output.dir, taxonomyPath, sampleGroups=NA){
     colnames(tmp) = c("miRNA","sample","abundance")
     if(is.data.frame(sampleGroups)){ tmp$sampleGroup = sampleGroups[match(tmp$sample, sampleGroups$sampleID), 2] }
     p = ggplot(tmp, aes(y=abundance, x=sample, colour=sample)) +geom_violin() +geom_boxplot(alpha=0.2) +ylab("Reads per million (RPM)") +ggtitle("miRNA abundance distributions (RPM)") +theme(axis.ticks = element_blank(), axis.text.x = element_blank()) +scale_y_log10()
-    if(ncol(exprs.miRNA.rpm) > 30){ 
+    if(ncol(exprs.miRNA.rpm) < 30){ 
       p = p + guides(colour=FALSE) +theme(axis.text.x=element_text(angle = 90, hjust = 1))
     }else{
       p = p+theme(axis.ticks = element_blank(), axis.text.x = element_blank())
