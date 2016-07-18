@@ -8,7 +8,6 @@
 ##                                                                                      ##
 ##########################################################################################
 
-data.dir="/Users/robk/WORK/YALE_offline/exRNA/Kendall/PlasmaUrineSaliva/Combined"
 
 ##
 ## Main function to read and plot exceRpt output in a given directory
@@ -16,7 +15,7 @@ data.dir="/Users/robk/WORK/YALE_offline/exRNA/Kendall/PlasmaUrineSaliva/Combined
 processSamplesInDir = function(data.dir, output.dir=data.dir, scriptDir="~/Dropbox/Work/YALE/exRNA/exceRpt"){
   
   ##  Look for samples to merge
-  printMessage("Searching for valid exceRpt pipeline output...")
+  printMessage(c("Searching for valid exceRpt pipeline output in ",data.dir))
   samplePathList = unique(SearchForSampleData(data.dir,""))
   
   ## get sample names and remove duplicates:
