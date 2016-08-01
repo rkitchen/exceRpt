@@ -178,6 +178,8 @@ MAX_MISMATCHES_EXOGENOUS         | &lt;int&gt;              | [default: 0] maxim
 
 <p>This is the most labour-intensive mode of using exceRpt, but it offers the most flexibility.  Generally not recommended unless you are very familiar with the *NIX environment, shell scripting, and makefile syntax.  Detailed instructions on how to install exceRpt and its various dependencies will [one day] be listed toward the bottom of this page.</p>
 
+<p>In addition to the genome+transcriptome indices listed in the Docker section above, you will also require the core database that is contained within the Docker image.  <a href="http://homes.gersteinlab.org/people/rrk24/exceRpt/exceRptDB_v4_CORE.tgz">The CORE database can be downloaded here.</a>  Once this is extracted, it will create a DATABASE directory, into which the genome+transcriptome databases can be extracted.  If the DATABASE directory is located at the same path as the exceRpt_smallRNA makefile, it will be automatically detected.  If it is preferable to keep the DATABASE in a different location to the rest of the exceRpt executables and dependencies, this new path can be specified at runtime using the make flag: DATABASE_PATH=/path/to/exceRpt/DATABASE</p>
+
 <p>Once all dependencies are installed, the exceRpt pipeline can be run on a human sample (here an SRA binary file) using default parameters using the following skeleton command:</p>
 
 <pre><code>make -f exceRpt_smallRNA \
