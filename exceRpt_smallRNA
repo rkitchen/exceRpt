@@ -16,10 +16,10 @@
 ##                                                                                   ##
 ## Learn more at github.gersteinlab.org/exceRpt                                      ##
 ##                                                                                   ##
-## Version 4.3.4 (2016-08-02)                                                        ##
+## Version 4.3.5 (2016-08-16)                                                        ##
 ##                                                                                   ##
 #######################################################################################
-EXCERPT_VERSION := 4.3.4
+EXCERPT_VERSION := 4.3.5
 
 
 ##
@@ -38,6 +38,7 @@ MAIN_ORGANISM_GENOME_ID := hg38
 ## 3) *OPTIONAL* parameters for calibrator library and random barcodes
 ##
 ADAPTER_SEQ 				:= guessKnown
+MIN_ADAPTER_BASES_3p		:= 7
 CALIBRATOR_LIBRARY      	:= NULL
 TRIM_N_BASES_5p				:= 0
 TRIM_N_BASES_3p				:= 0
@@ -306,7 +307,7 @@ endif
 
 
 ## If no adapter clipping command has been set- use this one:
-COMMAND_CLIP_ADAPTER ?= $(COMMAND_CONVERT_SRA) > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).preClipped.fastq.tmp; $(FASTX_CLIP_EXE) $(FASTX_CLIP_COMMANDS_FOR_RANDOM_BARCODE) -Q$(shell cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).qualityEncoding) -a $(shell cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).adapterSeq) -l $(MIN_READ_LENGTH) -v -n -M 7 -i $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).preClipped.fastq.tmp -z -o $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.tmp.gz >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err; rm $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).preClipped.fastq.tmp
+COMMAND_CLIP_ADAPTER ?= $(COMMAND_CONVERT_SRA) > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).preClipped.fastq.tmp; $(FASTX_CLIP_EXE) $(FASTX_CLIP_COMMANDS_FOR_RANDOM_BARCODE) -Q$(shell cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).qualityEncoding) -a $(shell cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).adapterSeq) -l $(MIN_READ_LENGTH) -v -n -M $(MIN_ADAPTER_BASES_3p) -i $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).preClipped.fastq.tmp -z -o $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.tmp.gz >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err; rm $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).preClipped.fastq.tmp
 
 
 
