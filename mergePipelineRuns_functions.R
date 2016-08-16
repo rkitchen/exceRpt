@@ -4,7 +4,7 @@
 ##                                                                                      ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                           ##
 ##                                                                                      ##
-## Version 4.1.1 (2016-07-17)                                                           ##
+## Version 4.1.2 (2016-08-16)                                                           ##
 ##                                                                                      ##
 ##########################################################################################
 
@@ -297,6 +297,7 @@ readData = function(samplePathList, output.dir){
   ## Create objects to contain the data
   ##
   sample.data = vector(mode="list",length=length(samplePathList))
+  allIDs.calibrator = NULL
   allIDs.miRNA = NULL
   allIDs.tRNA = NULL
   allIDs.piRNA = NULL
@@ -349,16 +350,18 @@ readData = function(samplePathList, output.dir){
       ##
       ## Read the QC result
       ##
-      tmp.qc = read.table(paste(samplePathList[i],".qcResult",sep=""), stringsAsFactors=F, fill=T, header=F, sep=" ",skip=0)
       adapterConfidence = NA
-      if(tmp.qc[1,1] == "Adapter_confidence:"){
-        adapterConfidence = tmp.qc[1,2]
-        tmp.qc = tmp.qc[-1,]
+      qcOutcome = NA
+      if(paste(thisSampleID,".qcResult",sep="") %in% dir(samplePathList[i])){
+        tmp.qc = read.table(paste(samplePathList[i],".qcResult",sep=""), stringsAsFactors=F, fill=T, header=F, sep=" ",skip=0)
+        if(tmp.qc[1,1] == "Adapter_confidence:"){
+          adapterConfidence = tmp.qc[1,2]
+          tmp.qc = tmp.qc[-1,]
+        }
+        qcOutcome = tmp.qc[1,2]
+        qc.results[i, ] = as.numeric(tmp.qc[-1,2])
+        rownames(qc.results)[i] = thisSampleID
       }
-      qcOutcome = tmp.qc[1,2]
-      qc.results[i, ] = as.numeric(tmp.qc[-1,2])
-      rownames(qc.results)[i] = thisSampleID
-      
       
       ##
       ## Read the adapter sequence
@@ -370,6 +373,16 @@ readData = function(samplePathList, output.dir){
         }else{
           adapterSeq = as.character(tmp.seq[1,1])
         }
+      }
+      
+      
+      ##
+      ## Read the calibrator counts, if available
+      ##
+      calibratorCounts = NULL
+      if(paste(thisSampleID,".clipped.filtered.calibratormapped.counts",sep="") %in% dir(samplePathList[i])){
+        calibratorCounts = read.table(paste(samplePathList[i],"/",thisSampleID,".clipped.filtered.calibratormapped.counts",sep=""), stringsAsFactors=F)[,2:1]
+        colnames(calibratorCounts) = c("calibratorID","readCount")
       }
       
       
@@ -493,6 +506,7 @@ readData = function(samplePathList, output.dir){
       
       
       # Update list of detected smallRNA IDs
+      allIDs.calibrator = unique(c(allIDs.calibrator, as.character(calibratorCounts$calibratorID)))
       allIDs.miRNA = unique(c(allIDs.miRNA, as.character(miRNA_sense$ID)))
       allIDs.tRNA = unique(c(allIDs.tRNA, as.character(tRNA_sense$ID)))
       allIDs.piRNA = unique(c(allIDs.piRNA, rownames(piRNA_sense)))
@@ -501,7 +515,7 @@ readData = function(samplePathList, output.dir){
       allIDs.exogenous_miRNA = unique(c(allIDs.exogenous_miRNA, exogenous_miRNA_IDs))
       allIDs.exogenous_genomes = unique(c(allIDs.exogenous_genomes, exogenous_genomes_IDs))
       
-      sample.data[[i]] = list("miRNA_sense"=miRNA_sense,"miRNA_antisense"=miRNA_antisense, "tRNA_sense"=tRNA_sense,"tRNA_antisense"=tRNA_antisense, "piRNA_sense"=piRNA_sense,"piRNA_antisense"=piRNA_antisense, "gencode_sense"=gencode_sense,"gencode_antisense"=gencode_antisense, "circRNA_sense"=circRNA_sense,"circRNA_antisense"=circRNA_antisense, "exogenous_miRNA_sense"=exogenous_miRNA_sense, "exogenous_genomes"=exogenous_genomes, "adapterSeq"=adapterSeq, "adapterConfidence"=adapterConfidence, "qcOutcome"=qcOutcome, "runTiming"=runTiming)
+      sample.data[[i]] = list("miRNA_sense"=miRNA_sense,"miRNA_antisense"=miRNA_antisense, "tRNA_sense"=tRNA_sense,"tRNA_antisense"=tRNA_antisense, "piRNA_sense"=piRNA_sense,"piRNA_antisense"=piRNA_antisense, "gencode_sense"=gencode_sense,"gencode_antisense"=gencode_antisense, "circRNA_sense"=circRNA_sense,"circRNA_antisense"=circRNA_antisense, "exogenous_miRNA_sense"=exogenous_miRNA_sense, "exogenous_genomes"=exogenous_genomes, "adapterSeq"=adapterSeq, "adapterConfidence"=adapterConfidence, "qcOutcome"=qcOutcome, "runTiming"=runTiming, "calibratorCounts"=calibratorCounts)
       names(sample.data)[i] = thisSampleID
       
       
@@ -534,7 +548,7 @@ readData = function(samplePathList, output.dir){
   ##
   ## Collect IDs
   ##
-  allIDs = list("miRNA_sense"=allIDs.miRNA, "tRNA_sense"=allIDs.tRNA, "piRNA_sense"=allIDs.piRNA, "gencode_sense"=allIDs.gencode, "circRNA_sense"=allIDs.circularRNA, "exogenous_miRNA"=allIDs.exogenous_miRNA, "exogenous_genomes"=allIDs.exogenous_genomes)
+  allIDs = list("calibrator"=allIDs.calibrator, "miRNA_sense"=allIDs.miRNA, "tRNA_sense"=allIDs.tRNA, "piRNA_sense"=allIDs.piRNA, "gencode_sense"=allIDs.gencode, "circRNA_sense"=allIDs.circularRNA, "exogenous_miRNA"=allIDs.exogenous_miRNA, "exogenous_genomes"=allIDs.exogenous_genomes)
   
   
   ##
@@ -544,6 +558,9 @@ readData = function(samplePathList, output.dir){
   #run.duration = data.frame(runDuration_string=rep("",length(sample.data)), runDuration_secs=rep(0,length(sample.data)),stringsAsFactors = F)
   run.duration = data.frame(runDuration_secs=rep(0,length(sample.data)),stringsAsFactors = F)
   rownames(run.duration) = names(sample.data)
+  
+  exprs.calibrator = matrix(0,ncol=length(sample.data),nrow=length(allIDs$calibrator), dimnames=list(allIDs$calibrator, names(sample.data)))
+  
   exprs.miRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$miRNA_sense), dimnames=list(allIDs$miRNA_sense, names(sample.data)))
   exprs.tRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$tRNA_sense), dimnames=list(allIDs$tRNA_sense, names(sample.data)))
   exprs.piRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$piRNA_sense), dimnames=list(allIDs$piRNA_sense, names(sample.data)))
@@ -554,6 +571,10 @@ readData = function(samplePathList, output.dir){
   exprs.exogenousGenomes_cumulative = matrix(0,ncol=length(sample.data),nrow=length(allIDs$exogenous_genomes), dimnames=list(allIDs$exogenous_genomes, names(sample.data)))
   for(i in 1:length(sample.data)){
     run.duration[i,] = sample.data[[i]]$runTiming[1,4,drop=F]
+    
+    if(!is.null(nrow(sample.data[[i]]$exprs.calibrator)))
+      exprs.calibrator[match(sample.data[[i]]$calibratorCounts$calibratorID, rownames(exprs.calibrator)),i] = as.numeric(sample.data[[i]]$calibratorCounts$readCount)
+    
     exprs.miRNA[match(sample.data[[i]]$miRNA_sense$ID, rownames(exprs.miRNA)),i] = as.numeric(sample.data[[i]]$miRNA_sense$multimapAdjustedReadCount)
     exprs.tRNA[match(sample.data[[i]]$tRNA_sense$ID, rownames(exprs.tRNA)),i] = as.numeric(sample.data[[i]]$tRNA_sense$multimapAdjustedReadCount)
     exprs.piRNA[match(rownames(sample.data[[i]]$piRNA_sense), rownames(exprs.piRNA)),i] = as.numeric(sample.data[[i]]$piRNA_sense$multimapAdjustedReadCount)
@@ -589,11 +610,23 @@ readData = function(samplePathList, output.dir){
   ##
   printMessage("Saving raw data to disk")
   #save(exprs.miRNA, exprs.tRNA, exprs.piRNA, exprs.gencode, exprs.circRNA, exprs.exogenous_miRNA, exprs.exogenous_genomes, mapping.stats, libSizes, read.lengths, file=paste(output.dir, "exceRpt_smallRNAQuants_ReadCounts.RData", sep="/"))
-  save(exprs.miRNA, exprs.tRNA, exprs.piRNA, exprs.gencode, exprs.circRNA, exprs.exogenous_miRNA, exprs.exogenousGenomes_specific, exprs.exogenousGenomes_cumulative, mapping.stats, qc.results, libSizes, read.lengths, run.duration, file=paste(output.dir, "exceRpt_smallRNAQuants_ReadCounts.RData", sep="/"))
+  save(exprs.miRNA, exprs.tRNA, exprs.piRNA, exprs.gencode, exprs.circRNA, exprs.exogenous_miRNA, exprs.exogenousGenomes_specific, exprs.exogenousGenomes_cumulative, mapping.stats, qc.results, libSizes, read.lengths, run.duration, exprs.calibrator, file=paste(output.dir, "exceRpt_smallRNAQuants_ReadCounts.RData", sep="/"))
+  
+  if(nrow(exprs.calibrator) > 0)
+    write.table(exprs.calibrator, file=paste(output.dir, "exceRpt_CALIBRATOR_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+  if(nrow(exprs.miRNA) > 0)
   write.table(exprs.miRNA, file=paste(output.dir, "exceRpt_miRNA_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+  
+  if(nrow(exprs.tRNA) > 0)
   write.table(exprs.tRNA, file=paste(output.dir, "exceRpt_tRNA_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+  
+  if(nrow(exprs.piRNA) > 0)
   write.table(exprs.piRNA, file=paste(output.dir, "exceRpt_piRNA_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+  
+  if(nrow(exprs.gencode) > 0)
   write.table(exprs.gencode, file=paste(output.dir, "exceRpt_gencode_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+  
+  if(nrow(exprs.circRNA) > 0)
   write.table(exprs.circRNA, file=paste(output.dir, "exceRpt_circularRNA_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
   
   if(nrow(exprs.exogenous_miRNA) > 0)
