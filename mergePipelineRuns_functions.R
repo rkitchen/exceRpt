@@ -572,7 +572,7 @@ readData = function(samplePathList, output.dir){
   for(i in 1:length(sample.data)){
     run.duration[i,] = sample.data[[i]]$runTiming[1,4,drop=F]
     
-    if(!is.null(nrow(sample.data[[i]]$exprs.calibrator)))
+    if(!is.null(nrow(sample.data[[i]]$calibratorCounts)))
       exprs.calibrator[match(sample.data[[i]]$calibratorCounts$calibratorID, rownames(exprs.calibrator)),i] = as.numeric(sample.data[[i]]$calibratorCounts$readCount)
     
     exprs.miRNA[match(sample.data[[i]]$miRNA_sense$ID, rownames(exprs.miRNA)),i] = as.numeric(sample.data[[i]]$miRNA_sense$multimapAdjustedReadCount)
