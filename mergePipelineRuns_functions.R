@@ -4,7 +4,7 @@
 ##                                                                                      ##
 ## Author: Rob Kitchen (rob.kitchen@yale.edu)                                           ##
 ##                                                                                      ##
-## Version 4.1.2 (2016-08-16)                                                           ##
+## Version 4.1.3 (2016-08-18)                                                           ##
 ##                                                                                      ##
 ##########################################################################################
 
@@ -380,8 +380,8 @@ readData = function(samplePathList, output.dir){
       ## Read the calibrator counts, if available
       ##
       calibratorCounts = NULL
-      if(paste(thisSampleID,".clipped.filtered.calibratormapped.counts",sep="") %in% dir(samplePathList[i])){
-        calibratorCounts = read.table(paste(samplePathList[i],"/",thisSampleID,".clipped.filtered.calibratormapped.counts",sep=""), stringsAsFactors=F)[,2:1]
+      if(paste(thisSampleID,".clipped.trimmed.filtered.calibratormapped.counts",sep="") %in% dir(samplePathList[i])){
+        calibratorCounts = read.table(paste(samplePathList[i],"/",thisSampleID,".clipped.trimmed.filtered.calibratormapped.counts",sep=""), stringsAsFactors=F)[,2:1]
         colnames(calibratorCounts) = c("calibratorID","readCount")
       }
       
