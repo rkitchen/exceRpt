@@ -976,7 +976,7 @@ PlotData = function(sampleIDs, output.dir, taxonomyPath, sampleGroups=NA){
   print(p)
   
   ## save the biotype counts
-  write.table(sampleTotals[order(apply(sampleTotals, 1, median, na.rm=T), decreasing=T), ,drop=F], file=paste(output.dir, "exceRpt_BiotypeCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+  write.table(sampleTotals[order(apply(sampleTotals, 1, median, na.rm=T), decreasing=T), ,drop=F], file=paste(output.dir, "exceRpt_biotypeCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
   
   
   ## Plot miRNA expression distributions
