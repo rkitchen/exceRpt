@@ -2,9 +2,9 @@
 ##                                                                                      ##
 ## Functions to combine pipeline runs for individual samples into something more useful ##
 ##                                                                                      ##
-## Author: Rob Kitchen (rob.kitchen@yale.edu)                                           ##
+## Author: Rob Kitchen (r.r.kitchen@gmail.com)                                          ##
 ##                                                                                      ##
-## Version 4.1.3 (2016-08-18)                                                           ##
+## Version 4.1.4 (2016-09-02)                                                           ##
 ##                                                                                      ##
 ##########################################################################################
 
@@ -975,6 +975,8 @@ PlotData = function(sampleIDs, output.dir, taxonomyPath, sampleGroups=NA){
   if(is.data.frame(sampleGroups)){ p = p +facet_grid(~sampleGroup, scales="free_x")}
   print(p)
   
+  ## save the biotype counts
+  write.table(sampleTotals[order(apply(sampleTotals, 1, median, na.rm=T), decreasing=T), ,drop=F], file=paste(output.dir, "exceRpt_BiotypeCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
   
   
   ## Plot miRNA expression distributions

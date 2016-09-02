@@ -1,5 +1,5 @@
 FROM rkitchen/excerpt_base:latest
-MAINTAINER Rob Kitchen <rob.kitchen@yale.edu>
+MAINTAINER Rob Kitchen <r.r.kitchen@gmail.com>
 
 ##
 ## Add exceRpt executables

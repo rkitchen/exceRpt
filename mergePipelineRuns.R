@@ -2,7 +2,7 @@
 ##                                                                                   ##
 ## Script to combine pipeline runs for individual samples into something more useful ##
 ##                                                                                   ##
-## Author: Rob Kitchen (rob.kitchen@yale.edu)                                        ##
+## Author: Rob Kitchen (r.r.kitchen@gmail.com)                                       ##
 ##                                                                                   ##
 ## Version 3.2.0 (2015-11-02)                                                        ##
 ##                                                                                   ##
