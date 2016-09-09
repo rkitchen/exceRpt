@@ -4,7 +4,7 @@
 ##                                                                                      ##
 ## Author: Rob Kitchen (r.r.kitchen@gmail.com)                                          ##
 ##                                                                                      ##
-## Version 4.1.4 (2016-09-02)                                                           ##
+## Version 4.1.5 (2016-09-09)                                                           ##
 ##                                                                                      ##
 ##########################################################################################
 
@@ -352,7 +352,7 @@ readData = function(samplePathList, output.dir){
       ##
       adapterConfidence = NA
       qcOutcome = NA
-      if(paste(thisSampleID,".qcResult",sep="") %in% dir(samplePathList[i])){
+      if(file.exists(paste(samplePathList[i],".qcResult",sep=""))){
         tmp.qc = read.table(paste(samplePathList[i],".qcResult",sep=""), stringsAsFactors=F, fill=T, header=F, sep=" ",skip=0)
         if(tmp.qc[1,1] == "Adapter_confidence:"){
           adapterConfidence = tmp.qc[1,2]
@@ -728,45 +728,6 @@ PlotData = function(sampleIDs, output.dir, taxonomyPath, sampleGroups=NA){
   
   
   ##
-  ## Guess sample grouping based on their names
-  ##
-  #sampleNames = rownames(mapping.stats)
-  #tmp = adist(sampleNames,ignore.case=T)
-  #dimnames(tmp) = list(sampleNames,sampleNames)
-  #par(mfrow=c(1,1))
-  #plot(hclust(as.dist(tmp)))
-  
-  ##
-  ## Calculate optimal number of sample groups
-  ##
-  #require(cluster)
-  #K.max=10
-  #B=200
-  ## Slightly faster way to use pam (see below)
-  #pam1 <- function(x,k) list(cluster = pam(x,k, cluster.only=TRUE))
-  #gs.kmeans <- clusGap(t(tmp), FUN=kmeans, nstart=3, K.max=K.max, B=B)
-  #gs.pam <- clusGap(t(tmp), FUN=pam1, K.max=K.max, B=B)
-  ## plot?
-  ##par(mfrow=c(2,1))
-  ##ylim=c(0.3,0.45)
-  ##ylim=NULL
-  ##plot(gs.kmeans, ylim=ylim, main="kmeans"); abline(h=0.398, col="darkgreen")
-  ##plot(gs.pam, ylim=ylim, main="pam"); abline(h=0.406, col="darkgreen")
-  ## find optimal cluster number
-  #nGroups.kmeans = as.numeric(names(sort(table(sapply(c(1/4, 1,2,4), function(SEf){ sapply(eval(formals(maxSE)$method), function(M){maxSE(gs.kmeans$Tab[,3], gs.kmeans$Tab[,4], method = M, SE.factor = SEf)}) })),decreasing=T)[1]))
-  #nGroups.pam = as.numeric(names(sort(table(sapply(c(1/4, 1,2,4), function(SEf){ sapply(eval(formals(maxSE)$method), function(M){maxSE(gs.pam$Tab[,3], gs.pam$Tab[,4], method=M, SE.factor=SEf)}) })),decreasing=T)[1]))
-  #as.numeric(names(sort(table(sapply(c(1/4, 1,2,4), function(SEf){ sapply(eval(formals(maxSE)$method), function(M){maxSE(gs.kmeans$Tab[,3], gs.kmeans$Tab[,4], method = M, SE.factor = SEf)}) })[3,]),decreasing=T)[1]))
-  #as.numeric(names(sort(table(sapply(c(1/4, 1,2,4), function(SEf){ sapply(eval(formals(maxSE)$method), function(M){maxSE(gs.pam$Tab[,3], gs.pam$Tab[,4], method = M, SE.factor = SEf)}) })[3,]),decreasing=T)[1]))
-  ##if(nGroups.pam <= 5){
-  ## 
-  #  
-  #}
-  
-  
-  
-  
-  
-  ##
   ## Open PDF for diagnostic plots
   ##
   printMessage("Creating QC plots")
@@ -819,12 +780,14 @@ PlotData = function(sampleIDs, output.dir, taxonomyPath, sampleGroups=NA){
   tmp$colour[tmp$colour == 1] = "red"
   tmp$colour[tmp$colour == 2] = "green"
   tmp$colour[tmp$colour == 3] = "blue"
-  p = ggplot(tmp, aes(x=sampleID,y=runDuration_seconds,fill=colour)) +geom_bar(stat="identity") +facet_grid(~category,scales="free_x",space="free_x") +guides(fill=FALSE) +theme(axis.text.x=element_text(angle=90, hjust=1,vjust=0.5))
+  tmp$runDuration_minutes = tmp$runDuration_seconds/60
+  tmp$runDuration_hours = tmp$runDuration_minutes/60
+  p = ggplot(tmp, aes(x=sampleID,y=runDuration_hours,fill=colour)) +geom_bar(stat="identity") +facet_grid(~category,scales="free_x",space="free_x") +guides(fill=FALSE) +theme(axis.text.x=element_text(angle=60, hjust=1.0, vjust=1)) +ggtitle("Duration of exceRpt run for each sample") +ylab("Run duration (hours)")
   print(p)
   
   if(is.data.frame(sampleGroups)){ tmp$sampleGroup = sampleGroups[match(tmp$sampleID, sampleGroups$sampleID), 2] }
-  p = ggplot(tmp, aes(x=inputReadCount,y=runDuration_seconds,colour=colour)) +geom_point(size=10) +guides(colour=FALSE) +scale_y_log10(limits=c(1,10^ceiling(log10(max(tmp$runDuration_seconds)))), breaks=10^seq(1:ceiling(log10(max(tmp$runDuration_seconds))))) +scale_x_log10(limits=c(min(c(100000,10^floor(log10(min(tmp$inputReadCount+1))))),10^ceiling(log10(max(tmp$inputReadCount)))), breaks=10^seq(min(c(100000,floor(log10(min(tmp$inputReadCount+1))))),ceiling(log10(max(tmp$inputReadCount)))))
-  if(is.data.frame(sampleGroups)){ p = p +facet_wrap(~sampleGroup,ncol=1)}
+  p = ggplot(tmp, aes(x=inputReadCount,y=runDuration_hours,colour=colour)) +geom_point(size=5) +guides(colour=FALSE) +scale_y_log10(limits=c(0.1,10^ceiling(log10(max(tmp$runDuration_hours)))), breaks=c(0.1,1,10^seq(0:ceiling(log10(max(tmp$runDuration_hours)))))) +scale_x_log10(limits=c(min(c(100000,10^floor(log10(min(tmp$inputReadCount+1))))),10^ceiling(log10(max(tmp$inputReadCount)))), breaks=10^seq(min(c(100000,floor(log10(min(tmp$inputReadCount+1))))),ceiling(log10(max(tmp$inputReadCount))))) +ggtitle("Duration of exceRpt run per sequencing yield") +ylab("Run duration (hours)") +xlab("Total number of reads input")
+  #if(is.data.frame(sampleGroups)){ p = p +facet_wrap(~sampleGroup,ncol=1)}
   print(p)
   
   
@@ -848,6 +811,11 @@ PlotData = function(sampleIDs, output.dir, taxonomyPath, sampleGroups=NA){
   mapping.stats.orig = mapping.stats
   mapping.stats = mapping.stats[,-grep("input_to_",colnames(mapping.stats))]
   
+  ## remove the exogenous stuff from the stats if this wasn't used in the run
+  if(sum(mapping.stats[,23:27]) == 0)
+    mapping.stats = mapping.stats[, -c(23:27)]
+  
+  
   ##
   ## Plot heatmap of mapping percentages through the pipeline
   ##
@@ -856,7 +824,7 @@ PlotData = function(sampleIDs, output.dir, taxonomyPath, sampleGroups=NA){
   toplot$Stage = with(toplot, factor(Stage, levels = rev(levels(Stage))))
   toplot$Sample = factor(as.character(toplot$Sample), levels=rownames(mapping.stats)[sampleOrder])
   if(is.data.frame(sampleGroups)){ toplot$sampleGroup = sampleGroups[match(toplot$Sample, sampleGroups$sampleID), 2] }
-  p = ggplot(toplot, aes(x=Sample, y=Stage, group=Sample, fill=ReadFraction, label=sprintf("%1.1f%%",ReadFraction*100))) +geom_tile() +scale_fill_gradient2(low="white",high="yellow",mid="steelblue", midpoint=0.5) +theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5)) +ggtitle("fraction aligned reads (normalised by # input reads)")
+  p = ggplot(toplot, aes(x=Sample, y=Stage, group=Sample, fill=ReadFraction, label=sprintf("%1.1f%%",ReadFraction*100))) +geom_tile() +scale_fill_gradient2(low="white",high="yellow",mid="steelblue", midpoint=0.5) +theme(axis.text.x=element_text(angle=40, hjust=1.0, vjust=1)) +ggtitle("fraction aligned reads (normalised by # input reads)")
   if(nrow(mapping.stats) < 50){ p = p +geom_text(size=3) }
   if(is.data.frame(sampleGroups)){ p = p +facet_grid(~sampleGroup, scales="free_x")}
   print(p)
@@ -866,11 +834,15 @@ PlotData = function(sampleIDs, output.dir, taxonomyPath, sampleGroups=NA){
   ##
   printMessage("Plotting mapping stats heatmap (2/3)")
   if(max(mapping.stats$successfully_clipped) > 0){
-    toplot = melt(as.matrix(mapping.stats / mapping.stats$successfully_clipped)[,-1,drop=F]); colnames(toplot) = c("Sample","Stage","ReadFraction")
+    tmp = mapping.stats
+    i.toFix = which(tmp$successfully_clipped == 0)
+    if(length(i.toFix) > 0)
+      tmp$successfully_clipped[i.toFix] = tmp$input[i.toFix]
+    toplot = melt(as.matrix(tmp / tmp$successfully_clipped)[,-1,drop=F]); colnames(toplot) = c("Sample","Stage","ReadFraction")
     toplot$Stage = with(toplot, factor(Stage, levels = rev(levels(Stage))))
     toplot$Sample = factor(as.character(toplot$Sample), levels=rownames(mapping.stats)[sampleOrder])
     if(is.data.frame(sampleGroups)){ toplot$sampleGroup = sampleGroups[match(toplot$Sample, sampleGroups$sampleID), 2] }
-    p = ggplot(toplot, aes(x=Sample, y=Stage, group=Sample, fill=ReadFraction, label=sprintf("%1.1f%%",ReadFraction*100))) +geom_tile() +scale_fill_gradient2(low="white",high="yellow",mid="steelblue", midpoint=0.5) +theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5)) +ggtitle("fraction aligned reads (normalised by # adapter-clipped reads)")
+    p = ggplot(toplot, aes(x=Sample, y=Stage, group=Sample, fill=ReadFraction, label=sprintf("%1.1f%%",ReadFraction*100))) +geom_tile() +scale_fill_gradient2(low="white",high="yellow",mid="steelblue", midpoint=0.5) +theme(axis.text.x=element_text(angle=40, hjust=1.0, vjust=1)) +ggtitle("fraction aligned reads (normalised by # adapter-clipped reads)")
     if(nrow(mapping.stats) < 50){ p = p +geom_text(size=3) }
     if(is.data.frame(sampleGroups)){ p = p +facet_grid(~sampleGroup, scales="free_x")}
     print(p)
@@ -884,7 +856,7 @@ PlotData = function(sampleIDs, output.dir, taxonomyPath, sampleGroups=NA){
   toplot$Stage = with(toplot, factor(Stage, levels = rev(levels(Stage))))
   toplot$Sample = factor(as.character(toplot$Sample), levels=rownames(mapping.stats)[sampleOrder])
   if(is.data.frame(sampleGroups)){ toplot$sampleGroup = sampleGroups[match(toplot$Sample, sampleGroups$sampleID), 2] }
-  p = ggplot(toplot, aes(x=Sample, y=Stage, group=Sample, fill=ReadFraction, label=sprintf("%1.1f%%",ReadFraction*100))) +geom_tile() +scale_fill_gradient2(low="white",high="yellow",mid="steelblue", midpoint=0.5) +theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5)) +ggtitle("fraction aligned reads (normalised by # non-contaminant reads)")
+  p = ggplot(toplot, aes(x=Sample, y=Stage, group=Sample, fill=ReadFraction, label=sprintf("%1.1f%%",ReadFraction*100))) +geom_tile() +scale_fill_gradient2(low="white",high="yellow",mid="steelblue", midpoint=0.5) +theme(axis.text.x=element_text(angle=40, hjust=1.0, vjust=1)) +ggtitle("fraction aligned reads (normalised by # non-contaminant reads)")
   if(nrow(mapping.stats) < 50){ p = p +geom_text(size=3) }
   if(is.data.frame(sampleGroups)){ p = p +facet_grid(~sampleGroup, scales="free_x")}
   print(p)
@@ -910,15 +882,15 @@ PlotData = function(sampleIDs, output.dir, taxonomyPath, sampleGroups=NA){
   tmp.mat[,1] = rep(1,nrow(tmp.mat))
   tmp.mat[,2] = rep(1,nrow(tmp.mat))
   tmp.mat[,5] = rep(1,nrow(tmp.mat))
-  tmp.pass=tmp.mat[,3] >= 100000;  tmp.mat[tmp.pass,3] = 1; tmp.mat[!tmp.pass,3] = 0
-  tmp.pass=tmp.mat[,4] >= 0.5;  tmp.mat[tmp.pass,4] = 1; tmp.mat[!tmp.pass,4] = 0
+  tmp.pass=tmp.mat[,3] >= 100000;  tmp.mat[tmp.pass,3] = "pass"; tmp.mat[!tmp.pass,3] = "fail"
+  tmp.pass=tmp.mat[,4] >= 0.5;  tmp.mat[tmp.pass,4] = "pass"; tmp.mat[!tmp.pass,4] = "fail"
   
   toplot=cbind(melt(tmp.mat), Actual=melt(qc.results)[,3]); colnames(toplot)[1:3]=c("Sample","Stage","Value")
   #toplot$Stage = with(toplot, factor(Stage, levels = rev(levels(Stage))))
   toplot$Sample = factor(as.character(toplot$Sample), levels=rownames(mapping.stats)[sampleOrder])
   if(is.data.frame(sampleGroups)){ toplot$sampleGroup = sampleGroups[match(toplot$Sample, sampleGroups$sampleID), 2] }
-  p = ggplot(toplot, aes(y=Sample, x=Stage, fill=Value, label=Actual)) +scale_fill_gradient2(low="red",high="white", midpoint=0.5) +geom_label() +theme(plot.background=element_rect(fill="white"),panel.background=element_rect(fill=rgb(0.97,0.97,0.97)), axis.text.x=element_text(angle=90, hjust=1, vjust=0.5), legend.position="none") +ggtitle("QC result: per-sample results") +xlab("") +ylab("")
-  if(is.data.frame(sampleGroups)){ p = p +facet_wrap(~sampleGroup, scales="free_y", ncol=1)}
+  p = ggplot(toplot, aes(y=Sample, x=Stage, fill=Value, label=Actual)) +scale_fill_manual(values=c("fail"="red","pass"="palegreen")) +geom_label() +theme(plot.background=element_rect(fill="white"),panel.background=element_rect(fill=rgb(0.97,0.97,0.97)), axis.text.x=element_text(angle=20, hjust=1, vjust=1), legend.position="none") +ggtitle("QC result: per-sample results") +xlab("") +ylab("")
+  #if(is.data.frame(sampleGroups)){ p = p +facet_wrap(~sampleGroup, scales="free_y", ncol=1)}
   print(p)
   
   
@@ -971,13 +943,34 @@ PlotData = function(sampleIDs, output.dir, taxonomyPath, sampleGroups=NA){
   tmp = melt(as.matrix(sampleTotals))
   colnames(tmp) = c("biotype","sampleID","readCount")
   if(is.data.frame(sampleGroups)){ tmp$sampleGroup = sampleGroups[match(tmp$sampleID, sampleGroups$sampleID), 2] }
-  p = ggplot(na.omit(tmp), aes(y=readCount,x=biotype, colour=biotype)) +geom_hline(aes(yintercept=1),linetype="dashed") +geom_boxplot() +scale_y_log10(breaks=c(0.01,0.1,1,10,100,1000,10000,100000,1000000,10000000,100000000)) +guides(colour=FALSE) +coord_flip()
+  p = ggplot(na.omit(tmp), aes(y=readCount,x=biotype, colour=biotype)) +geom_hline(aes(yintercept=1),linetype="dashed") +geom_boxplot() +scale_y_log10(breaks=c(0.01,0.1,1,10,100,1000,10000,100000,1000000,10000000,100000000)) +guides(colour=FALSE) +coord_flip() +ggtitle("Biotypes: distributions, raw read-counts")
   if(is.data.frame(sampleGroups)){ p = p +facet_grid(~sampleGroup, scales="free_x")}
   print(p)
   
   ## save the biotype counts
   write.table(sampleTotals[order(apply(sampleTotals, 1, median, na.rm=T), decreasing=T), ,drop=F], file=paste(output.dir, "exceRpt_biotypeCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
   
+  
+  ## plot biotype breakdown as RPM:
+  tmp = melt(as.matrix(apply(sampleTotals, 2, function(col){ col*1000000/sum(col) })))
+  colnames(tmp) = c("biotype","sampleID","readPerMillion")
+  if(is.data.frame(sampleGroups)){ tmp$sampleGroup = sampleGroups[match(tmp$sampleID, sampleGroups$sampleID), 2] }
+  p = ggplot(na.omit(tmp), aes(y=readPerMillion,x=biotype, colour=biotype)) +geom_hline(aes(yintercept=1),linetype="dashed") +geom_boxplot() +scale_y_log10(breaks=c(0.01,0.1,1,10,100,1000,10000,100000,1000000,10000000,100000000)) +guides(colour=FALSE) +coord_flip() +ggtitle("Biotypes: distributions, normalised")
+  if(is.data.frame(sampleGroups)){ p = p +facet_grid(~sampleGroup, scales="free_x")}
+  print(p)
+
+  
+  ## plot top N biotypes for each sample as a barplot
+  N = 7
+  tmp = as.matrix(apply(sampleTotals, 2, function(col){ col*1000000/sum(col) }))
+  tmp = tmp[order(apply(tmp, 1, mean), decreasing=T), ]
+  tmp = melt(rbind(tmp[1:N, ], other=colSums(tmp[-c(1:N), ])))
+  colnames(tmp) = c("biotype","sampleID","readsPerMillion")
+  if(is.data.frame(sampleGroups)){ tmp$sampleGroup = sampleGroups[match(tmp$sampleID, sampleGroups$sampleID), 2] }
+  p = ggplot(na.omit(tmp), aes(y=readsPerMillion,x=sampleID,fill=biotype)) +geom_bar(stat="identity") +scale_fill_brewer(palette = "Spectral") +theme(axis.text.x=element_text(angle=50, hjust=1.0, vjust=1)) +ggtitle("Biotypes: per-sample, normalised")
+  if(is.data.frame(sampleGroups)){ p = p +facet_grid(~sampleGroup, scales="free_x")}
+  print(p)
+    
   
   ## Plot miRNA expression distributions
   if(nrow(exprs.miRNA) > 0){
@@ -987,7 +980,7 @@ PlotData = function(sampleIDs, output.dir, taxonomyPath, sampleGroups=NA){
     if(is.data.frame(sampleGroups)){ tmp$sampleGroup = sampleGroups[match(tmp$sample, sampleGroups$sampleID), 2] }
     p = ggplot(tmp, aes(y=abundance, x=sample, colour=sample)) +geom_violin() +geom_boxplot(alpha=0.2) +ylab("Read count") +ggtitle("miRNA abundance distributions (raw counts)") +scale_y_log10()
     if(ncol(exprs.miRNA) < 30){ 
-      p = p + guides(colour=FALSE) +theme(axis.text.x=element_text(angle = 90, hjust = 1))
+      p = p + guides(colour=FALSE) +theme(axis.text.x=element_text(angle=50, hjust=1.0, vjust=1))
     }else{
       p = p+theme(axis.ticks = element_blank(), axis.text.x = element_blank())
     }
@@ -1004,7 +997,7 @@ PlotData = function(sampleIDs, output.dir, taxonomyPath, sampleGroups=NA){
     if(is.data.frame(sampleGroups)){ tmp$sampleGroup = sampleGroups[match(tmp$sample, sampleGroups$sampleID), 2] }
     p = ggplot(tmp, aes(y=abundance, x=sample, colour=sample)) +geom_violin() +geom_boxplot(alpha=0.2) +ylab("Reads per million (RPM)") +ggtitle("miRNA abundance distributions (RPM)") +theme(axis.ticks = element_blank(), axis.text.x = element_blank()) +scale_y_log10()
     if(ncol(exprs.miRNA.rpm) < 30){ 
-      p = p + guides(colour=FALSE) +theme(axis.text.x=element_text(angle = 90, hjust = 1))
+      p = p + guides(colour=FALSE) +theme(axis.text.x=element_text(angle=50, hjust=1.0, vjust=1))
     }else{
       p = p+theme(axis.ticks = element_blank(), axis.text.x = element_blank())
     }
