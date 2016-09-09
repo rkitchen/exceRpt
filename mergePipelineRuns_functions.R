@@ -868,10 +868,20 @@ PlotData = function(sampleIDs, output.dir, taxonomyPath, sampleGroups=NA){
   printMessage("Plotting QC result")
   toplot = as.data.frame(qc.results)
   toplot$Sample = factor(rownames(toplot), levels=rownames(mapping.stats)[sampleOrder])
-  if(is.data.frame(sampleGroups)){ toplot$sampleGroup = sampleGroups[match(toplot$Sample, sampleGroups$sampleID), 2] }
-  p = ggplot(toplot, aes(x=TranscriptomeReads, y=TranscriptomeGenomeRatio)) +scale_x_log10(breaks=10^c(0:8)) +coord_cartesian(xlim=c(1,1E8),ylim=c(0,1)) +geom_vline(xintercept=100000,col="red",alpha=0.5) +geom_hline(yintercept=0.5,col="red",alpha=0.5) +annotate("rect",xmin=0,xmax=Inf,ymin=-1,ymax=0.5,alpha=0.2,fill="red") +annotate("rect",xmin=0,xmax=100000,ymin=-1,ymax=1.1,alpha=0.2,fill="red") +geom_point() +ylab("# transcriptome reads / # genome reads") +xlab("# transcriptome reads (log10)") +ggtitle("QC result: overall")
-  if(is.data.frame(sampleGroups)){ p = p +facet_wrap(~sampleGroup)}
-  print(p)
+  p = ggplot(toplot, aes(x=TranscriptomeReads, y=TranscriptomeGenomeRatio))
+  if(is.data.frame(sampleGroups)){ 
+    toplot$sampleGroup = sampleGroups[match(toplot$Sample, sampleGroups$sampleID), 2] 
+    p = ggplot(toplot, aes(x=TranscriptomeReads, y=TranscriptomeGenomeRatio, colour=sampleGroup))
+  }
+  minX = floor(log10(min(toplot$TranscriptomeReads)+0.001))
+  maxX = ceiling(log10(max(toplot$TranscriptomeReads)+0.001))
+  p = p +scale_x_log10(breaks=10^c(minX:maxX)) +coord_cartesian(xlim=c(10^(minX),10^(maxX)),ylim=c(0,1)) +geom_vline(xintercept=100000,col="red",alpha=0.5) +geom_hline(yintercept=0.5,col="red",alpha=0.5) +annotate("rect",xmin=0,xmax=Inf,ymin=-1,ymax=0.5,alpha=0.2,fill="red") +annotate("rect",xmin=0,xmax=100000,ymin=-1,ymax=1.1,alpha=0.2,fill="red") +ylab("# transcriptome reads / # genome reads") +xlab("# transcriptome reads (log10)") +ggtitle("QC result: overall")
+  
+  print(p +geom_point(size=4) )
+  
+  if(is.data.frame(sampleGroups)){ print(p +facet_wrap(~sampleGroup) +theme(legend.position="none") +geom_point(size=2)) }
+  
+  
   
   ##
   ## Heatmap
@@ -889,7 +899,7 @@ PlotData = function(sampleIDs, output.dir, taxonomyPath, sampleGroups=NA){
   #toplot$Stage = with(toplot, factor(Stage, levels = rev(levels(Stage))))
   toplot$Sample = factor(as.character(toplot$Sample), levels=rownames(mapping.stats)[sampleOrder])
   if(is.data.frame(sampleGroups)){ toplot$sampleGroup = sampleGroups[match(toplot$Sample, sampleGroups$sampleID), 2] }
-  p = ggplot(toplot, aes(y=Sample, x=Stage, fill=Value, label=Actual)) +scale_fill_manual(values=c("fail"="red","pass"="palegreen")) +geom_label() +theme(plot.background=element_rect(fill="white"),panel.background=element_rect(fill=rgb(0.97,0.97,0.97)), axis.text.x=element_text(angle=20, hjust=1, vjust=1), legend.position="none") +ggtitle("QC result: per-sample results") +xlab("") +ylab("")
+  p = ggplot(toplot, aes(y=Sample, x=Stage, fill=Value, label=Actual)) +scale_fill_manual(values=c("fail"="red","pass"="palegreen","1"="lightgrey")) +geom_label() +theme(plot.background=element_rect(fill="white"),panel.background=element_rect(fill=rgb(0.97,0.97,0.97)), axis.text.x=element_text(angle=20, hjust=1, vjust=1), legend.position="none") +ggtitle("QC result: per-sample results") +xlab("") +ylab("")
   #if(is.data.frame(sampleGroups)){ p = p +facet_wrap(~sampleGroup, scales="free_y", ncol=1)}
   print(p)
   
