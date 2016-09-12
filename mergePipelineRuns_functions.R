@@ -4,7 +4,7 @@
 ##                                                                                      ##
 ## Author: Rob Kitchen (r.r.kitchen@gmail.com)                                          ##
 ##                                                                                      ##
-## Version 4.1.6 (2016-09-12)                                                           ##
+## Version 4.1.7 (2016-09-12)                                                           ##
 ##                                                                                      ##
 ##########################################################################################
 
@@ -39,6 +39,8 @@ processSamplesInDir = function(data.dir, output.dir=data.dir, scriptDir="~/Dropb
     groups.tmp = groups.tmp[groups.tmp$sampleID %in% sampleGroups$sampleID, ]
     ## apply new sample groups to these samples
     sampleGroups[match(groups.tmp$sampleID, sampleGroups$sampleID), ]$sampleGroup = groups.tmp$sampleGroup
+    ## write the table back in case there are unassigned / new samples
+    write.table(sampleGroups, file=paste(output.dir,"/exceRpt_sampleGroupDefinitions.txt",sep=""), sep="\t",row.names=F,col.names=T,quote=F)
   }else{
     # if not, write a template
     write.table(sampleGroups, file=paste(output.dir,"/exceRpt_sampleGroupDefinitions.txt",sep=""), sep="\t",row.names=F,col.names=T,quote=F)
@@ -359,7 +361,9 @@ readData = function(samplePathList, output.dir){
           tmp.qc = tmp.qc[-1,]
         }
         qcOutcome = tmp.qc[1,2]
-        qc.results[i, ] = as.numeric(tmp.qc[-1,2])
+        
+        qc.results[i, match(gsub(":$","",tmp.qc[-1,1]), colnames(qc.results))] = as.numeric(tmp.qc[-1,2])
+        #qc.results[i, ] = as.numeric(tmp.qc[-1,2])
         rownames(qc.results)[i] = thisSampleID
       }
       
