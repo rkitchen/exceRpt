@@ -4,7 +4,7 @@
 ##                                                                                      ##
 ## Author: Rob Kitchen (r.r.kitchen@gmail.com)                                          ##
 ##                                                                                      ##
-## Version 4.1.5 (2016-09-09)                                                           ##
+## Version 4.1.6 (2016-09-12)                                                           ##
 ##                                                                                      ##
 ##########################################################################################
 
@@ -826,7 +826,7 @@ PlotData = function(sampleIDs, output.dir, taxonomyPath, sampleGroups=NA){
   if(is.data.frame(sampleGroups)){ toplot$sampleGroup = sampleGroups[match(toplot$Sample, sampleGroups$sampleID), 2] }
   p = ggplot(toplot, aes(x=Sample, y=Stage, group=Sample, fill=ReadFraction, label=sprintf("%1.1f%%",ReadFraction*100))) +geom_tile() +scale_fill_gradient2(low="white",high="yellow",mid="steelblue", midpoint=0.5) +theme(axis.text.x=element_text(angle=40, hjust=1.0, vjust=1)) +ggtitle("fraction aligned reads (normalised by # input reads)")
   if(nrow(mapping.stats) < 50){ p = p +geom_text(size=3) }
-  if(is.data.frame(sampleGroups)){ p = p +facet_grid(~sampleGroup, scales="free_x")}
+  if(is.data.frame(sampleGroups)){ p = p +facet_grid(~sampleGroup, scales="free_x",space="free_x")}
   print(p)
   
   ##
@@ -844,7 +844,7 @@ PlotData = function(sampleIDs, output.dir, taxonomyPath, sampleGroups=NA){
     if(is.data.frame(sampleGroups)){ toplot$sampleGroup = sampleGroups[match(toplot$Sample, sampleGroups$sampleID), 2] }
     p = ggplot(toplot, aes(x=Sample, y=Stage, group=Sample, fill=ReadFraction, label=sprintf("%1.1f%%",ReadFraction*100))) +geom_tile() +scale_fill_gradient2(low="white",high="yellow",mid="steelblue", midpoint=0.5) +theme(axis.text.x=element_text(angle=40, hjust=1.0, vjust=1)) +ggtitle("fraction aligned reads (normalised by # adapter-clipped reads)")
     if(nrow(mapping.stats) < 50){ p = p +geom_text(size=3) }
-    if(is.data.frame(sampleGroups)){ p = p +facet_grid(~sampleGroup, scales="free_x")}
+    if(is.data.frame(sampleGroups)){ p = p +facet_grid(~sampleGroup, scales="free_x",space="free_x")}
     print(p)
   }
   
@@ -858,7 +858,7 @@ PlotData = function(sampleIDs, output.dir, taxonomyPath, sampleGroups=NA){
   if(is.data.frame(sampleGroups)){ toplot$sampleGroup = sampleGroups[match(toplot$Sample, sampleGroups$sampleID), 2] }
   p = ggplot(toplot, aes(x=Sample, y=Stage, group=Sample, fill=ReadFraction, label=sprintf("%1.1f%%",ReadFraction*100))) +geom_tile() +scale_fill_gradient2(low="white",high="yellow",mid="steelblue", midpoint=0.5) +theme(axis.text.x=element_text(angle=40, hjust=1.0, vjust=1)) +ggtitle("fraction aligned reads (normalised by # non-contaminant reads)")
   if(nrow(mapping.stats) < 50){ p = p +geom_text(size=3) }
-  if(is.data.frame(sampleGroups)){ p = p +facet_grid(~sampleGroup, scales="free_x")}
+  if(is.data.frame(sampleGroups)){ p = p +facet_grid(~sampleGroup, scales="free_x",space="free_x")}
   print(p)
   
   
@@ -978,7 +978,7 @@ PlotData = function(sampleIDs, output.dir, taxonomyPath, sampleGroups=NA){
   colnames(tmp) = c("biotype","sampleID","readsPerMillion")
   if(is.data.frame(sampleGroups)){ tmp$sampleGroup = sampleGroups[match(tmp$sampleID, sampleGroups$sampleID), 2] }
   p = ggplot(na.omit(tmp), aes(y=readsPerMillion,x=sampleID,fill=biotype)) +geom_bar(stat="identity") +scale_fill_brewer(palette = "Spectral") +theme(axis.text.x=element_text(angle=50, hjust=1.0, vjust=1)) +ggtitle("Biotypes: per-sample, normalised")
-  if(is.data.frame(sampleGroups)){ p = p +facet_grid(~sampleGroup, scales="free_x")}
+  if(is.data.frame(sampleGroups)){ p = p +facet_grid(~sampleGroup, scales="free_x",space="free_x")}
   print(p)
     
   
@@ -994,7 +994,7 @@ PlotData = function(sampleIDs, output.dir, taxonomyPath, sampleGroups=NA){
     }else{
       p = p+theme(axis.ticks = element_blank(), axis.text.x = element_blank())
     }
-    if(is.data.frame(sampleGroups)){ p = p +facet_grid(~sampleGroup, scales="free_x")}
+    if(is.data.frame(sampleGroups)){ p = p +facet_grid(~sampleGroup, scales="free_x",space="free_x")}
     print(p)
     
     p = ggplot(tmp, aes(x=abundance, colour=sample)) +geom_density() +xlab("Read count") +ggtitle("miRNA abundance distributions (raw counts)") +scale_x_log10()
@@ -1011,7 +1011,7 @@ PlotData = function(sampleIDs, output.dir, taxonomyPath, sampleGroups=NA){
     }else{
       p = p+theme(axis.ticks = element_blank(), axis.text.x = element_blank())
     }
-    if(is.data.frame(sampleGroups)){ p = p +facet_grid(~sampleGroup, scales="free_x")}
+    if(is.data.frame(sampleGroups)){ p = p +facet_grid(~sampleGroup, scales="free_x",space="free_x")}
     print(p)
     
     p = ggplot(tmp, aes(x=abundance, colour=sample)) +geom_density() +xlab("Reads per million (RPM)") +ggtitle("miRNA abundance distributions (RPM)") +scale_x_log10()
