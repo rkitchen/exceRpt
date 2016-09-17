@@ -4,7 +4,7 @@
 ##                                                                                      ##
 ## Author: Rob Kitchen (r.r.kitchen@gmail.com)                                          ##
 ##                                                                                      ##
-## Version 4.1.7 (2016-09-12)                                                           ##
+## Version 4.1.9 (2016-09-17)                                                           ##
 ##                                                                                      ##
 ##########################################################################################
 
@@ -600,6 +600,8 @@ readData = function(samplePathList, output.dir){
   mapping.stats = as.data.frame(mapping.stats)
   libSizes = list()
   libSizes$input = mapping.stats[,colnames(mapping.stats) %in% c("input")]
+  libSizes$successfully_clipped = mapping.stats[,colnames(mapping.stats) %in% c("successfully_clipped")]
+  libSizes$reads_used_for_alignment = mapping.stats[,colnames(mapping.stats) %in% c("reads_used_for_alignment")]
   libSizes$all = rowSums(mapping.stats[,colnames(mapping.stats) %in% c("rRNA","genome","miRNA_exogenous_sense")])
   libSizes$endogenous = rowSums(mapping.stats[,colnames(mapping.stats) %in% c("rRNA","genome")])
   libSizes$genome = mapping.stats[,colnames(mapping.stats) %in% "genome"]
@@ -747,7 +749,7 @@ PlotData = function(sampleIDs, output.dir, taxonomyPath, sampleGroups=NA){
     tmp = melt(read.lengths); colnames(tmp) = c("sample","length","count")
     if(is.data.frame(sampleGroups)){ tmp$sampleGroup = sampleGroups[match(tmp$sample, sampleGroups$sampleID), 2] }
     maxX = min(c(100,max(tmp$length)))
-    p = ggplot(tmp, aes(x=length, y=count, colour=sample)) +geom_line(alpha=0.75) +xlab("read length (nt)") +ylab("# reads") +ggtitle("read-length distributions: raw read count") +scale_x_continuous(limits=c(15,maxX), minor_breaks=1:maxX)
+    p = ggplot(tmp, aes(x=length, y=count, colour=sample)) +geom_line(alpha=0.75) +xlab("read length (nt)") +ylab("# reads") +ggtitle("read-length distributions: raw read count") +scale_x_continuous(limits=c(15,maxX), minor_breaks=1:maxX, breaks=seq(15,maxX,by=5))
     if(nrow(read.lengths) > 30){ p = p +guides(colour=FALSE) }
     if(is.data.frame(sampleGroups)){ p = p +facet_wrap(~sampleGroup,ncol=1)}
     print(p)
@@ -761,7 +763,7 @@ PlotData = function(sampleIDs, output.dir, taxonomyPath, sampleGroups=NA){
     tmp = melt(t(apply(read.lengths, 1, function(row){ row/sum(row) }))); colnames(tmp) = c("sample","length","fraction")
     if(is.data.frame(sampleGroups)){ tmp$sampleGroup = sampleGroups[match(tmp$sample, sampleGroups$sampleID), 2] }
     maxX = min(c(100,max(tmp$length)))
-    p = ggplot(tmp, aes(x=length, y=fraction, colour=sample)) +geom_line(alpha=0.75) +xlab("read length (nt)") +ylab("fraction of reads") +ggtitle("read-length distributions: normalised read fraction") +scale_x_continuous(limits=c(15,maxX), minor_breaks=1:maxX)
+    p = ggplot(tmp, aes(x=length, y=fraction, colour=sample)) +geom_line(alpha=0.75) +xlab("read length (nt)") +ylab("fraction of reads") +ggtitle("read-length distributions: normalised read fraction") +scale_x_continuous(limits=c(15,maxX), minor_breaks=1:maxX, breaks=seq(15,maxX,by=5))
     if(nrow(read.lengths) > 30){ p = p +guides(colour=FALSE) }
     if(is.data.frame(sampleGroups)){ p = p +facet_wrap(~sampleGroup,ncol=1)}
     print(p)
@@ -974,17 +976,35 @@ PlotData = function(sampleIDs, output.dir, taxonomyPath, sampleGroups=NA){
   print(p)
 
   
-  ## plot top N biotypes for each sample as a barplot
+  ## plot top N biotypes for each sample as a barplot - normalised to INPUT reads
   N = 7
-  tmp = as.matrix(apply(sampleTotals, 2, function(col){ col*1000000/sum(col) }))
-  tmp = tmp[order(apply(tmp, 1, mean), decreasing=T), ]
-  tmp = melt(rbind(tmp[1:N, ], other=colSums(tmp[-c(1:N), ])))
+  tmp = sampleTotals
+  for(i in 1:ncol(sampleTotals))
+    tmp[,i] = sampleTotals[,i]*1000000/libSizes$reads_used_for_alignment[i]
+  biotypeOrder = order(apply(tmp, 1, mean), decreasing=T)
+  tmp = tmp[biotypeOrder, , drop=F]
+  tmp = as.matrix(rbind(tmp[1:N, , drop=F], other=colSums(tmp[-c(1:N), , drop=F])))
+  tmp = melt(rbind(tmp, unmapped=1000000-colSums(tmp)))
+  #tmp = melt(tmp)
   colnames(tmp) = c("biotype","sampleID","readsPerMillion")
   if(is.data.frame(sampleGroups)){ tmp$sampleGroup = sampleGroups[match(tmp$sampleID, sampleGroups$sampleID), 2] }
-  p = ggplot(na.omit(tmp), aes(y=readsPerMillion,x=sampleID,fill=biotype)) +geom_bar(stat="identity") +scale_fill_brewer(palette = "Spectral") +theme(axis.text.x=element_text(angle=50, hjust=1.0, vjust=1)) +ggtitle("Biotypes: per-sample, normalised")
+  p = ggplot(na.omit(tmp), aes(y=readsPerMillion,x=sampleID,fill=biotype)) +geom_bar(stat="identity") +scale_fill_brewer(palette = "Paired") +theme(axis.text.x=element_text(angle=50, hjust=1.0, vjust=1)) +ggtitle("Biotypes: per-sample, normalised") +ylab("reads per million reads used for alignment") +xlab("") +ylim(limits=c(0,1E6)) #+scale_fill_discrete(rich.colors(10))
   if(is.data.frame(sampleGroups)){ p = p +facet_grid(~sampleGroup, scales="free_x",space="free_x")}
-  print(p)
-    
+  suppressWarnings(print(p))
+  
+  
+  ## plot top N biotypes for each sample as a barplot - normalised to MAPPED reads
+  N = 7
+  tmp = as.matrix(apply(sampleTotals, 2, function(col){ col*1000000/sum(col) }))
+  tmp = tmp[biotypeOrder, , drop=F]
+  tmp = melt(rbind(tmp[1:N, , drop=F], other=colSums(tmp[-c(1:N), , drop=F])))
+  colnames(tmp) = c("biotype","sampleID","readsPerMillion")
+  if(is.data.frame(sampleGroups)){ tmp$sampleGroup = sampleGroups[match(tmp$sampleID, sampleGroups$sampleID), 2] }
+  p = ggplot(na.omit(tmp), aes(y=readsPerMillion,x=sampleID,fill=biotype)) +geom_bar(stat="identity") +theme(axis.text.x=element_text(angle=50, hjust=1.0, vjust=1)) +ggtitle("Biotypes: per-sample, normalised") +ylab("reads per million mapped reads") +xlab("") +scale_fill_brewer(palette = "Paired") #+scale_fill_manual( values = c(colorRampPalette( brewer.pal( 6 , "Paired" ) )(8), "grey") )
+  if(is.data.frame(sampleGroups)){ p = p +facet_grid(~sampleGroup, scales="free_x",space="free_x")}
+  suppressWarnings(print(p))    
+  
+
   
   ## Plot miRNA expression distributions
   if(nrow(exprs.miRNA) > 0){
@@ -992,9 +1012,9 @@ PlotData = function(sampleIDs, output.dir, taxonomyPath, sampleGroups=NA){
     tmp = melt(exprs.miRNA)
     colnames(tmp) = c("miRNA","sample","abundance")
     if(is.data.frame(sampleGroups)){ tmp$sampleGroup = sampleGroups[match(tmp$sample, sampleGroups$sampleID), 2] }
-    p = ggplot(tmp, aes(y=abundance, x=sample, colour=sample)) +geom_violin() +geom_boxplot(alpha=0.2) +ylab("Read count") +ggtitle("miRNA abundance distributions (raw counts)") +scale_y_log10()
+    p = ggplot(tmp, aes(y=abundance, x=sample, colour=sample)) +geom_violin() +geom_boxplot(alpha=0.2) +ylab("Read count") +ggtitle("miRNA abundance distributions (raw counts)") +scale_y_log10() +guides(colour=FALSE)
     if(ncol(exprs.miRNA) < 30){ 
-      p = p + guides(colour=FALSE) +theme(axis.text.x=element_text(angle=50, hjust=1.0, vjust=1))
+      p = p +theme(axis.text.x=element_text(angle=50, hjust=1.0, vjust=1))
     }else{
       p = p+theme(axis.ticks = element_blank(), axis.text.x = element_blank())
     }
@@ -1002,16 +1022,16 @@ PlotData = function(sampleIDs, output.dir, taxonomyPath, sampleGroups=NA){
     print(p)
     
     p = ggplot(tmp, aes(x=abundance, colour=sample)) +geom_density() +xlab("Read count") +ggtitle("miRNA abundance distributions (raw counts)") +scale_x_log10()
-    #if(ncol(exprs.miRNA.rpm) > 30){ p = p +guides(colour=FALSE) }
+    if(ncol(exprs.miRNA.rpm) > 30){ p = p +guides(colour=FALSE) }
     if(is.data.frame(sampleGroups)){ p = p +facet_grid(~sampleGroup)}
     print(p)
     
     tmp = melt(exprs.miRNA.rpm)
     colnames(tmp) = c("miRNA","sample","abundance")
     if(is.data.frame(sampleGroups)){ tmp$sampleGroup = sampleGroups[match(tmp$sample, sampleGroups$sampleID), 2] }
-    p = ggplot(tmp, aes(y=abundance, x=sample, colour=sample)) +geom_violin() +geom_boxplot(alpha=0.2) +ylab("Reads per million (RPM)") +ggtitle("miRNA abundance distributions (RPM)") +theme(axis.ticks = element_blank(), axis.text.x = element_blank()) +scale_y_log10()
+    p = ggplot(tmp, aes(y=abundance, x=sample, colour=sample)) +geom_violin() +geom_boxplot(alpha=0.2) +ylab("Reads per million (RPM)") +ggtitle("miRNA abundance distributions (RPM)") +theme(axis.ticks = element_blank(), axis.text.x = element_blank()) +scale_y_log10() +guides(colour=FALSE)
     if(ncol(exprs.miRNA.rpm) < 30){ 
-      p = p + guides(colour=FALSE) +theme(axis.text.x=element_text(angle=50, hjust=1.0, vjust=1))
+      p = p +theme(axis.text.x=element_text(angle=50, hjust=1.0, vjust=1))
     }else{
       p = p+theme(axis.ticks = element_blank(), axis.text.x = element_blank())
     }
@@ -1019,7 +1039,7 @@ PlotData = function(sampleIDs, output.dir, taxonomyPath, sampleGroups=NA){
     print(p)
     
     p = ggplot(tmp, aes(x=abundance, colour=sample)) +geom_density() +xlab("Reads per million (RPM)") +ggtitle("miRNA abundance distributions (RPM)") +scale_x_log10()
-    #if(ncol(exprs.miRNA.rpm) > 30){ p = p +guides(colour=FALSE) }
+    if(ncol(exprs.miRNA.rpm) > 30){ p = p +guides(colour=FALSE) }
     if(is.data.frame(sampleGroups)){ p = p +facet_grid(~sampleGroup)}
     print(p)
   }
@@ -1038,16 +1058,16 @@ PlotData = function(sampleIDs, output.dir, taxonomyPath, sampleGroups=NA){
     if(ncol(exprs.exogenousGenomes_specific) > 1){
       par(oma=c(8,0,0,20))
       tmp.order = order(apply(t(t(exprs.exogenousGenomes_specific)/colSums(exprs.exogenousGenomes_specific)), 1, median), decreasing=T)
-      heatmap.2(t(log10(exprs.exogenousGenomes_specific[tmp.order, ][1:50,]+0.1)),trace="none",main="top taxa nodes: specific normalised read count")
+      heatmap.2(t(log10(exprs.exogenousGenomes_specific[tmp.order, ][1:50,]+0.1)),trace="none",main="top taxa nodes: specific normalised read count", symbreaks=F,col=rich.colors(50))
       
       tmp.order = order(apply(t(t(exprs.exogenousGenomes_specific)), 1, median), decreasing=T)
-      heatmap.2(t(log10(exprs.exogenousGenomes_specific[tmp.order, ][1:50,]+0.1)),trace="none",main="top taxa nodes: specific absolute read count")
+      heatmap.2(t(log10(exprs.exogenousGenomes_specific[tmp.order, ][1:50,]+0.1)),trace="none",main="top taxa nodes: specific absolute read count", symbreaks=F,col=rich.colors(50))
       
       tmp.order = order(apply(t(t(exprs.exogenousGenomes_cumulative)/libSizes$exogenous_genomes), 1, median), decreasing=T)
-      heatmap.2(t(log10(exprs.exogenousGenomes_cumulative[tmp.order, ][1:50,]+0.1)),trace="none",main="top taxa nodes: cumulative normalised read count")
+      heatmap.2(t(log10(exprs.exogenousGenomes_cumulative[tmp.order, ][1:50,]+0.1)),trace="none",main="top taxa nodes: cumulative normalised read count", symbreaks=F,col=rich.colors(50))
       
       tmp.order = order(apply(t(t(exprs.exogenousGenomes_cumulative)), 1, median), decreasing=T)
-      heatmap.2(t(log10(exprs.exogenousGenomes_cumulative[tmp.order, ][1:50,]+0.1)),trace="none",main="top taxa nodes: cumulative absolute read count")
+      heatmap.2(t(log10(exprs.exogenousGenomes_cumulative[tmp.order, ][1:50,]+0.1)),trace="none",main="top taxa nodes: cumulative absolute read count", symbreaks=F,col=rich.colors(50))
     }
   }
   dev.off()

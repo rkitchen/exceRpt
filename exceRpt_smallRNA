@@ -17,10 +17,10 @@
 ##                                                                                          ##
 ##   Learn more at github.com/rkitchen/exceRpt                                              ##
 ##                                                                                          ##
-##   Version 4.4.0 (2016-09-02)                                                             ##
+##   Version 4.4.1 (2016-09-17)                                                             ##
 ##                                                                                          ##
 ##############################################################################################
-EXCERPT_VERSION := 4.4.0
+EXCERPT_VERSION := 4.4.1
 
 
 ##
@@ -351,7 +351,7 @@ ifeq ($(CALIBRATOR_LIBRARY),NULL)
 	
 else
 	
-	COMMAND_COUNT_CALIBRATOR := cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.calibratormapped.counts | awk '{sum+=$$1} END {print "calibrator\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	COMMAND_COUNT_CALIBRATOR := cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.calibratormapped.counts | awk 'BEGIN{sum=0} {sum+=$$1} END{print "calibrator\t"sum}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	COMMAND_MAP_CALIBRATOR := $(BOWTIE2_EXE) -p $(N_THREADS) $(BOWTIE2_MAPPING_PARAMS_CALIBRATOR) --un-gz $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.noCalibrator.fastq.gz -x $(CALIBRATOR_LIBRARY) -U $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.fastq.gz 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '$$2 != 4 {print $$0}' | $(SAMTOOLS_EXE) view -Sb - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | tee $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.calibratormapped.bam | $(SAMTOOLS_EXE) view - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | awk '{print $$3}' | sort -k 2 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err | uniq --count > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.calibratormapped.counts 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
 	LOGENTRY_MAP_CALIBRATOR_1 := $(ts) $(PIPELINE_NAME): Mapping reads to calibrator sequences using bowtie:\n
 	LOGENTRY_MAP_CALIBRATOR_2 := $(ts) $(PIPELINE_NAME): Finished mapping to the calibrators\n
