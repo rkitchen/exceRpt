@@ -4,7 +4,7 @@
 ##                                                                                      ##
 ## Author: Rob Kitchen (r.r.kitchen@gmail.com)                                          ##
 ##                                                                                      ##
-## Version 4.1.9 (2016-09-17)                                                           ##
+## Version 4.2.0 (2016-09-19)                                                           ##
 ##                                                                                      ##
 ##########################################################################################
 
@@ -385,8 +385,12 @@ readData = function(samplePathList, output.dir){
       ##
       calibratorCounts = NULL
       if(paste(thisSampleID,".clipped.trimmed.filtered.calibratormapped.counts",sep="") %in% dir(samplePathList[i])){
-        calibratorCounts = read.table(paste(samplePathList[i],"/",thisSampleID,".clipped.trimmed.filtered.calibratormapped.counts",sep=""), stringsAsFactors=F)[,2:1]
-        colnames(calibratorCounts) = c("calibratorID","readCount")
+        calibratorCounts = try(read.table(paste(samplePathList[i],"/",thisSampleID,".clipped.trimmed.filtered.calibratormapped.counts",sep=""), stringsAsFactors=F)[,2:1], silent=T)
+        if(class(calibratorCounts) == "try-error"){
+          calibratorCounts = NULL
+        }else{
+          colnames(calibratorCounts) = c("calibratorID","readCount")
+        }
       }
       
       
