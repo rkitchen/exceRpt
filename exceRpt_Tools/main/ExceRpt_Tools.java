@@ -3,6 +3,8 @@ package main;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+import objects.RandomBarcodeStats;
+
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -27,7 +29,7 @@ import footprintAlignments.ReadCoverage;
 
 public class ExceRpt_Tools {
 
-	public static final String VERSION = "1.2.7";
+	public static final String VERSION = "1.3.0";
 	
 	public static final String OPT_PATH_DB_ANNOTATION = "A";
 	public static final String OPT_PATH_DB_SAMPLE = "S";
@@ -86,6 +88,8 @@ public class ExceRpt_Tools {
 			FilterFastxByHeaderList.main(args);
 		}else if(main.equals("processfastqwithrandombarcode")){
 			ProcessFastqWithRandomBarcode.main(args);
+		}else if(main.equals("randombarcodestats")){
+			RandomBarcodeStats.main(args);
 		}else if(main.equals("findadapter")){
 			FindAdapter.main(args);
 		}else if(main.equals("fastq2fasta")){
@@ -120,7 +124,8 @@ public class ExceRpt_Tools {
 			System.out.println("         FilterFastxByIDList           | Filter fasta/q sequences based on a list of sequence IDs");
 			System.out.println("         FilterSequencesByLength       | Filter fasta or fastq sequences based on some maximum sequence length");
 			System.out.println("         TrimFastq                     | Trim bases from the 5' and/or 3' end of each read in a fastq file");
-			System.out.println("         ProcessFastqWithRandomBarcode | Filter fasta or fastq sequences based on some maximum sequence length");
+			System.out.println("         ProcessFastqWithRandomBarcode | Process Fastq formatted sequences containing random barcodes in either or both adapters");
+			System.out.println("         RandomBarcodeStats            | Compute entropy/enrichment statistics for inserts with random barcodes in a Fastq file already processed with \'ProcessFastqWithRandomBarcode\'");
 			System.out.println("         FindAdapter                   | Determine most likely 3' adapter sequence from fastq reads");
 			System.out.println("         RemoveHomopolymerRepeats      | Filter fasta or fastq sequences based on sequence composition");
 			System.out.println("         MatchPairedEndSequences       | Match paired-end fastq sequences based on readID");

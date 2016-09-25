@@ -17,10 +17,10 @@
 ##                                                                                          ##
 ##   Learn more at github.com/rkitchen/exceRpt                                              ##
 ##                                                                                          ##
-##   Version 4.5.0 (2016-09-20)                                                             ##
+##   Version 4.5.1 (2016-09-24)                                                             ##
 ##                                                                                          ##
 ##############################################################################################
-EXCERPT_VERSION := 4.5.0
+EXCERPT_VERSION := 4.5.1
 
 
 ##
@@ -84,6 +84,9 @@ MAP_EXOGENOUS 				:= off
 ## for exogenous alignments (can only be 0 or 1)
 MAX_MISMATCHES_EXOGENOUS 	:= 0
 ## For the taxonomic interpretation:
+EXOGENOUS_RIBOSOMAL_TAXA_MINFRAC        := 0.95
+EXOGENOUS_RIBOSOMAL_TAXA_BATCHSIZE      := 50000
+EXOGENOUS_RIBOSOMAL_TAXA_MINREADPERCENT := 0.001
 EXOGENOUS_GENOMES_TAXA_MINFRAC        := 0.95
 EXOGENOUS_GENOMES_TAXA_BATCHSIZE      := 500000
 EXOGENOUS_GENOMES_TAXA_MINREADPERCENT := 0.001
@@ -927,26 +930,30 @@ $(OUTDIR)/EXOGENOUS_rRNA/unaligned.fq.gz: $(OUTDIR)/EXOGENOUS_miRNA/exogenous_mi
 	#rm $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_Aligned.out.sam
 	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_Log.out
 	@echo -e "$(ts) $(PIPELINE_NAME): Finished mapping to rRNA sequences in RDP\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	#
-	#
+
+
+##
+## Resolve the RDP rRNA alignments against the NCBI taxonomy
+##
+$(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/ExogenousRibosomalAlignments.result.taxaAnnotated.txt: $(OUTDIR)/EXOGENOUS_rRNA/unaligned.fq.gz
+	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(PIPELINE_NAME): Resolving and quantifying rRNA alignments\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "\n$(ts) $(PIPELINE_NAME): $(SAMTOOLS_EXE) view $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_Aligned.out.bam | awk '{print $$1,$$3,$$4,$$6,$$10}' | sort -k 1,1 -k 2,2 | uniq > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/ExogenousRibosomalAlignments.txt 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	$(SAMTOOLS_EXE) view $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/exogenous_rRNA_Aligned.out.bam | awk '{print $$1,$$3,$$4,$$6,$$10}' | sort -k 1,1 -k 2,2 | uniq > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/ExogenousRibosomalAlignments.txt 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	#
-	@echo -e "\n$(ts) $(PIPELINE_NAME): $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) ProcessExogenousAlignments -taxonomyPath $(DATABASE_PATH)/NCBI_taxonomy_taxdump -min $(EXOGENOUS_GENOMES_TAXA_MINREADPERCENT) -frac $(EXOGENOUS_GENOMES_TAXA_MINFRAC) --minReads 1 -batchSize $(EXOGENOUS_GENOMES_TAXA_BATCHSIZE) -alignments $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/ExogenousRibosomalAlignments.txt --rdp > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/ExogenousRibosomalAlignments.result.taxaAnnotated.txt 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	$(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) ProcessExogenousAlignments -taxonomyPath $(DATABASE_PATH)/NCBI_taxonomy_taxdump -min $(EXOGENOUS_GENOMES_TAXA_MINREADPERCENT) -frac $(EXOGENOUS_GENOMES_TAXA_MINFRAC) --minReads 1 -batchSize $(EXOGENOUS_GENOMES_TAXA_BATCHSIZE) -alignments $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/ExogenousRibosomalAlignments.txt --rdp > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/ExogenousRibosomalAlignments.result.taxaAnnotated.txt 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) $(PIPELINE_NAME): Finished resolving and quantifying rRNA alignments\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "\n$(ts) $(PIPELINE_NAME): $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) ProcessExogenousAlignments -taxonomyPath $(DATABASE_PATH)/NCBI_taxonomy_taxdump -min $(EXOGENOUS_RIBOSOMAL_TAXA_MINREADPERCENT) -frac $(EXOGENOUS_RIBOSOMAL_TAXA_MINFRAC) --minReads 1 -batchSize $(EXOGENOUS_RIBOSOMAL_TAXA_BATCHSIZE) -alignments $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/ExogenousRibosomalAlignments.txt --rdp > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/ExogenousRibosomalAlignments.result.taxaAnnotated.txt 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	$(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) ProcessExogenousAlignments -taxonomyPath $(DATABASE_PATH)/NCBI_taxonomy_taxdump -min $(EXOGENOUS_RIBOSOMAL_TAXA_MINREADPERCENT) -frac $(EXOGENOUS_RIBOSOMAL_TAXA_MINFRAC) --minReads 1 -batchSize $(EXOGENOUS_RIBOSOMAL_TAXA_BATCHSIZE) -alignments $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/ExogenousRibosomalAlignments.txt --rdp > $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/ExogenousRibosomalAlignments.result.taxaAnnotated.txt 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	#
 	# Tidy up
 	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/ExogenousRibosomalAlignments.txt
-
+	@echo -e "$(ts) $(PIPELINE_NAME): Finished resolving and quantifying rRNA alignments\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 
 ##
 ## Routines for aligning unmapped reads to exogenous sequences
 ##
 ## Bacteria
-$(OUTDIR)/EXOGENOUS_genomes/Bacteria10_Aligned.out.bam: $(OUTDIR)/EXOGENOUS_rRNA/unaligned.fq.gz
+$(OUTDIR)/EXOGENOUS_genomes/Bacteria10_Aligned.out.bam: $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/ExogenousRibosomalAlignments.result.taxaAnnotated.txt
 	mkdir -p $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(PIPELINE_NAME): Mapping reads to exogenous GENOMES of BACTERIA:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
@@ -973,7 +980,7 @@ $(OUTDIR)/EXOGENOUS_genomes/Bacteria10_Aligned.out.bam: $(OUTDIR)/EXOGENOUS_rRNA
 	@echo -e "\n$(ts) $(PIPELINE_NAME): Finished mapping to exogenous GENOMES of BACTERIA\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 ## Plants
-$(OUTDIR)/EXOGENOUS_genomes/Plants5_Aligned.out.bam: $(OUTDIR)/EXOGENOUS_rRNA/unaligned.fq.gz
+$(OUTDIR)/EXOGENOUS_genomes/Plants5_Aligned.out.bam: $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/ExogenousRibosomalAlignments.result.taxaAnnotated.txt
 	mkdir -p $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(PIPELINE_NAME): Mapping reads to exogenous GENOMES of PLANTS:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
@@ -990,7 +997,7 @@ $(OUTDIR)/EXOGENOUS_genomes/Plants5_Aligned.out.bam: $(OUTDIR)/EXOGENOUS_rRNA/un
 	@echo -e "\n$(ts) $(PIPELINE_NAME): Finished mapping to exogenous GENOMES of PLANTS\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 ## Metazoa
-$(OUTDIR)/EXOGENOUS_genomes/Metazoa5_Aligned.out.bam: $(OUTDIR)/EXOGENOUS_rRNA/unaligned.fq.gz
+$(OUTDIR)/EXOGENOUS_genomes/Metazoa5_Aligned.out.bam: $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/ExogenousRibosomalAlignments.result.taxaAnnotated.txt
 	mkdir -p $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(PIPELINE_NAME): Mapping reads to exogenous GENOMES of METAZOA:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
@@ -1007,7 +1014,7 @@ $(OUTDIR)/EXOGENOUS_genomes/Metazoa5_Aligned.out.bam: $(OUTDIR)/EXOGENOUS_rRNA/u
 	@echo -e "\n$(ts) $(PIPELINE_NAME): Finished mapping to exogenous GENOMES of METAZOA\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 ## Fungi, Protist, and Virus
-$(OUTDIR)/EXOGENOUS_genomes/FungiProtistVirus_Aligned.out.bam: $(OUTDIR)/EXOGENOUS_rRNA/unaligned.fq.gz
+$(OUTDIR)/EXOGENOUS_genomes/FungiProtistVirus_Aligned.out.bam: $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/ExogenousRibosomalAlignments.result.taxaAnnotated.txt
 	mkdir -p $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(PIPELINE_NAME): Mapping reads to exogenous GENOMES of FUNGI, PROTISTS, and VIRUSES:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
@@ -1015,7 +1022,7 @@ $(OUTDIR)/EXOGENOUS_genomes/FungiProtistVirus_Aligned.out.bam: $(OUTDIR)/EXOGENO
 	@echo -e "\n$(ts) $(PIPELINE_NAME): Finished mapping to exogenous GENOMES of FUNGI, PROTISTS, and VIRUSES\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 ## Vertebrates
-$(OUTDIR)/EXOGENOUS_genomes/Vertebrate4_Aligned.out.bam: $(OUTDIR)/EXOGENOUS_rRNA/unaligned.fq.gz
+$(OUTDIR)/EXOGENOUS_genomes/Vertebrate4_Aligned.out.bam: $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_rRNA/ExogenousRibosomalAlignments.result.taxaAnnotated.txt
 	mkdir -p $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_genomes
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(PIPELINE_NAME): Mapping reads to exogenous GENOMES of VERTEBRATES:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
