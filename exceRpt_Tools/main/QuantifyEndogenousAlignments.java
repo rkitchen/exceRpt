@@ -273,7 +273,7 @@ public class QuantifyEndogenousAlignments {
 		String library = tmpBits[2];
 		
 		HashSet<String> referenceIDs = new HashSet<String>();
-		String[] alignmentBits = _alignmentDictionary.get(Integer.valueOf(tmpBits[4])).split("\\|");
+		String[] alignmentBits = _alignmentDictionary.get(Integer.valueOf(tmpBits[4])).split(" \\| ");
 		for(String x:alignmentBits)
 			referenceIDs.add(x.trim());
 		
