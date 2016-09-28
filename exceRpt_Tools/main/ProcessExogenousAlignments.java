@@ -122,6 +122,7 @@ public class ProcessExogenousAlignments {
 		countReads();
 		//IO_utils.printLineErr("Quantified taxonomy:");
 		String indent = ">";
+		System.out.println("depth"+"\t"+"level"+"\t"+"ID"+"\t"+"parentID"+"\t"+"name"+"\t"+"readCount_direct"+"\t"+"readCount_inherited");
 		_taxonomy.getRootNode().printSummary(indent, _minReads);
 
 		IO_utils.printLineErr("Done");
