@@ -905,7 +905,7 @@ $(OUTDIR)/EXOGENOUS_miRNA/exogenous_miRBase_Unmapped.R1.fastq.gz: $(OUTDIR)/endo
 	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenousAlignments_Accepted.txt
 	#
 	## Stats
-	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_Log.final.out | grep "Number of input reads" | awk -F "|\t" '{print "input_to_exogenous_miRNA\t"$2}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_Log.final.out | grep "Number of input reads" | awk -F "|\t" '{print "input_to_exogenous_miRNA\t"$$2}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/EXOGENOUS_miRNA/exogenous_miRBase_Log.final.out | grep "Uniquely mapped reads number\|Number of reads mapped to multiple loci" | awk -F "|\t" '{SUM+=$$2}END{print "exogenous_miRNA\t"SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 
 
