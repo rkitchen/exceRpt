@@ -1045,7 +1045,6 @@ $(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.txt.gz: $(OUTDIR)/
 	@echo -e "======================\n" >> $(OUTDIR).log
 	@echo -e "$(ts) $(PIPELINE_NAME): Collecting all alignments to exogenous GENOMES...\n" >> $(OUTDIR).log
 	#
-	#cat $(OUTDIR)/EXOGENOUS_genomes/Bacteria1_Aligned.out.sam | grep -v "^@" | awk '{print $$1,$$3,$$4,$$6,$$10}' | uniq | sed 's/[:$$]/ /g' | awk '{print $$1"\tBacteria\t"$$2"\t"$$7"\t"$$12"\t"$$13"\t"$$14}' > $(OUTDIR)/EXOGENOUS_genomes/Bacteria_Aligned.out.sam.summary
 	$(SAMTOOLS_EXE) view $(OUTDIR)/EXOGENOUS_genomes/Bacteria1_Aligned.out.bam | awk '{print $$1,$$3,$$4,$$6,$$10}' | uniq | awk '{split($$2,a,"[$$:]");print $$1"\tBacteria\t"a[1]"\t"a[7]"\t"$$3"\t"$$4"\t"$$5}' > $(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.txt
 	$(SAMTOOLS_EXE) view $(OUTDIR)/EXOGENOUS_genomes/Bacteria2_Aligned.out.bam | awk '{print $$1,$$3,$$4,$$6,$$10}' | uniq | awk '{split($$2,a,"[$$:]");print $$1"\tBacteria\t"a[1]"\t"a[7]"\t"$$3"\t"$$4"\t"$$5}' >> $(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.txt
 	$(SAMTOOLS_EXE) view $(OUTDIR)/EXOGENOUS_genomes/Bacteria3_Aligned.out.bam | awk '{print $$1,$$3,$$4,$$6,$$10}' | uniq | awk '{split($$2,a,"[$$:]");print $$1"\tBacteria\t"a[1]"\t"a[7]"\t"$$3"\t"$$4"\t"$$5}' >> $(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.txt
@@ -1057,7 +1056,6 @@ $(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.txt.gz: $(OUTDIR)/
 	$(SAMTOOLS_EXE) view $(OUTDIR)/EXOGENOUS_genomes/Bacteria9_Aligned.out.bam | awk '{print $$1,$$3,$$4,$$6,$$10}' | uniq | awk '{split($$2,a,"[$$:]");print $$1"\tBacteria\t"a[1]"\t"a[7]"\t"$$3"\t"$$4"\t"$$5}' >> $(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.txt
 	$(SAMTOOLS_EXE) view $(OUTDIR)/EXOGENOUS_genomes/Bacteria10_Aligned.out.bam | awk '{print $$1,$$3,$$4,$$6,$$10}' | uniq | awk '{split($$2,a,"[$$:]");print $$1"\tBacteria\t"a[1]"\t"a[7]"\t"$$3"\t"$$4"\t"$$5}' >> $(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.txt
 	#
-	#cat $(OUTDIR)/EXOGENOUS_genomes/Plants1_Aligned.out.sam | grep -v "^@" | awk '{print $$1" "$$3" "$$4" "$$6" "$$10}' | uniq | sed 's/:/ /g' | awk '{print $$1"\t"$$2"\t"$$3"\t"$$4"\t"$$5"\t"$$6"\t"$$7}' > $(OUTDIR)/EXOGENOUS_genomes/Plants_Aligned.out.sam.summary
 	$(SAMTOOLS_EXE) view $(OUTDIR)/EXOGENOUS_genomes/Plants1_Aligned.out.bam | awk '{print $$1,$$3,$$4,$$6,$$10}' | uniq | awk '{split($$2,a,":");print $$1"\t"a[1]"\t"a[2]"\t"a[3]"\t"$$3"\t"$$4"\t"$$5}' >> $(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.txt
 	$(SAMTOOLS_EXE) view $(OUTDIR)/EXOGENOUS_genomes/Plants2_Aligned.out.bam | awk '{print $$1,$$3,$$4,$$6,$$10}' | uniq | awk '{split($$2,a,":");print $$1"\t"a[1]"\t"a[2]"\t"a[3]"\t"$$3"\t"$$4"\t"$$5}' >> $(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.txt
 	$(SAMTOOLS_EXE) view $(OUTDIR)/EXOGENOUS_genomes/Plants3_Aligned.out.bam | awk '{print $$1,$$3,$$4,$$6,$$10}' | uniq | awk '{split($$2,a,":");print $$1"\t"a[1]"\t"a[2]"\t"a[3]"\t"$$3"\t"$$4"\t"$$5}' >> $(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.txt
@@ -1070,12 +1068,10 @@ $(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.txt.gz: $(OUTDIR)/
 	$(SAMTOOLS_EXE) view $(OUTDIR)/EXOGENOUS_genomes/Metazoa4_Aligned.out.bam | awk '{print $$1,$$3,$$4,$$6,$$10}' | uniq | awk '{split($$2,a,":");print $$1"\t"a[1]"\t"a[2]"\t"a[3]"\t"$$3"\t"$$4"\t"$$5}' >> $(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.txt
 	$(SAMTOOLS_EXE) view $(OUTDIR)/EXOGENOUS_genomes/Metazoa5_Aligned.out.bam | awk '{print $$1,$$3,$$4,$$6,$$10}' | uniq | awk '{split($$2,a,":");print $$1"\t"a[1]"\t"a[2]"\t"a[3]"\t"$$3"\t"$$4"\t"$$5}' >> $(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.txt
 	#
-	#cat $(OUTDIR)/EXOGENOUS_genomes/FungiProtistVirus_Aligned.out.sam | grep -v "^@" | grep "Virus:" | awk '{print $$1" "$$3" "$$4" "$$6" "$$10}' | uniq | sed 's/:/ /g' | sed 's/|/ /g' | awk '{print $$1"\t"$$2"\t"$$4"\t"$$6"\t"$$7"\t"$$8"\t"$$9}' > $(OUTDIR)/EXOGENOUS_genomes/Virus_Aligned.out.sam.summary
 	$(SAMTOOLS_EXE) view $(OUTDIR)/EXOGENOUS_genomes/FungiProtistVirus_Aligned.out.bam | grep "Virus:" | awk '{print $$1,$$3,$$4,$$6,$$10}' | uniq | awk '{split($$2,a,"[:|]");print $$1"\t"a[1]"\t"a[3]"\t"a[5]"\t"$$3"\t"$$4"\t"$$5}' >> $(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.txt
 	$(SAMTOOLS_EXE) view $(OUTDIR)/EXOGENOUS_genomes/FungiProtistVirus_Aligned.out.bam | grep "Fungi:" | awk '{print $$1,$$3,$$4,$$6,$$10}' | uniq | awk '{split($$2,a,":");print $$1"\t"a[1]"\t"a[2]"\t"a[3]"\t"$$3"\t"$$4"\t"$$5}' >> $(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.txt
 	$(SAMTOOLS_EXE) view $(OUTDIR)/EXOGENOUS_genomes/FungiProtistVirus_Aligned.out.bam | grep "Protist:" | awk '{print $$1,$$3,$$4,$$6,$$10}' | uniq | awk '{split($$2,a,":");print $$1"\t"a[1]"\t"a[2]"\t"a[3]"\t"$$3"\t"$$4"\t"$$5}' >> $(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.txt
 	#
-	#cat $(OUTDIR)/EXOGENOUS_genomes/Vertebrate1_Aligned.out.sam | grep -v "^@" | awk '{print $$1" "$$3" "$$4" "$$6" "$$10}' | uniq | sed 's/:/ /g' | awk '{print $$1"\t"$$2"\t"$$3"\t"$$4"\t"$$5"\t"$$6"\t"$$7}' > $(OUTDIR)/EXOGENOUS_genomes/Vertebrate_Aligned.out.sam.summary
 	$(SAMTOOLS_EXE) view $(OUTDIR)/EXOGENOUS_genomes/Vertebrate1_Aligned.out.bam | awk '{print $$1,$$3,$$4,$$6,$$10}' | uniq | awk '{split($$2,a,":");print $$1"\t"a[1]"\t"a[2]"\t"a[3]"\t"$$3"\t"$$4"\t"$$5}' >> $(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.txt
 	$(SAMTOOLS_EXE) view $(OUTDIR)/EXOGENOUS_genomes/Vertebrate2_Aligned.out.bam | awk '{print $$1,$$3,$$4,$$6,$$10}' | uniq | awk '{split($$2,a,":");print $$1"\t"a[1]"\t"a[2]"\t"a[3]"\t"$$3"\t"$$4"\t"$$5}' >> $(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.txt
 	$(SAMTOOLS_EXE) view $(OUTDIR)/EXOGENOUS_genomes/Vertebrate3_Aligned.out.bam | awk '{print $$1,$$3,$$4,$$6,$$10}' | uniq | awk '{split($$2,a,":");print $$1"\t"a[1]"\t"a[2]"\t"a[3]"\t"$$3"\t"$$4"\t"$$5}' >> $(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.txt
@@ -1087,7 +1083,6 @@ $(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.txt.gz: $(OUTDIR)/
 	## Input to exogenous genome alignment
 	gunzip -c $(OUTDIR)/EXOGENOUS_rRNA/unaligned.fq.gz | wc -l | awk '{print "input_to_exogenous_genomes\t"$$1/4}' >> $(OUTDIR).stats
 	## Count reads mapped to exogenous genomes:
-	#cat $@ | awk '{print $$1}' | uniq | awk -F "#" '{SUM += $$2} END {print "exogenous_genomes\t"SUM}' >> $(OUTDIR).stats
 	gunzip -c $@ | awk '{print $$1}' | uniq | wc -l | awk '{print "exogenous_genomes\t"$$1}' >> $(OUTDIR).stats
 	#
 	@echo -e "\n$(ts) $(PIPELINE_NAME): Finished collecting all alignments to exogenous GENOMES\n" >> $(OUTDIR).log
@@ -1099,17 +1094,11 @@ $(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.txt.gz: $(OUTDIR)/
 $(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.result.taxaAnnotated.txt: $(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.txt.gz
 	@echo -e "\n$(ts) $(PIPELINE_NAME): Started quantifying exogenous GENOMES\n" >> $(OUTDIR).log
 	gunzip -c $(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.txt.gz > $(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.txt
-	@echo -e "\n$(ts) $(PIPELINE_NAME): $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) ProcessExogenousAlignments -taxonomyPath $(DATABASE_PATH)/NCBI_taxonomy_taxdump -min $(EXOGENOUS_GENOMES_TAXA_MINREADPERCENT) -frac $(EXOGENOUS_GENOMES_TAXA_MINFRAC) -batchSize $(EXOGENOUS_GENOMES_TAXA_BATCHSIZE) -minReads $(EXOGENOUS_GENOMES_TAXA_MINREADS) -alignments $(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.txt > $(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.result.taxaAnnotated.txt 2>> $(OUTDIR).log\n" >> $(OUTDIR).log
-	$(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) ProcessExogenousAlignments -taxonomyPath $(DATABASE_PATH)/NCBI_taxonomy_taxdump -min $(EXOGENOUS_GENOMES_TAXA_MINREADPERCENT) -frac $(EXOGENOUS_GENOMES_TAXA_MINFRAC) -batchSize $(EXOGENOUS_GENOMES_TAXA_BATCHSIZE) -minReads $(EXOGENOUS_GENOMES_TAXA_MINREADS) -alignments $(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.txt > $(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.result.taxaAnnotated.txt 2>> $(OUTDIR).log
+	@echo -e "\n$(ts) $(PIPELINE_NAME): $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) ProcessExogenousAlignments -taxonomyPath $(DATABASE_PATH)/NCBI_taxonomy_taxdump -min $(EXOGENOUS_GENOMES_TAXA_MINREADPERCENT) -frac $(EXOGENOUS_GENOMES_TAXA_MINFRAC) -batchSize $(EXOGENOUS_GENOMES_TAXA_BATCHSIZE) -minReads $(EXOGENOUS_GENOMES_TAXA_MINREADS) -alignments $(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.txt > $(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.tmp 2>> $(OUTDIR).log\n" >> $(OUTDIR).log
+	$(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) ProcessExogenousAlignments -taxonomyPath $(DATABASE_PATH)/NCBI_taxonomy_taxdump -min $(EXOGENOUS_GENOMES_TAXA_MINREADPERCENT) -frac $(EXOGENOUS_GENOMES_TAXA_MINFRAC) -batchSize $(EXOGENOUS_GENOMES_TAXA_BATCHSIZE) -minReads $(EXOGENOUS_GENOMES_TAXA_MINREADS) -alignments $(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.txt > $(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.tmp 2>> $(OUTDIR).log
+	# Tidy up
+	mv $(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.tmp $(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.result.taxaAnnotated.txt
 	rm $(OUTDIR)/EXOGENOUS_genomes/ExogenousGenomicAlignments.sorted.txt
 	@echo -e "\n$(ts) $(PIPELINE_NAME): Finished quantifying exogenous GENOMES\n" >> $(OUTDIR).log
-
-
-
-
-
-
-
-
 
 
