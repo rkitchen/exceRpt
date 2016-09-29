@@ -1144,17 +1144,19 @@ PlotData = function(sampleIDs, output.dir, sampleGroups=NA, minPercent_exogenous
     ## if we have more than one sample, plot some heatmaps
     if(ncol(exprs.exogenousGenomes_specific) > 1){
       par(oma=c(8,0,0,20))
+      maxRow = 50; if(nrow(exprs.exogenousGenomes_specific) < maxRow){ maxRow = nrow(exprs.exogenousGenomes_specific) }
       tmp.order = order(apply(t(t(exprs.exogenousGenomes_specific)/colSums(exprs.exogenousGenomes_specific)), 1, median), decreasing=T)
-      heatmap.2(t(log10(exprs.exogenousGenomes_specific[tmp.order, ][1:50,]+0.1)),trace="none",main="top taxa nodes: specific normalised read count", symbreaks=F,col=rich.colors(50))
+      heatmap.2(t(log10(exprs.exogenousGenomes_specific[tmp.order, ][1:maxRow,]+0.1)),trace="none",main="top taxa nodes: specific normalised read count", symbreaks=F,col=rich.colors(50))
       
       tmp.order = order(apply(t(t(exprs.exogenousGenomes_specific)), 1, median), decreasing=T)
-      heatmap.2(t(log10(exprs.exogenousGenomes_specific[tmp.order, ][1:50,]+0.1)),trace="none",main="top taxa nodes: specific absolute read count", symbreaks=F,col=rich.colors(50))
+      heatmap.2(t(log10(exprs.exogenousGenomes_specific[tmp.order, ][1:maxRow,]+0.1)),trace="none",main="top taxa nodes: specific absolute read count", symbreaks=F,col=rich.colors(50))
       
+      maxRow = 50; if(nrow(exprs.exogenousGenomes_cumulative) < maxRow){ maxRow = nrow(exprs.exogenousGenomes_cumulative) }
       tmp.order = order(apply(t(t(exprs.exogenousGenomes_cumulative)/libSizes$exogenous_genomes), 1, median), decreasing=T)
-      heatmap.2(t(log10(exprs.exogenousGenomes_cumulative[tmp.order, ][1:50,]+0.1)),trace="none",main="top taxa nodes: cumulative normalised read count", symbreaks=F,col=rich.colors(50))
+      heatmap.2(t(log10(exprs.exogenousGenomes_cumulative[tmp.order, ][1:maxRow,]+0.1)),trace="none",main="top taxa nodes: cumulative normalised read count", symbreaks=F,col=rich.colors(50))
       
       tmp.order = order(apply(t(t(exprs.exogenousGenomes_cumulative)), 1, median), decreasing=T)
-      heatmap.2(t(log10(exprs.exogenousGenomes_cumulative[tmp.order, ][1:50,]+0.1)),trace="none",main="top taxa nodes: cumulative absolute read count", symbreaks=F,col=rich.colors(50))
+      heatmap.2(t(log10(exprs.exogenousGenomes_cumulative[tmp.order, ][1:maxRow,]+0.1)),trace="none",main="top taxa nodes: cumulative absolute read count", symbreaks=F,col=rich.colors(50))
     }
   }
   dev.off()
