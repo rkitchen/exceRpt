@@ -4,7 +4,7 @@
 ##                                                                                      ##
 ## Author: Rob Kitchen (r.r.kitchen@gmail.com)                                          ##
 ##                                                                                      ##
-## Version 4.6.0 (2016-09-28)                                                           ##
+## Version 4.6.2 (2016-10-04)                                                           ##
 ##                                                                                      ##
 ##########################################################################################
 
@@ -304,8 +304,8 @@ plotExogenousTaxonomyTrees = function(counts, cumcounts, what, output.dir, taxon
     printMessage(c("Plotting a separate taxonomy tree for each sample-group"))
     pdf(file=paste(output.dir,"/exceRpt_",what,"_TaxonomyTrees_perGroup.pdf",sep=""), height=7, width=15)
     for(thisgroup in levels(as.factor(sampleGroups$sampleGroup))){
-      tmpDat_uniq = rowMeans(data_uniq[, match(sampleGroups[sampleGroups$sampleGroup %in% thisgroup, ]$sampleID, colnames(data_uniq))])
-      tmpDat_cum = rowMeans(data_cum[, match(sampleGroups[sampleGroups$sampleGroup %in% thisgroup, ]$sampleID, colnames(data_cum))])
+      tmpDat_uniq = rowMeans(data_uniq[, match(sampleGroups[sampleGroups$sampleGroup %in% thisgroup, ]$sampleID, colnames(data_uniq)), drop=F])
+      tmpDat_cum = rowMeans(data_cum[, match(sampleGroups[sampleGroups$sampleGroup %in% thisgroup, ]$sampleID, colnames(data_cum)), drop=F])
       plotTree(rEG, taxonomyInfo, tmpDat_uniq, tmpDat_cum, title=paste(thisgroup,sep=""), what=what)
     }
     dev.off()
@@ -629,12 +629,20 @@ readData = function(samplePathList, output.dir){
   exprs.circRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$circRNA_sense), dimnames=list(allIDs$circRNA_sense, names(sample.data)))
   exprs.exogenous_miRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$exogenous_miRNA), dimnames=list(allIDs$exogenous_miRNA, names(sample.data)))
   
+  if(is.null(taxonomyInfo.exogenous_rRNA))
+    tmp.nrow = 0
+  else
+    tmp.nrow = nrow(taxonomyInfo.exogenous_rRNA)
+  exprs.exogenousRibosomal_specific = matrix(0,ncol=length(sample.data),nrow=tmp.nrow, dimnames=list(taxonomyInfo.exogenous_rRNA$ID, names(sample.data)))
+  exprs.exogenousRibosomal_cumulative = matrix(0,ncol=length(sample.data),nrow=tmp.nrow, dimnames=list(taxonomyInfo.exogenous_rRNA$ID, names(sample.data)))
   
-  exprs.exogenousRibosomal_specific = matrix(0,ncol=length(sample.data),nrow=nrow(taxonomyInfo.exogenous_rRNA), dimnames=list(taxonomyInfo.exogenous_rRNA$ID, names(sample.data)))
-  exprs.exogenousRibosomal_cumulative = matrix(0,ncol=length(sample.data),nrow=nrow(taxonomyInfo.exogenous_rRNA), dimnames=list(taxonomyInfo.exogenous_rRNA$ID, names(sample.data)))
-  
-  exprs.exogenousGenomes_specific = matrix(0,ncol=length(sample.data),nrow=nrow(taxonomyInfo.exogenous_genomes), dimnames=list(taxonomyInfo.exogenous_genomes$ID, names(sample.data)))
-  exprs.exogenousGenomes_cumulative = matrix(0,ncol=length(sample.data),nrow=nrow(taxonomyInfo.exogenous_genomes), dimnames=list(taxonomyInfo.exogenous_genomes$ID, names(sample.data)))
+  if(is.null(taxonomyInfo.exogenous_genomes))
+    tmp.nrow = 0
+  else
+    tmp.nrow = nrow(taxonomyInfo.exogenous_genomes)
+  exprs.exogenousGenomes_specific = matrix(0,ncol=length(sample.data),nrow=tmp.nrow, dimnames=list(taxonomyInfo.exogenous_genomes$ID, names(sample.data)))
+  exprs.exogenousGenomes_cumulative = matrix(0,ncol=length(sample.data),nrow=tmp.nrow, dimnames=list(taxonomyInfo.exogenous_genomes$ID, names(sample.data)))
+
   for(i in 1:length(sample.data)){
     run.duration[i,] = sample.data[[i]]$runTiming[1,4,drop=F]
     
