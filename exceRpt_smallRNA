@@ -17,10 +17,10 @@
 ##                                                                                          ##
 ##   Learn more at github.com/rkitchen/exceRpt                                              ##
 ##                                                                                          ##
-##   Version 4.6.1 (2016-09-29)                                                             ##
+##   Version 4.6.2 (2016-10-04)                                                             ##
 ##                                                                                          ##
 ##############################################################################################
-EXCERPT_VERSION := 4.6.1
+EXCERPT_VERSION := 4.6.2
 
 
 ##
@@ -215,14 +215,11 @@ STAR_EXOGENOUS_DYNAMIC_PARAMS := --outSAMtype BAM Unsorted --outSAMattributes St
 ##
 ## Map reads to plant and virus miRNAs
 ##
-ifeq ($(MAP_EXOGENOUS),miRNA)		## ALIGNMENT TO ONLY EXOGENOUS MIRNA
-	#PROCESS_SAMPLE_REQFILE := EXOGENOUS_miRNA/unaligned.fq.gz
-	PROCESS_SAMPLE_REQFILE := EXOGENOUS_rRNA/unaligned.fq.gz
+ifeq ($(MAP_EXOGENOUS),miRNA)		## ALIGNMENT TO ONLY EXOGENOUS miRNA and rRNA
+	PROCESS_SAMPLE_REQFILE := EXOGENOUS_rRNA/ExogenousRibosomalAlignments.result.taxaAnnotated.txt
 else ifeq ($(MAP_EXOGENOUS),on)	## COMPLETE EXOGENOUS GENOME ALIGNMENT
-	#PROCESS_SAMPLE_REQFILE := EXOGENOUS_genomes/ExogenousGenomicAlignments.result.txt
 	PROCESS_SAMPLE_REQFILE := EXOGENOUS_genomes/ExogenousGenomicAlignments.result.taxaAnnotated.txt
 else
-	#PROCESS_SAMPLE_REQFILE := endogenousUnaligned_ungapped_noLibs.fq
 	PROCESS_SAMPLE_REQFILE := endogenousAlignments_Accepted.txt.gz
 endif
 
