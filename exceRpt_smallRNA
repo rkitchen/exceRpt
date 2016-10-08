@@ -217,8 +217,10 @@ STAR_EXOGENOUS_DYNAMIC_PARAMS := --outSAMtype BAM Unsorted --outSAMattributes St
 ##
 ifeq ($(MAP_EXOGENOUS),miRNA)		## ALIGNMENT TO ONLY EXOGENOUS miRNA and rRNA
 	PROCESS_SAMPLE_REQFILE := EXOGENOUS_rRNA/ExogenousRibosomalAlignments.result.taxaAnnotated.txt
+	JAVA_RAM := 90G
 else ifeq ($(MAP_EXOGENOUS),on)	## COMPLETE EXOGENOUS GENOME ALIGNMENT
 	PROCESS_SAMPLE_REQFILE := EXOGENOUS_genomes/ExogenousGenomicAlignments.result.taxaAnnotated.txt
+	JAVA_RAM := 90G
 else
 	PROCESS_SAMPLE_REQFILE := endogenousAlignments_Accepted.txt.gz
 endif

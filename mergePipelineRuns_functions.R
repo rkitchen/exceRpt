@@ -4,7 +4,7 @@
 ##                                                                                      ##
 ## Author: Rob Kitchen (r.r.kitchen@gmail.com)                                          ##
 ##                                                                                      ##
-## Version 4.6.2 (2016-10-04)                                                           ##
+## Version 4.6.3 (2016-10-08)                                                           ##
 ##                                                                                      ##
 ##########################################################################################
 
@@ -717,14 +717,21 @@ readData = function(samplePathList, output.dir){
     write.table(exprs.exogenous_miRNA, file=paste(output.dir, "exceRpt_exogenous_miRNA_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
   
   if(nrow(exprs.exogenousRibosomal_specific) > 0){
-    write.table(exprs.exogenousRibosomal_specific, file=paste(output.dir, "exceRpt_exogenousRibosomal_taxonomySpecific_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
-    write.table(exprs.exogenousRibosomal_cumulative, file=paste(output.dir, "exceRpt_exogenousRibosomal_taxonomyCumulative_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+    tmp = cbind(taxonomyInfo.exogenous_rRNA[match(rownames(exprs.exogenousRibosomal_specific), taxonomyInfo.exogenous_rRNA$ID), ], exprs.exogenousRibosomal_specific)
+    write.table(tmp, file=paste(output.dir, "exceRpt_exogenousRibosomal_taxonomySpecific_ReadCounts.txt", sep="/"), sep="\t", row.names=F, quote=F)
+    
+    tmp = cbind(taxonomyInfo.exogenous_rRNA[match(rownames(exprs.exogenousRibosomal_cumulative), taxonomyInfo.exogenous_rRNA$ID), ], exprs.exogenousRibosomal_cumulative)
+    write.table(tmp, file=paste(output.dir, "exceRpt_exogenousRibosomal_taxonomyCumulative_ReadCounts.txt", sep="/"), sep="\t", row.names=F, quote=F)
   }
   
   if(nrow(exprs.exogenousGenomes_specific) > 0){
-    write.table(exprs.exogenousGenomes_specific, file=paste(output.dir, "exceRpt_exogenousGenomes_taxonomySpecific_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
-    write.table(exprs.exogenousGenomes_cumulative, file=paste(output.dir, "exceRpt_exogenousGenomes_taxonomyCumulative_ReadCounts.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+    tmp = cbind(taxonomyInfo.exogenous_genomes[match(rownames(exprs.exogenousGenomes_specific), taxonomyInfo.exogenous_genomes$ID), ], exprs.exogenousGenomes_specific)
+    write.table(tmp, file=paste(output.dir, "exceRpt_exogenousGenomes_taxonomySpecific_ReadCounts.txt", sep="/"), sep="\t", row.names=F, quote=F)
+    
+    tmp = cbind(taxonomyInfo.exogenous_genomes[match(rownames(exprs.exogenousGenomes_cumulative), taxonomyInfo.exogenous_genomes$ID), ], exprs.exogenousGenomes_cumulative)
+    write.table(tmp, file=paste(output.dir, "exceRpt_exogenousGenomes_taxonomyCumulative_ReadCounts.txt", sep="/"), sep="\t", row.names=F, quote=F)
   }
+  
   write.table(read.lengths, file=paste(output.dir, "exceRpt_ReadLengths.txt", sep="/"), sep="\t", col.names=NA, quote=F)
   
   
@@ -792,13 +799,18 @@ readData = function(samplePathList, output.dir){
     write.table(exprs.exogenous_miRNA.rpm, file=paste(output.dir, "exceRpt_exogenous_miRNA_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
   
   if(nrow(exprs.exogenousRibosomal_specific) > 0){
-    write.table(exprs.exogenousRibosomal_specific.rpm, file=paste(output.dir, "exceRpt_exogenousRibosomal_taxonomySpecific_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
-    write.table(exprs.exogenousRibosomal_cumulative.rpm, file=paste(output.dir, "exceRpt_exogenousRibosomal_taxonomyCumulative_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+    tmp = cbind(taxonomyInfo.exogenous_rRNA[match(rownames(exprs.exogenousRibosomal_specific.rpm), taxonomyInfo.exogenous_rRNA$ID), ], exprs.exogenousRibosomal_specific.rpm)
+    write.table(tmp, file=paste(output.dir, "exceRpt_exogenousRibosomal_taxonomySpecific_ReadsPerMillion.txt", sep="/"), sep="\t", row.names=F, quote=F)
+    
+    tmp = cbind(taxonomyInfo.exogenous_rRNA[match(rownames(exprs.exogenousRibosomal_cumulative.rpm), taxonomyInfo.exogenous_rRNA$ID), ], exprs.exogenousRibosomal_cumulative.rpm)
+    write.table(tmp, file=paste(output.dir, "exceRpt_exogenousRibosomal_taxonomyCumulative_ReadsPerMillion.txt", sep="/"), sep="\t", row.names=F, quote=F)
   }
   
   if(nrow(exprs.exogenousGenomes_specific) > 0){
-    write.table(exprs.exogenousGenomes_specific.rpm, file=paste(output.dir, "exceRpt_exogenousGenomes_taxonomySpecific_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
-    write.table(exprs.exogenousGenomes_cumulative.rpm, file=paste(output.dir, "exceRpt_exogenousGenomes_taxonomyCumulative_ReadsPerMillion.txt", sep="/"), sep="\t", col.names=NA, quote=F)
+    tmp = cbind(taxonomyInfo.exogenous_genomes[match(rownames(exprs.exogenousGenomes_specific.rpm), taxonomyInfo.exogenous_genomes$ID), ], exprs.exogenousGenomes_specific.rpm)
+    write.table(tmp, file=paste(output.dir, "exceRpt_exogenousGenomes_taxonomySpecific_ReadsPerMillion.txt", sep="/"), sep="\t", row.names=F, quote=F)
+    tmp = cbind(taxonomyInfo.exogenous_genomes[match(rownames(exprs.exogenousGenomes_cumulative.rpm), taxonomyInfo.exogenous_genomes$ID), ], exprs.exogenousGenomes_cumulative.rpm)
+    write.table(tmp, file=paste(output.dir, "exceRpt_exogenousGenomes_taxonomyCumulative_ReadsPerMillion.txt", sep="/"), sep="\t", row.names=F, quote=F)
   }
   
   return(rownames(mapping.stats))
@@ -816,6 +828,7 @@ readData = function(samplePathList, output.dir){
 PlotData = function(sampleIDs, output.dir, sampleGroups=NA, minPercent_exogenousRibosomal=0.5, minPercent_exogenousGenomes=0.5){
   
   load(paste(output.dir, "exceRpt_smallRNAQuants_ReadCounts.RData", sep="/"))
+  
   load(paste(output.dir, "exceRpt_smallRNAQuants_ReadsPerMillion.RData", sep="/"))
   
   ##
@@ -1154,17 +1167,25 @@ PlotData = function(sampleIDs, output.dir, sampleGroups=NA, minPercent_exogenous
       par(oma=c(8,0,0,20))
       maxRow = 50; if(nrow(exprs.exogenousGenomes_specific) < maxRow){ maxRow = nrow(exprs.exogenousGenomes_specific) }
       tmp.order = order(apply(t(t(exprs.exogenousGenomes_specific)/colSums(exprs.exogenousGenomes_specific)), 1, median), decreasing=T)
-      heatmap.2(t(log10(exprs.exogenousGenomes_specific[tmp.order, ][1:maxRow,]+0.1)),trace="none",main="top taxa nodes: specific normalised read count", symbreaks=F,col=rich.colors(50))
+      tmp = t(log10(t(t(exprs.exogenousGenomes_specific)*1000000/colSums(exprs.exogenousGenomes_specific))[tmp.order, ][1:maxRow,]+0.1))
+      colnames(tmp) = taxonomyInfo.exogenous_genomes[match(colnames(tmp), taxonomyInfo.exogenous_genomes$ID), ]$name
+      heatmap.2(tmp,trace="none",main="top taxa nodes: specific normalised read count", symbreaks=F,col=rich.colors(50))
       
       tmp.order = order(apply(t(t(exprs.exogenousGenomes_specific)), 1, median), decreasing=T)
-      heatmap.2(t(log10(exprs.exogenousGenomes_specific[tmp.order, ][1:maxRow,]+0.1)),trace="none",main="top taxa nodes: specific absolute read count", symbreaks=F,col=rich.colors(50))
+      tmp = t(log10(exprs.exogenousGenomes_specific[tmp.order, ][1:maxRow,]+0.1))
+      colnames(tmp) = taxonomyInfo.exogenous_genomes[match(colnames(tmp), taxonomyInfo.exogenous_genomes$ID), ]$name
+      heatmap.2(tmp,trace="none",main="top taxa nodes: specific absolute read count", symbreaks=F,col=rich.colors(50))
       
       maxRow = 50; if(nrow(exprs.exogenousGenomes_cumulative) < maxRow){ maxRow = nrow(exprs.exogenousGenomes_cumulative) }
       tmp.order = order(apply(t(t(exprs.exogenousGenomes_cumulative)/libSizes$exogenous_genomes), 1, median), decreasing=T)
-      heatmap.2(t(log10(exprs.exogenousGenomes_cumulative[tmp.order, ][1:maxRow,]+0.1)),trace="none",main="top taxa nodes: cumulative normalised read count", symbreaks=F,col=rich.colors(50))
+      tmp = t(log10(t(t(exprs.exogenousGenomes_cumulative)*1000000/libSizes$exogenous_genomes)[tmp.order, ][1:maxRow,]+0.1))
+      colnames(tmp) = taxonomyInfo.exogenous_genomes[match(colnames(tmp), taxonomyInfo.exogenous_genomes$ID), ]$name
+      heatmap.2(tmp,trace="none",main="top taxa nodes: cumulative normalised read count", symbreaks=F,col=rich.colors(50))
       
       tmp.order = order(apply(t(t(exprs.exogenousGenomes_cumulative)), 1, median), decreasing=T)
-      heatmap.2(t(log10(exprs.exogenousGenomes_cumulative[tmp.order, ][1:maxRow,]+0.1)),trace="none",main="top taxa nodes: cumulative absolute read count", symbreaks=F,col=rich.colors(50))
+      tmp = t(log10(exprs.exogenousGenomes_cumulative[tmp.order, ][1:maxRow,]+0.1))
+      colnames(tmp) = taxonomyInfo.exogenous_genomes[match(colnames(tmp), taxonomyInfo.exogenous_genomes$ID), ]$name
+      heatmap.2(tmp,trace="none",main="top taxa nodes: cumulative absolute read count", symbreaks=F,col=rich.colors(50))
     }
   }
   dev.off()
