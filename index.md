@@ -31,8 +31,8 @@ To download the exceRpt database for your genome/species of interest (currently 
 
     mkdir ~/DirectoryContainingMyexceRptDatabase
     cd ~/DirectoryContainingMyexceRptDatabase
-    wget http://homes.gersteinlab.org/people/rrk24/exceRpt/exceRptDB_v4_hg38_lowmem.tgz
-    tar -xvf exceRptDB_hg38.tgz
+    wget http://homes.gersteinlab.org/people/rrk24/exceRpt/exceRptDB_v4_hg38_lowmem.tgz
+    tar -xvf exceRptDB_hg38.tgz
 
 To run a smallRNA-seq sample through the exceRpt pipeline we can grab a publicly-available dataset from the SRA:
 
