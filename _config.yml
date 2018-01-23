@@ -1,0 +1,8 @@
+title: exceRpt
+description: The extra-cellular RNA processing toolkit.  Includes software to preprocess, align, quantitate, and normalise smallRNA-seq datasets
+google_analytics: UA-69502165-1
+show_downloads: true
+theme: jekyll-theme-cayman
+
+gems:
+  - jekyll-mentions
