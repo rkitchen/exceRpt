@@ -180,6 +180,7 @@ public class ProcessExogenousAlignments {
 			//System.out.println(_lastReadID+"\t"+readID+"\t"+line);
 			//}
 			if(readID.equals(_lastReadID)  ||  _lastReadID == null){
+				//IO_utils.printLineErr("adding read...");
 				addRead(readID, species);
 				_lastReadID = readID;
 				_lastSpeciesID = species;
@@ -188,9 +189,10 @@ public class ProcessExogenousAlignments {
 				//System.out.println("readCounter: "+readCounter);
 				_lastReadID = readID;
 				_lastSpeciesID = species;
-				if(readCounter < batchSize)
+				if(readCounter < batchSize){
+					//IO_utils.printLineErr("adding read...");
 					addRead(readID, species);
-				else
+				}else
 					break;
 			}
 		}
@@ -215,6 +217,9 @@ public class ProcessExogenousAlignments {
 	 * @return
 	 */
 	private String findMatchToTaxonomy(String speciesStringRDP){
+		
+		//IO_utils.printLineErr("matching to taxonomy...");
+		
 		//boolean matchedID = false;
 		String matchedTaxaID = null;
 
@@ -297,6 +302,7 @@ public class ProcessExogenousAlignments {
 	 * @param species
 	 */
 	private void addRead(String readID, String species){
+		
 		// check that this species is in the taxonomy
 		//if(_taxonomy.getNodeName2nodeIndex().containsKey(species)){
 		if(_taxonomy.containsNode(species)){
@@ -631,7 +637,8 @@ public class ProcessExogenousAlignments {
 		options.addOption(OptionBuilder.withArgName("integer").hasArg().withDescription("[optional] process alignments in batches of reads [default: "+DEFAULT_BATCH_SIZE+"]").create("batchSize"));
 		options.addOption(OptionBuilder.withArgName("decimal").hasArg().withDescription("[optional] Rapid-run mode: do not resolve alignments for leaf-nodes with fewer than this % of total reads [default: 0.0] [suggested 0.001]").create("min"));
 		options.addOption(OptionBuilder.withDescription("[optional] Perform tree search \'top down\'.  This is guaranteed to find the correct assignment for each read, but can be very slow for a large number of alignments").create("topDown"));
-		options.addOption(OptionBuilder.withDescription("If the inout alignments are agains exogenous rRNA sequences in the RDP").create("rdp"));
+		options.addOption(OptionBuilder.withDescription("If the input alignments are against exogenous rRNA sequences in the RDP").create("rdp"));
+		options.addOption(OptionBuilder.withDescription("If the input alignments are sorted by reference ID").create("referenceSorted"));
 		options.addOption(OptionBuilder.withArgName("integer").hasArg().withDescription("[optional] output taxa information for branches with at least this number of alignments [default: "+DEFAULT_MINREADS+"]").create("minReads"));
 		options.addOption(OptionBuilder.withDescription("Print verbose status messages").create("v"));
 		options.addOption(OptionBuilder.withDescription("Print REALLY verbose status messages").create("vv"));
@@ -648,20 +655,30 @@ public class ProcessExogenousAlignments {
 		//alignmentsPath = "/Users/robk/WORK/YALE_offline/tmp/Lajos/exogenousTEST/Sample_Yale-IBC-298-normal.unmapped_ExogenousGenomicAlignments.sorted.unique.txt";
 		//alignmentsPath = "/Users/robk/WORK/YALE_offline/tmp/Lajos/exogenousTEST/PG0004515-BLD.hs37d5.unmapped_ExogenousGenomicAlignments.sorted.unique.txt";
 		//alignmentsPath = "/Users/robk/WORK/YALE_offline/tmp/Lajos/exogenousTEST/A806WMABXX.unmapped_ExogenousGenomicAlignments.sorted.unique.txt";
-		alignmentsPath = "/Users/robk/WORK/YALE_offline/tmp/Lajos/exogenousTEST/test.txt";
+		//alignmentsPath = "/Users/robk/WORK/YALE_offline/tmp/Lajos/exogenousTEST/test.txt";
 
 		//alignmentsPath = "/Users/robk/Downloads/TEST.txt";
 		//args = new String[]{"--taxonomyPath","/Users/robk/WORK/YALE_offline/ANNOTATIONS/taxdump", "--alignments",alignmentsPath, "--batchSize","200000", "-v", "-min","0.001"};
 		//args = new String[]{"--taxonomyPath","/Users/robk/WORK/YALE_offline/ANNOTATIONS/taxdump", "--alignments",alignmentsPath, "--batchSize","200000", "-v", "-topDown"};
 
-
-
-		alignmentsPath = "/Users/robk/Downloads/ExogenousRibosomalAlignments.head";
+		//alignmentsPath = "/Users/robk/Downloads/ExogenousRibosomalAlignments.head";
 		//args = new String[]{"--taxonomyPath","/Users/robk/WORK/YALE_offline/ANNOTATIONS/taxdump", "--alignments",alignmentsPath, "--rdp", "--minReads","1", "--batchSize","200000", "--v"};
 
+		alignmentsPath = "/Users/rkitchen/Downloads/ExogenousRibosomalAlignments.tmpNEW";
+		alignmentsPath = "/Users/rkitchen/Downloads/TEST.tmp";
+		args = new String[]{"ProcessEndogenousAlignments",
+							"--taxonomyPath","/Users/rkitchen/Work/ANNOTATIONS/NCBI_Taxonomy", 
+							"--alignments",alignmentsPath, 
+							"--rdp", 
+							"--min", "0.01",
+							"--minReads","10", 
+							"--batchSize","10000", 
+							"--v"};
+		
 		CommandLine cmdArgs = ExceRpt_Tools.parseArgs(args, getCmdLineOptions());
+		
 		if(cmdArgs.hasOption("taxonomyPath") && cmdArgs.hasOption("alignments")){
-
+			
 			int verbose = 0;
 			if(cmdArgs.hasOption("vv")){
 				IO_utils.printLineErr("Printing REALLY verbose status messages");
