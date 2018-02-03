@@ -3,7 +3,7 @@ The **ex**tra-**ce**llular **R**NA **p**rocessing **t**oolkit (**exceRpt**) was 
 
 The schematic diagram below details the various stages of the exceRpt pipeline including **pre-processing** of the raw reads, **contaminant removal**, alignment to the **endogenous** (human/mouse) genome and annotated transcriptome, and finally alignment to a large number of **exogenous** sequences for detection of foreign nucleic acids.
 
-![exceRpt workflow diagram](https://dl.dropboxusercontent.com/u/2696693/exceRpt_workflow.png)
+![exceRpt workflow diagram](http://genboree.org/theCommons/attachments/6315/exceRpt_4thGen_Workflow.png)
 
 ***
 # How to use exceRpt
