@@ -6,7 +6,7 @@ Software for preprocessing, filtering, alignment, and reporting of smallRNA-seq 
 
 AUTHOR/SUPPORT:
 
-Rob Kitchen, exceRpt@robert.kitchen
+Rob Kitchen, r [dot] r [dot] kitchen [@] gmail
 
 
 
