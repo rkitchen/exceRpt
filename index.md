@@ -17,9 +17,14 @@ Slightly more effort to get set up than using Genboree, but using the [Docker](h
 
 As with the manual installation described below, **you will also need to download the pre-compiled genome and transcriptome indices** for exceRpt to use.  These are too large to be included in the Docker image, but using these links you can download the exceRpt database files:
 
-* [human hg19](http://homes.gersteinlab.org/people/rrk24/exceRpt/exceRptDB_v4_hg19_lowmem.tgz); 
-* [human hg38](http://homes.gersteinlab.org/people/rrk24/exceRpt/exceRptDB_v4_hg38_lowmem.tgz);
-* [mouse mm10](http://homes.gersteinlab.org/people/rrk24/exceRpt/exceRptDB_v4_mm10_lowmem.tgz).
+* [human hg19](http://org.gersteinlab.excerpt.s3-website-us-east-1.amazonaws.com/exceRptDB_v4_hg19_lowmem.tgz); 
+* [human hg38](http://org.gersteinlab.excerpt.s3-website-us-east-1.amazonaws.com/exceRptDB_v4_hg38_lowmem.tgz);
+* [mouse mm10](http://org.gersteinlab.excerpt.s3-website-us-east-1.amazonaws.com/exceRptDB_v4_mm10_lowmem.tgz).
+
+There are two other optional exceRpt databases for completing the analysis of endogenous-unmapped reads by mapping to all known exogenous miRNAs, rRNAs, and genomes.  The miRNAs sequences are obtained from [miRBase](www.mirbase.org), ribosomal-RNA sequences from the [Ribosome Database Project](https://rdp.cme.msu.edu), and the full-genomes of all sequenced bacteria, viruses, funghi, plants, protists, and 'edible' eukaryotes obtained from Ensembl and the NCBI.  These two exogenous databases are available at the locations below (**beware** the very large size of the **exogenous genomes database**, which is around **1.5 TB** and will take a **long time to download**).  When running the Docker image, including these exogenous databases requires a slight modification to the standard 'docker run' command - please contact the exceRpt authors for further information.
+
+* [exogenous miRNAs and rRNAs](http://org.gersteinlab.excerpt.s3-website-us-east-1.amazonaws.com/exceRptDB_v4_EXOmiRNArRNA.tgz);
+* [exogenous genomes](http://org.gersteinlab.excerpt.s3-website-us-east-1.amazonaws.com/exceRptDB_v4_EXOGenomes.tgz).
 
 Once you have downloaded the desired genome database and have successfully installed and started Docker on your machine/cluster/AWS-instance only a few commands are required to install and run exceRpt.  
 
