@@ -4,13 +4,19 @@ MAINTAINER Rob Kitchen <r.r.kitchen@gmail.com>
 ##
 ## Add exceRpt executables
 ##
-#ADD smallRNA_pipeline.mk /exceRpt_bin/smallRNA_pipeline
 ADD exceRpt_smallRNA /exceRpt_bin/exceRpt_smallRNA
 ADD mergePipelineRuns.R /exceRpt_bin/mergePipelineRuns.R
 ADD mergePipelineRuns_functions.R /exceRpt_bin/mergePipelineRuns_functions.R
 ADD exceRpt_Tools.jar /exceRpt_bin/exceRpt_Tools.jar
 ADD LICENSE /exceRpt_bin/LICENSE
 ADD README.md /exceRpt_bin/README.md
+
+##
+## Add baseDB and example raw data
+##
+ADD exceRpt_coreDB /exceRpt_DB/
+ADD ExampleData/testData_human.fastq.gz /exceRptInput/testData_human.fastq.gz
+
 
 ##
 ## Entrypoint

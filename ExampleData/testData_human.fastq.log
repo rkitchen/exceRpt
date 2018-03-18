@@ -1,0 +1,235 @@
+2018-03-18--20:31:17 exceRpt_smallRNA: BEGIN exceRpt smallRNA-seq pipeline v.4.6.3 for sample testData_human.fastq
+======================
+
+2018-03-18--20:31:17 exceRpt_smallRNA: Created results dir: /exceRptOutput/testData_human.fastq
+
+======================
+
+2018-03-18--20:31:17 exceRpt_smallRNA: Processing adapter sequence:
+
+2018-03-18--20:31:17 exceRpt_smallRNA: gunzip -c /exceRptInput/testData_human.fastq.gz 2>> /exceRptOutput/testData_human.fastq.err | java -Xmx10G -jar /exceRpt_bin/exceRpt_Tools.jar FindAdapter -n 10000 -m 1000000 -s 4 -a /exceRpt_DB/adapters/adapters.fa - > /exceRptOutput/testData_human.fastq/testData_human.fastq.adapterSeq 2>> /exceRptOutput/testData_human.fastq.log
+
+2018/03/18 20:31:18  Searching for best of 7 potential adapter sequences
+2018/03/18 20:31:18  
+2018/03/18 20:31:18  FOUND! Most likely adapter (after 1000 reads, which is all that are available): Illumina_1.0_smallRNA_3p: TCGTATGCCGTCTTCTGCTTG
+2018/03/18 20:31:18         with an average alignment score of 13.74 (1.5x higher than the next best adapter: Illumina_1.5_smallRNA_3p: ATCTCGTATGCCGTCTTCTGCTTGC)
+======================
+
+2018-03-18--20:31:18 exceRpt_smallRNA: Guessing encoding of fastq read-qualities:
+
+2018-03-18--20:31:18 exceRpt_smallRNA: gunzip -c /exceRptInput/testData_human.fastq.gz | head -n 40000 | awk '{if(NR%4==0) printf(%s,/bin/sh);}' | od -A n -t u1 | grep -v ^* | awk 'BEGIN{min=100;max=0;}{for(i=1;i<=NF;i++) {if(>max) max=; if(<min) min=;}}END{if(max<84) print 33; else print 64;}' > /exceRptOutput/testData_human.fastq/testData_human.fastq.qualityEncoding
+
+2018-03-18--20:31:18 exceRpt_smallRNA: Finished guessing encoding of fastq read-qualities:
+
+======================
+
+2018-03-18--20:31:18 exceRpt_smallRNA: Checking adapter against known sequences: gunzip -c /exceRptInput/testData_human.fastq.gz 2>> /exceRptOutput/testData_human.fastq.err | java -Xmx10G -jar /exceRpt_bin/exceRpt_Tools.jar FindAdapter -n 1000 -m 100000 -s 4 -a /exceRpt_DB/adapters/adapters.fa - > /exceRptOutput/testData_human.fastq/testData_human.fastq.knownAdapterSeq 2>> /exceRptOutput/testData_human.fastq.log
+
+2018/03/18 20:31:18  Searching for best of 7 potential adapter sequences
+2018/03/18 20:31:18  
+2018/03/18 20:31:19  FOUND! Most likely adapter (after 1000 reads): Illumina_1.0_smallRNA_3p: TCGTATGCCGTCTTCTGCTTG
+2018/03/18 20:31:19         with an average alignment score of 13.74 (1.5x higher than the next best adapter: Illumina_1.5_smallRNA_3p: ATCTCGTATGCCGTCTTCTGCTTGC)
+======================
+
+2018-03-18--20:31:19 exceRpt_smallRNA: Provided/guessed adapter sequence: TCGTATGCCGTCTTCTGCTTG
+2018-03-18--20:31:19 exceRpt_smallRNA: 2018-03-18--20:31:19 exceRpt_smallRNA: Identifying 3' adapter from list of known sequences.  Removing 3' adapter sequence using fastX:
+
+2018-03-18--20:31:19 exceRpt_smallRNA: gunzip -c /exceRptInput/testData_human.fastq.gz > /exceRptOutput/testData_human.fastq/testData_human.fastq.preClipped.fastq.tmp; /exceRpt_bin/fastx_0.0.14/bin/fastx_clipper  -Q33 -a TCGTATGCCGTCTTCTGCTTG -l 18 -v -n -M 7 -i /exceRptOutput/testData_human.fastq/testData_human.fastq.preClipped.fastq.tmp -z -o /exceRptOutput/testData_human.fastq/testData_human.fastq.clipped.fastq.tmp.gz >> /exceRptOutput/testData_human.fastq.log 2>> /exceRptOutput/testData_human.fastq.err; rm /exceRptOutput/testData_human.fastq/testData_human.fastq.preClipped.fastq.tmp
+
+Clipping Adapter: TCGTATGCCGTCTTCTGCTTG
+Min. Length: 18
+Input: 1000 reads.
+Output: 699 reads.
+discarded 297 too-short reads.
+discarded 4 adapter-only reads.
+2018-03-18--20:31:19 exceRpt_smallRNA: Finished removing adapters
+
+2018-03-18--20:31:19 exceRpt_smallRNA: Removing 0N random barcode:
+
+2018-03-18--20:31:19 exceRpt_smallRNA: mv /exceRptOutput/testData_human.fastq/testData_human.fastq.clipped.fastq.tmp.gz /exceRptOutput/testData_human.fastq/testData_human.fastq.clipped.fastq.gz
+
+2018-03-18--20:31:19 exceRpt_smallRNA: Finished removing random barcode
+
+======================
+
+2018-03-18--20:31:19 exceRpt_smallRNA: Trimming 0 bases from the 5' and 0 bases from the 3' of all reads:
+
+2018-03-18--20:31:19 exceRpt_smallRNA: gunzip -c /exceRptOutput/testData_human.fastq/testData_human.fastq.clipped.fastq.gz | java -Xmx10G -jar /exceRpt_bin/exceRpt_Tools.jar TrimFastq -5p 0 -3p 0 | gzip -c > /exceRptOutput/testData_human.fastq/testData_human.fastq.clipped.trimmed.fastq.gz 2>>/exceRptOutput/testData_human.fastq.log
+
+2018-03-18--20:31:19 exceRpt_smallRNA: Finished trimming bases from the 5' and 3' end of all reads
+
+======================
+
+2018-03-18--20:31:19 exceRpt_smallRNA: Filtering reads by base quality:
+
+2018-03-18--20:31:19 exceRpt_smallRNA: gunzip -c /exceRptOutput/testData_human.fastq/testData_human.fastq.clipped.trimmed.fastq.gz | /exceRpt_bin/fastx_0.0.14/bin/fastq_quality_filter -v -Q33 -p 80 -q 20 > /exceRptOutput/testData_human.fastq/testData_human.fastq.clipped.trimmed.filtered.tmp
+
+Quality cut-off: 20
+Minimum percentage: 80
+Input: 699 reads.
+Output: 534 reads.
+discarded 165 (23%) low-quality reads.
+2018-03-18--20:31:19 exceRpt_smallRNA: Finished filtering reads by base quality
+
+======================
+
+2018-03-18--20:31:19 exceRpt_smallRNA: Filtering homopolymer repeat reads:
+
+2018-03-18--20:31:19 exceRpt_smallRNA: java -Xmx10G -jar /exceRpt_bin/exceRpt_Tools.jar RemoveHomopolymerRepeats -m 0.66 -i /exceRptOutput/testData_human.fastq/testData_human.fastq.clipped.trimmed.filtered.tmp -o /exceRptOutput/testData_human.fastq/testData_human.fastq.clipped.trimmed.filtered.fastq
+
+
+Done.  Sequences removed=11
+2018-03-18--20:31:19 exceRpt_smallRNA: Finished filtering homopolymer repeat reads
+
+======================
+2018-03-18--20:31:19 exceRpt_smallRNA: Calculating length distribution of clipped reads:
+
+2018-03-18--20:31:19 exceRpt_smallRNA: java -Xmx10G -jar /exceRpt_bin/exceRpt_Tools.jar GetSequenceLengths /exceRptOutput/testData_human.fastq/testData_human.fastq.clipped.trimmed.filtered.fastq > /exceRptOutput/testData_human.fastq/testData_human.fastq.clipped.trimmed.filtered.readLengths.txt 2>> /exceRptOutput/testData_human.fastq.err
+
+2018-03-18--20:31:19 exceRpt_smallRNA: Finished calculating read-lengths
+
+======================
+2018-03-18--20:31:19 exceRpt_smallRNA: Running FastQC on clipped reads:
+
+2018-03-18--20:31:19 exceRpt_smallRNA: java -classpath /exceRpt_bin/FastQC_0.11.7:/exceRpt_bin/FastQC_0.11.7/sam-1.103.jar:/exceRpt_bin/FastQC_0.11.7/jbzip2-0.9.jar -Xmx10G -Dfastqc.threads=4 -Dfastqc.unzip=false -Dfastqc.output_dir=/exceRptOutput/testData_human.fastq/ uk/ac/bbsrc/babraham/FastQC/FastQCApplication /exceRptOutput/testData_human.fastq/testData_human.fastq.clipped.trimmed.filtered.fastq.gz >> /exceRptOutput/testData_human.fastq.log 2>> /exceRptOutput/testData_human.fastq.err
+
+Analysis complete for testData_human.fastq.clipped.trimmed.filtered.fastq.gz
+2018-03-18--20:31:22 exceRpt_smallRNA: Finished running FastQC
+
+======================
+
+2018-03-18--20:31:22 exceRpt_smallRNA: No calibrator sequences
+ 
+2018-03-18--20:31:22 exceRpt_smallRNA: 
+2018-03-18--20:31:22 exceRpt_smallRNA: Moving on to UniVec and rRNA sequences
+
+======================
+
+2018-03-18--20:31:22 exceRpt_smallRNA: Mapping reads to contaminant sequences in UniVec using STAR:
+
+2018-03-18--20:31:22 exceRpt_smallRNA: /exceRpt_bin/STAR-2.5.4b/bin/Linux_x86_64/STAR --runThreadN 4 --outFileNamePrefix /exceRptOutput/testData_human.fastq/filteringAlignments_UniVec_ --genomeDir /exceRpt_DB/UniVec/STAR_INDEX_UniVec --readFilesIn /exceRptOutput/testData_human.fastq/testData_human.fastq.clipped.trimmed.filtered.fastq.gz --outReadsUnmapped Fastx --parametersFiles /exceRpt_DB/STAR_Parameters_Endogenous_smallRNA.in --alignEndsType Local --outFilterMatchNmin 18 --outFilterMatchNminOverLread 0.9 --outFilterMismatchNmax 1 --outFilterMismatchNoverLmax 0.3  >> /exceRptOutput/testData_human.fastq.log 2>> /exceRptOutput/testData_human.fastq.err; /exceRpt_bin/samtools-1.7/samtools view /exceRptOutput/testData_human.fastq/filteringAlignments_UniVec_Aligned.out.bam | awk '{print }' | sort -k 2,2 2>> /exceRptOutput/testData_human.fastq.err | uniq --count > /exceRptOutput/testData_human.fastq/testData_human.fastq.clipped.trimmed.filtered.uniVecContaminants.counts 2>> /exceRptOutput/testData_human.fastq.err; /exceRpt_bin/samtools-1.7/samtools view /exceRptOutput/testData_human.fastq/filteringAlignments_UniVec_Aligned.out.bam | awk '{print }' | sort 2>> /exceRptOutput/testData_human.fastq.err | uniq -c | wc -l > /exceRptOutput/testData_human.fastq/testData_human.fastq.clipped.trimmed.filtered.uniVecContaminants.readCount 2>> /exceRptOutput/testData_human.fastq.err; gzip -c /exceRptOutput/testData_human.fastq/filteringAlignments_UniVec_Unmapped.out.mate1 > /exceRptOutput/testData_human.fastq/testData_human.fastq.clipped.trimmed.filtered.noUniVecContaminants.fastq.gz; rm /exceRptOutput/testData_human.fastq/filteringAlignments_UniVec_Unmapped.out.mate1
+
+Mar 18 20:31:22 ..... started STAR run
+Mar 18 20:31:22 ..... loading genome
+Mar 18 20:31:23 ..... started mapping
+Mar 18 20:31:23 ..... finished successfully
+2018-03-18--20:31:23 exceRpt_smallRNA: Finished mapping to the UniVec contaminant DB
+
+======================
+
+2018-03-18--20:31:23 exceRpt_smallRNA: Mapping reads to ribosomal RNA sequences using STAR:
+
+2018-03-18--20:31:23 exceRpt_smallRNA: /exceRpt_bin/STAR-2.5.4b/bin/Linux_x86_64/STAR --runThreadN 4 --outFileNamePrefix /exceRptOutput/testData_human.fastq/filteringAlignments_rRNA_ --genomeDir /exceRpt_DB/hg38/STAR_INDEX_rRNA --readFilesIn /exceRptOutput/testData_human.fastq/testData_human.fastq.clipped.trimmed.filtered.noUniVecContaminants.fastq.gz --outReadsUnmapped Fastx --parametersFiles /exceRpt_DB/STAR_Parameters_Endogenous_smallRNA.in --alignEndsType Local --outFilterMatchNmin 18 --outFilterMatchNminOverLread 0.9 --outFilterMismatchNmax 1 --outFilterMismatchNoverLmax 0.3  >> /exceRptOutput/testData_human.fastq.log 2>> /exceRptOutput/testData_human.fastq.err; /exceRpt_bin/samtools-1.7/samtools view /exceRptOutput/testData_human.fastq/filteringAlignments_rRNA_Aligned.out.bam | awk '{print }' | sort -k 2,2 2>> /exceRptOutput/testData_human.fastq.err | uniq -c > /exceRptOutput/testData_human.fastq/testData_human.fastq.clipped.trimmed.filtered.rRNA.counts 2>> /exceRptOutput/testData_human.fastq.err; /exceRpt_bin/samtools-1.7/samtools view /exceRptOutput/testData_human.fastq/filteringAlignments_rRNA_Aligned.out.bam | awk '{print }' | sort 2>> /exceRptOutput/testData_human.fastq.err | uniq -c | wc -l > /exceRptOutput/testData_human.fastq/testData_human.fastq.clipped.trimmed.filtered.rRNA.readCount 2>> /exceRptOutput/testData_human.fastq.err; gzip -c /exceRptOutput/testData_human.fastq/filteringAlignments_rRNA_Unmapped.out.mate1 > /exceRptOutput/testData_human.fastq/testData_human.fastq.clipped.trimmed.filtered.noRiboRNA.fastq.gz; rm /exceRptOutput/testData_human.fastq/filteringAlignments_rRNA_Unmapped.out.mate1
+
+Mar 18 20:31:23 ..... started STAR run
+Mar 18 20:31:23 ..... loading genome
+Mar 18 20:31:24 ..... started mapping
+Mar 18 20:31:24 ..... finished successfully
+2018-03-18--20:31:24 exceRpt_smallRNA: Finished mapping to the rRNAs
+
+======================
+2018-03-18--20:31:24 exceRpt_smallRNA: Running FastQC on cleaned reads:
+
+2018-03-18--20:31:24 exceRpt_smallRNA: java -classpath /exceRpt_bin/FastQC_0.11.7:/exceRpt_bin/FastQC_0.11.7/sam-1.103.jar:/exceRpt_bin/FastQC_0.11.7/jbzip2-0.9.jar -Xmx10G -Dfastqc.threads=4 -Dfastqc.unzip=false -Dfastqc.output_dir=/exceRptOutput/testData_human.fastq/ uk/ac/bbsrc/babraham/FastQC/FastQCApplication /exceRptOutput/testData_human.fastq/testData_human.fastq.clipped.trimmed.filtered.noRiboRNA.fastq.gz >> /exceRptOutput/testData_human.fastq.log 2>> /exceRptOutput/testData_human.fastq.err
+
+Analysis complete for testData_human.fastq.clipped.trimmed.filtered.noRiboRNA.fastq.gz
+2018-03-18--20:31:27 exceRpt_smallRNA: Finished running FastQC
+
+======================
+
+2018-03-18--20:31:27 exceRpt_smallRNA: Mapping reads to the genome of the primary organism:
+
+2018-03-18--20:31:27 exceRpt_smallRNA: /exceRpt_bin/STAR-2.5.4b/bin/Linux_x86_64/STAR --runThreadN 4 --outFileNamePrefix /exceRptOutput/testData_human.fastq/endogenousAlignments_genome_ --genomeDir /exceRpt_DB/hg38/STAR_INDEX_genome --readFilesIn /exceRptOutput/testData_human.fastq/testData_human.fastq.clipped.trimmed.filtered.noRiboRNA.fastq.gz --outReadsUnmapped Fastx --parametersFiles /exceRpt_DB/STAR_Parameters_Endogenous_smallRNA.in --alignEndsType Local --outFilterMatchNmin 18 --outFilterMatchNminOverLread 0.9 --outFilterMismatchNmax 1 --outFilterMismatchNoverLmax 0.3  >> /exceRptOutput/testData_human.fastq.log 2>> /exceRptOutput/testData_human.fastq.err
+
+Mar 18 20:31:27 ..... started STAR run
+Mar 18 20:31:27 ..... loading genome
+Mar 18 20:33:30 ..... started mapping
+Mar 18 20:34:16 ..... finished successfully
+2018-03-18--20:34:17 exceRpt_smallRNA: Finished mapping to the genome of the primary organism
+
+======================
+
+2018-03-18--20:34:17 exceRpt_smallRNA: Mapping genome-aligned reads to the transcriptome of the primary organism:
+
+2018-03-18--20:34:17 exceRpt_smallRNA: /exceRpt_bin/STAR-2.5.4b/bin/Linux_x86_64/STAR --runThreadN 4 --outFileNamePrefix /exceRptOutput/testData_human.fastq/endogenousAlignments_genomeMapped_transcriptome_ --readFilesIn /exceRptOutput/testData_human.fastq/endogenousAlignments_genome_Mapped.out.mate1 --genomeDir /exceRpt_DB/hg38/STAR_INDEX_transcriptome --parametersFiles /exceRpt_DB/STAR_Parameters_Endogenous_smallRNA.in --alignEndsType Local --outFilterMatchNmin 18 --outFilterMatchNminOverLread 0.9 --outFilterMismatchNmax 1 --outFilterMismatchNoverLmax 0.3  --readFilesCommand - >> /exceRptOutput/testData_human.fastq.log 2>> /exceRptOutput/testData_human.fastq.err
+
+Mar 18 20:34:17 ..... started STAR run
+Mar 18 20:34:17 ..... loading genome
+Mar 18 20:35:21 ..... started mapping
+Mar 18 20:35:27 ..... finished successfully
+2018-03-18--20:35:27 exceRpt_smallRNA: Finished mapping genome-aligned reads to the transcriptome of the primary organism
+
+2018-03-18--20:35:27 exceRpt_smallRNA: Mapping genome-unaligned reads to the transcriptome of the primary organism:
+
+2018-03-18--20:35:27 exceRpt_smallRNA: /exceRpt_bin/STAR-2.5.4b/bin/Linux_x86_64/STAR --runThreadN 4 --outFileNamePrefix /exceRptOutput/testData_human.fastq/endogenousAlignments_genomeUnmapped_transcriptome_ --readFilesIn /exceRptOutput/testData_human.fastq/endogenousAlignments_genome_Unmapped.out.mate1 --outReadsUnmapped Fastx --genomeDir /exceRpt_DB/hg38/STAR_INDEX_transcriptome --parametersFiles /exceRpt_DB/STAR_Parameters_Endogenous_smallRNA.in --alignEndsType Local --outFilterMatchNmin 18 --outFilterMatchNminOverLread 0.9 --outFilterMismatchNmax 1 --outFilterMismatchNoverLmax 0.3  --readFilesCommand - >> /exceRptOutput/testData_human.fastq.log 2>> /exceRptOutput/testData_human.fastq.err
+
+Mar 18 20:35:27 ..... started STAR run
+Mar 18 20:35:27 ..... loading genome
+Mar 18 20:36:13 ..... started mapping
+Mar 18 20:36:17 ..... finished successfully
+2018-03-18--20:36:17 exceRpt_smallRNA: Finished mapping genome-unaligned reads to the transcriptome of the primary organism
+
+======================
+
+2018-03-18--20:36:19 exceRpt_smallRNA: Performing CIGAR QC on endogenous genome alignments:
+
+2018-03-18--20:36:19 exceRpt_smallRNA: java -Xmx10G -jar /exceRpt_bin/exceRpt_Tools.jar CIGAR_2_PWM -f /exceRptOutput/testData_human.fastq/endogenousAlignments_genome_Aligned.out.bam > /exceRptOutput/testData_human.fastq/endogenousAlignments_genome_Aligned.out.bam.CIGARstats.txt 2>> /exceRptOutput/testData_human.fastq.log
+2018/03/18 20:36:20  SAM records read = 321
+2018/03/18 20:36:20  max observed read length = 29
+2018-03-18--20:36:20 exceRpt_smallRNA: Finished performing CIGAR QC on endogenous genome alignments
+
+2018-03-18--20:36:20 exceRpt_smallRNA: Sorting endogenous transcriptome alignments:
+
+2018-03-18--20:36:20 exceRpt_smallRNA: /exceRpt_bin/samtools-1.7/samtools sort -n -@ 4 -m 2G -O bam -T /exceRptOutput/testData_human.fastq/tmp /exceRptOutput/testData_human.fastq/endogenousAlignments_genomeMapped_transcriptome_Aligned.out.bam > /exceRptOutput/testData_human.fastq/endogenousAlignments_genomeMapped_transcriptome_Aligned.out.sorted.bam 2>> /exceRptOutput/testData_human.fastq.log
+[bam_sort_core] merging from 0 files and 4 in-memory blocks...
+2018-03-18--20:36:21 exceRpt_smallRNA: Finished sorting endogenous transcriptome alignments
+
+2018-03-18--20:36:21 exceRpt_smallRNA: Performing read-coverage QC on endogenous transcriptome alignments:
+
+2018-03-18--20:36:21 exceRpt_smallRNA: java -Xmx10G -jar /exceRpt_bin/exceRpt_Tools.jar ReadCoverage -exceRpt -a /exceRpt_DB/hg38/gencodeAnnotation.gtf -f /exceRptOutput/testData_human.fastq/endogenousAlignments_genomeMapped_transcriptome_Aligned.out.sorted.bam 2>> /exceRptOutput/testData_human.fastq.log
+2018/03/18 20:36:21  Reading GTF file...
+2018/03/18 20:37:18  Done - Read 2572840 GTF entries corresponding to 60554 genes and 199169 transcripts
+2018/03/18 20:37:18  Average annotated lengths:  5'UTR=133.0  CDS=678  3'UTR=312.0
+2018/03/18 20:37:18  nBins:  5'UTR=23  CDS=122  3'UTR=55
+2018/03/18 20:37:19  Reading reference sequences (transcripts)...
+2018/03/18 20:37:21  N reference sequences (transcripts): 227400
+2018/03/18 20:37:21  Adding read alignments...
+2018/03/18 20:37:21  Writing read bins...
+2018/03/18 20:37:21  Done
+2018-03-18--20:37:21 exceRpt_smallRNA: Finished performing read-coverage QC on endogenous transcriptome alignments
+
+======================
+
+2018-03-18--20:37:21 exceRpt_smallRNA: Assigning and sorting reads:
+
+2018-03-18--20:37:21 exceRpt_smallRNA: java -Xmx10G -jar /exceRpt_bin/exceRpt_Tools.jar ProcessEndogenousAlignments --libPriority miRNA,tRNA,piRNA,gencode,circRNA --genomeMappedReads /exceRptOutput/testData_human.fastq/endogenousAlignments_genomeMapped_transcriptome_Aligned.out.bam --transcriptomeMappedReads /exceRptOutput/testData_human.fastq/endogenousAlignments_genomeUnmapped_transcriptome_Aligned.out.bam --hairpin2genome /exceRpt_DB/hg38/miRNA_precursor2genome.sam --mature2hairpin /exceRpt_DB/hg38/miRNA_mature2precursor.sam --dict /exceRptOutput/testData_human.fastq/endogenousAlignments_Accepted.dict 2>> /exceRptOutput/testData_human.fastq.log | sort -k 2,2 -k 1,1 > /exceRptOutput/testData_human.fastq/endogenousAlignments_Accepted.txt
+
+2018/03/18 20:37:22 Using default library priorities: miRNA > tRNA > piRNA > gencode > circRNA
+2018/03/18 20:37:22 Reading miRNA annotation info
+2018/03/18 20:37:22 Processing RNA-seq alignments
+2018/03/18 20:37:22 Processing transcriptome alignments for genome-mapped reads...
+2018/03/18 20:37:24 Processing transcriptome alignments for genome-UNmapped reads...
+2018/03/18 20:37:25 Done!
+2018-03-18--20:37:25 exceRpt_smallRNA: Finished assigning and sorting reads
+
+2018-03-18--20:37:25 exceRpt_smallRNA: If requested, downsampling to NULL transcriptome alignments:
+
+2018-03-18--20:37:25 exceRpt_smallRNA: 
+
+2018-03-18--20:37:25 exceRpt_smallRNA: Finished downsampling transcriptome alignments
+
+2018-03-18--20:37:25 exceRpt_smallRNA: Quantifying:
+
+2018-03-18--20:37:25 exceRpt_smallRNA: java -Xmx10G -jar /exceRpt_bin/exceRpt_Tools.jar QuantifyEndogenousAlignments --dict /exceRptOutput/testData_human.fastq/endogenousAlignments_Accepted.dict --acceptedAlignments /exceRptOutput/testData_human.fastq/endogenousAlignments_Accepted.txt --outputPath /exceRptOutput/testData_human.fastq
+
+2018/03/18 20:37:25 Reading alignments in: /exceRptOutput/testData_human.fastq/endogenousAlignments_Accepted.txt
+2018/03/18 20:37:25 Using alignment dictionary: /exceRptOutput/testData_human.fastq/endogenousAlignments_Accepted.dict
+2018/03/18 20:37:25 Writing results to: /exceRptOutput/testData_human.fastq
+2018/03/18 20:37:25 Reading alignment dictionary...
+2018/03/18 20:37:25 Reading alignments...
+2018/03/18 20:37:25  - Read alignments for 137 insert sequences
+2018/03/18 20:37:25 Writing read counts...
+2018/03/18 20:37:25 Done!
+2018-03-18--20:37:25 exceRpt_smallRNA: END smallRNA-seq Pipeline for sample testData_human.fastq
+======================
+

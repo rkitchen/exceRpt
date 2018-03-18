@@ -1,0 +1,3248 @@
+STAR version=STAR_2.5.4b
+STAR compilation time,server,dir=Fri Feb 9 10:47:42 EST 2018 florence.cshl.edu:/sonas-hs/gingeras/nlsas_norepl/user/dobin/STAR/STAR.sandbox/source
+##### DEFAULT parameters:
+versionSTAR                       20201
+versionGenome                     20101   20200   
+sysShell                          -
+runMode                           alignReads
+runThreadN                        1
+runDirPerm                        User_RWX
+runRNGseed                        777
+genomeDir                         ./GenomeDir/
+genomeLoad                        NoSharedMemory
+genomeFastaFiles                  -   
+genomeChainFiles                  -   
+genomeSAindexNbases               14
+genomeChrBinNbits                 18
+genomeSAsparseD                   1
+genomeSuffixLengthMax             18446744073709551615
+genomeFileSizes                   0   
+genomeConsensusFile               -
+readFilesType                     Fastx   
+readFilesIn                       Read1   Read2   
+readFilesPrefix                   -
+readFilesCommand                  -   
+readMatesLengthsIn                NotEqual
+readMapNumber                     18446744073709551615
+readNameSeparator                 /   
+inputBAMfile                      -
+bamRemoveDuplicatesType           -
+bamRemoveDuplicatesMate2basesN    0
+limitGenomeGenerateRAM            31000000000
+limitIObufferSize                 150000000
+limitOutSAMoneReadBytes           100000
+limitOutSJcollapsed               1000000
+limitOutSJoneRead                 1000
+limitBAMsortRAM                   0
+limitSjdbInsertNsj                1000000
+outTmpDir                         -
+outTmpKeep                        None
+outStd                            Log
+outReadsUnmapped                  None
+outQSconversionAdd                0
+outMultimapperOrder               Old_2.4
+outSAMtype                        SAM   
+outSAMmode                        Full
+outSAMstrandField                 None
+outSAMattributes                  Standard   
+outSAMunmapped                    None   
+outSAMorder                       Paired
+outSAMprimaryFlag                 OneBestScore
+outSAMreadID                      Standard
+outSAMmapqUnique                  255
+outSAMflagOR                      0
+outSAMflagAND                     65535
+outSAMattrRGline                  -   
+outSAMheaderHD                    -   
+outSAMheaderPG                    -   
+outSAMheaderCommentFile           -
+outBAMcompression                 1
+outBAMsortingThreadN              0
+outSAMfilter                      None   
+outSAMmultNmax                    18446744073709551615
+outSAMattrIHstart                 1
+outSJfilterReads                  All
+outSJfilterCountUniqueMin         3   1   1   1   
+outSJfilterCountTotalMin          3   1   1   1   
+outSJfilterOverhangMin            30   12   12   12   
+outSJfilterDistToOtherSJmin       10   0   5   10   
+outSJfilterIntronMaxVsReadN       50000   100000   200000   
+outWigType                        None   
+outWigStrand                      Stranded   
+outWigReferencesPrefix            -
+outWigNorm                        RPM   
+outFilterType                     Normal
+outFilterMultimapNmax             10
+outFilterMultimapScoreRange       1
+outFilterScoreMin                 0
+outFilterScoreMinOverLread        0.66
+outFilterMatchNmin                0
+outFilterMatchNminOverLread       0.66
+outFilterMismatchNmax             10
+outFilterMismatchNoverLmax        0.3
+outFilterMismatchNoverReadLmax    1
+outFilterIntronMotifs             None
+outFilterIntronStrands            RemoveInconsistentStrands
+clip5pNbases                      0   
+clip3pNbases                      0   
+clip3pAfterAdapterNbases          0   
+clip3pAdapterSeq                  -   
+clip3pAdapterMMp                  0.1   
+winBinNbits                       16
+winAnchorDistNbins                9
+winFlankNbins                     4
+winAnchorMultimapNmax             50
+winReadCoverageRelativeMin        0.5
+winReadCoverageBasesMin           0
+scoreGap                          0
+scoreGapNoncan                    -8
+scoreGapGCAG                      -4
+scoreGapATAC                      -8
+scoreStitchSJshift                1
+scoreGenomicLengthLog2scale       -0.25
+scoreDelBase                      -2
+scoreDelOpen                      -2
+scoreInsOpen                      -2
+scoreInsBase                      -2
+seedSearchLmax                    0
+seedSearchStartLmax               50
+seedSearchStartLmaxOverLread      1
+seedPerReadNmax                   1000
+seedPerWindowNmax                 50
+seedNoneLociPerWindow             10
+seedMultimapNmax                  10000
+seedSplitMin                      12
+alignIntronMin                    21
+alignIntronMax                    0
+alignMatesGapMax                  0
+alignTranscriptsPerReadNmax       10000
+alignSJoverhangMin                5
+alignSJDBoverhangMin              3
+alignSJstitchMismatchNmax         0   -1   0   0   
+alignSplicedMateMapLmin           0
+alignSplicedMateMapLminOverLmate    0.66
+alignWindowsPerReadNmax           10000
+alignTranscriptsPerWindowNmax     100
+alignEndsType                     Local
+alignSoftClipAtReferenceEnds      Yes
+alignEndsProtrude                 0   ConcordantPair   
+chimSegmentMin                    0
+chimScoreMin                      0
+chimScoreDropMax                  20
+chimScoreSeparation               10
+chimScoreJunctionNonGTAG          -1
+chimMainSegmentMultNmax           10
+chimJunctionOverhangMin           20
+chimOutType                       SeparateSAMold   
+chimFilter                        banGenomicN   
+chimSegmentReadGapMax             0
+sjdbFileChrStartEnd               -   
+sjdbGTFfile                       -
+sjdbGTFchrPrefix                  -
+sjdbGTFfeatureExon                exon
+sjdbGTFtagExonParentTranscript    transcript_id
+sjdbGTFtagExonParentGene          gene_id
+sjdbOverhang                      100
+sjdbScore                         2
+sjdbInsertSave                    Basic
+quantMode                         -   
+quantTranscriptomeBAMcompression    1
+quantTranscriptomeBan             IndelSoftclipSingleend
+twopass1readsN                    18446744073709551615
+twopassMode                       None
+##### Command Line:
+/exceRpt_bin/STAR-2.5.4b/bin/Linux_x86_64/STAR --runThreadN 4 --outFileNamePrefix /exceRptOutput/testData_human.fastq/filteringAlignments_UniVec_ --genomeDir /exceRpt_DB/UniVec/STAR_INDEX_UniVec --readFilesIn /exceRptOutput/testData_human.fastq/testData_human.fastq.clipped.trimmed.filtered.fastq.gz --outReadsUnmapped Fastx --parametersFiles /exceRpt_DB/STAR_Parameters_Endogenous_smallRNA.in --alignEndsType Local --outFilterMatchNmin 18 --outFilterMatchNminOverLread 0.9 --outFilterMismatchNmax 1 --outFilterMismatchNoverLmax 0.3
+##### Initial USER parameters from Command Line:
+parametersFiles                   /exceRpt_DB/STAR_Parameters_Endogenous_smallRNA.in   
+outFileNamePrefix                 /exceRptOutput/testData_human.fastq/filteringAlignments_UniVec_
+##### USER parameters from user-defined parameters file /exceRpt_DB/STAR_Parameters_Endogenous_smallRNA.in:
+runMode                       alignReads     ~RE-DEFINED
+outSAMtype                    BAM   Unsorted        ~RE-DEFINED
+outSAMattributes              All        ~RE-DEFINED
+outFilterMismatchNoverLmax    0.05     ~RE-DEFINED
+outFilterMatchNmin            16     ~RE-DEFINED
+readFilesCommand              zcat        ~RE-DEFINED
+outSAMunmapped                None        ~RE-DEFINED
+outReadsUnmapped              Fastx     ~RE-DEFINED
+outFilterMultimapNmax         1000000     ~RE-DEFINED
+alignEndsType                 Local     ~RE-DEFINED
+alignIntronMax                1     ~RE-DEFINED
+alignIntronMin                2     ~RE-DEFINED
+###### All USER parameters from Command Line:
+runThreadN                    4     ~RE-DEFINED
+outFileNamePrefix             /exceRptOutput/testData_human.fastq/filteringAlignments_UniVec_     ~RE-DEFINED
+genomeDir                     /exceRpt_DB/UniVec/STAR_INDEX_UniVec     ~RE-DEFINED
+readFilesIn                   /exceRptOutput/testData_human.fastq/testData_human.fastq.clipped.trimmed.filtered.fastq.gz        ~RE-DEFINED
+outReadsUnmapped              Fastx     ~RE-DEFINED
+parametersFiles               /exceRpt_DB/STAR_Parameters_Endogenous_smallRNA.in        ~RE-DEFINED
+alignEndsType                 Local     ~RE-DEFINED
+outFilterMatchNmin            18     ~RE-DEFINED
+outFilterMatchNminOverLread   0.9     ~RE-DEFINED
+outFilterMismatchNmax         1     ~RE-DEFINED
+outFilterMismatchNoverLmax    0.3     ~RE-DEFINED
+##### Finished reading parameters from all sources
+
+##### Final user re-defined parameters-----------------:
+parametersFiles                   /exceRpt_DB/STAR_Parameters_Endogenous_smallRNA.in   
+runMode                           alignReads
+runThreadN                        4
+genomeDir                         /exceRpt_DB/UniVec/STAR_INDEX_UniVec
+readFilesIn                       /exceRptOutput/testData_human.fastq/testData_human.fastq.clipped.trimmed.filtered.fastq.gz   
+readFilesCommand                  zcat   
+outFileNamePrefix                 /exceRptOutput/testData_human.fastq/filteringAlignments_UniVec_
+outReadsUnmapped                  Fastx
+outSAMtype                        BAM   Unsorted   
+outSAMattributes                  All   
+outSAMunmapped                    None   
+outFilterMultimapNmax             1000000
+outFilterMatchNmin                18
+outFilterMatchNminOverLread       0.9
+outFilterMismatchNmax             1
+outFilterMismatchNoverLmax        0.3
+alignIntronMin                    2
+alignIntronMax                    1
+alignEndsType                     Local
+
+-------------------------------
+##### Final effective command line:
+/exceRpt_bin/STAR-2.5.4b/bin/Linux_x86_64/STAR   --runMode alignReads   --runThreadN 4   --genomeDir /exceRpt_DB/UniVec/STAR_INDEX_UniVec   --readFilesIn /exceRptOutput/testData_human.fastq/testData_human.fastq.clipped.trimmed.filtered.fastq.gz      --readFilesCommand zcat      --outFileNamePrefix /exceRptOutput/testData_human.fastq/filteringAlignments_UniVec_   --outReadsUnmapped Fastx   --outSAMtype BAM   Unsorted      --outSAMattributes All      --outSAMunmapped None      --outFilterMultimapNmax 1000000   --outFilterMatchNmin 18   --outFilterMatchNminOverLread 0.9   --outFilterMismatchNmax 1   --outFilterMismatchNoverLmax 0.3   --alignIntronMin 2   --alignIntronMax 1   --alignEndsType Local
+
+##### Final parameters after user input--------------------------------:
+versionSTAR                       20201
+versionGenome                     20101   20200   
+parametersFiles                   /exceRpt_DB/STAR_Parameters_Endogenous_smallRNA.in   
+sysShell                          -
+runMode                           alignReads
+runThreadN                        4
+runDirPerm                        User_RWX
+runRNGseed                        777
+genomeDir                         /exceRpt_DB/UniVec/STAR_INDEX_UniVec
+genomeLoad                        NoSharedMemory
+genomeFastaFiles                  -   
+genomeChainFiles                  -   
+genomeSAindexNbases               14
+genomeChrBinNbits                 18
+genomeSAsparseD                   1
+genomeSuffixLengthMax             18446744073709551615
+genomeFileSizes                   0   
+genomeConsensusFile               -
+readFilesType                     Fastx   
+readFilesIn                       /exceRptOutput/testData_human.fastq/testData_human.fastq.clipped.trimmed.filtered.fastq.gz   
+readFilesPrefix                   -
+readFilesCommand                  zcat   
+readMatesLengthsIn                NotEqual
+readMapNumber                     18446744073709551615
+readNameSeparator                 /   
+inputBAMfile                      -
+bamRemoveDuplicatesType           -
+bamRemoveDuplicatesMate2basesN    0
+limitGenomeGenerateRAM            31000000000
+limitIObufferSize                 150000000
+limitOutSAMoneReadBytes           100000
+limitOutSJcollapsed               1000000
+limitOutSJoneRead                 1000
+limitBAMsortRAM                   0
+limitSjdbInsertNsj                1000000
+outFileNamePrefix                 /exceRptOutput/testData_human.fastq/filteringAlignments_UniVec_
+outTmpDir                         -
+outTmpKeep                        None
+outStd                            Log
+outReadsUnmapped                  Fastx
+outQSconversionAdd                0
+outMultimapperOrder               Old_2.4
+outSAMtype                        BAM   Unsorted   
+outSAMmode                        Full
+outSAMstrandField                 None
+outSAMattributes                  All   
+outSAMunmapped                    None   
+outSAMorder                       Paired
+outSAMprimaryFlag                 OneBestScore
+outSAMreadID                      Standard
+outSAMmapqUnique                  255
+outSAMflagOR                      0
+outSAMflagAND                     65535
+outSAMattrRGline                  -   
+outSAMheaderHD                    -   
+outSAMheaderPG                    -   
+outSAMheaderCommentFile           -
+outBAMcompression                 1
+outBAMsortingThreadN              0
+outSAMfilter                      None   
+outSAMmultNmax                    18446744073709551615
+outSAMattrIHstart                 1
+outSJfilterReads                  All
+outSJfilterCountUniqueMin         3   1   1   1   
+outSJfilterCountTotalMin          3   1   1   1   
+outSJfilterOverhangMin            30   12   12   12   
+outSJfilterDistToOtherSJmin       10   0   5   10   
+outSJfilterIntronMaxVsReadN       50000   100000   200000   
+outWigType                        None   
+outWigStrand                      Stranded   
+outWigReferencesPrefix            -
+outWigNorm                        RPM   
+outFilterType                     Normal
+outFilterMultimapNmax             1000000
+outFilterMultimapScoreRange       1
+outFilterScoreMin                 0
+outFilterScoreMinOverLread        0.66
+outFilterMatchNmin                18
+outFilterMatchNminOverLread       0.9
+outFilterMismatchNmax             1
+outFilterMismatchNoverLmax        0.3
+outFilterMismatchNoverReadLmax    1
+outFilterIntronMotifs             None
+outFilterIntronStrands            RemoveInconsistentStrands
+clip5pNbases                      0   
+clip3pNbases                      0   
+clip3pAfterAdapterNbases          0   
+clip3pAdapterSeq                  -   
+clip3pAdapterMMp                  0.1   
+winBinNbits                       16
+winAnchorDistNbins                9
+winFlankNbins                     4
+winAnchorMultimapNmax             50
+winReadCoverageRelativeMin        0.5
+winReadCoverageBasesMin           0
+scoreGap                          0
+scoreGapNoncan                    -8
+scoreGapGCAG                      -4
+scoreGapATAC                      -8
+scoreStitchSJshift                1
+scoreGenomicLengthLog2scale       -0.25
+scoreDelBase                      -2
+scoreDelOpen                      -2
+scoreInsOpen                      -2
+scoreInsBase                      -2
+seedSearchLmax                    0
+seedSearchStartLmax               50
+seedSearchStartLmaxOverLread      1
+seedPerReadNmax                   1000
+seedPerWindowNmax                 50
+seedNoneLociPerWindow             10
+seedMultimapNmax                  10000
+seedSplitMin                      12
+alignIntronMin                    2
+alignIntronMax                    1
+alignMatesGapMax                  0
+alignTranscriptsPerReadNmax       10000
+alignSJoverhangMin                5
+alignSJDBoverhangMin              3
+alignSJstitchMismatchNmax         0   -1   0   0   
+alignSplicedMateMapLmin           0
+alignSplicedMateMapLminOverLmate    0.66
+alignWindowsPerReadNmax           10000
+alignTranscriptsPerWindowNmax     100
+alignEndsType                     Local
+alignSoftClipAtReferenceEnds      Yes
+alignEndsProtrude                 0   ConcordantPair   
+chimSegmentMin                    0
+chimScoreMin                      0
+chimScoreDropMax                  20
+chimScoreSeparation               10
+chimScoreJunctionNonGTAG          -1
+chimMainSegmentMultNmax           10
+chimJunctionOverhangMin           20
+chimOutType                       SeparateSAMold   
+chimFilter                        banGenomicN   
+chimSegmentReadGapMax             0
+sjdbFileChrStartEnd               -   
+sjdbGTFfile                       -
+sjdbGTFchrPrefix                  -
+sjdbGTFfeatureExon                exon
+sjdbGTFtagExonParentTranscript    transcript_id
+sjdbGTFtagExonParentGene          gene_id
+sjdbOverhang                      100
+sjdbScore                         2
+sjdbInsertSave                    Basic
+quantMode                         -   
+quantTranscriptomeBAMcompression    1
+quantTranscriptomeBan             IndelSoftclipSingleend
+twopass1readsN                    18446744073709551615
+twopassMode                       None
+----------------------------------------
+
+
+   Input read files for mate 1, from input string /exceRptOutput/testData_human.fastq/testData_human.fastq.clipped.trimmed.filtered.fastq.gz
+-rw-r--r-- 1 root root 9893 Mar 18  2018 /exceRptOutput/testData_human.fastq/testData_human.fastq.clipped.trimmed.filtered.fastq.gz
+
+   readsCommandsFile:
+exec > "/exceRptOutput/testData_human.fastq/filteringAlignments_UniVec__STARtmp/tmp.fifo.read1"
+echo FILE 0
+zcat      "/exceRptOutput/testData_human.fastq/testData_human.fastq.clipped.trimmed.filtered.fastq.gz"
+
+Finished loading and checking parameters
+Reading genome generation parameters:
+versionGenome                 20201        ~RE-DEFINED
+genomeFastaFiles              /gpfs/scratch/fas/gerstein/rrk24/ANNOTATIONS/UniVec_Core.contaminants.fasta        ~RE-DEFINED
+genomeSAindexNbases           9     ~RE-DEFINED
+genomeChrBinNbits             8     ~RE-DEFINED
+genomeSAsparseD               1     ~RE-DEFINED
+sjdbOverhang                  0     ~RE-DEFINED
+sjdbFileChrStartEnd           -        ~RE-DEFINED
+sjdbGTFfile                   -     ~RE-DEFINED
+sjdbGTFchrPrefix              -     ~RE-DEFINED
+sjdbGTFfeatureExon            exon     ~RE-DEFINED
+sjdbGTFtagExonParentTranscripttranscript_id     ~RE-DEFINED
+sjdbGTFtagExonParentGene      gene_id     ~RE-DEFINED
+sjdbInsertSave                Basic     ~RE-DEFINED
+Genome version is compatible with current STAR version
+Number of real (reference) chromosomes= 2822
+1	gnl|uv|X66730.1:1-2687-49	2736	0
+2	gnl|uv|J01749.1:1-4361-49	4410	2816
+3	gnl|uv|J02400.1:1-5243-49	5292	7424
+4	gnl|uv|J02482.1:1-5386-49	5435	12800
+5	gnl|uv|V00604.2:1-6407-49	6456	18432
+6	gnl|uv|J02459.1:1-48502-49	48551	25088
+7	gnl|uv|M28829.1:1-8684-49	8733	73728
+8	gnl|uv|J01636.1:1-7477	7477	82688
+9	gnl|uv|X65312.3:1-150	150	90368
+10	gnl|uv|X65312.3:273-365	93	90624
+11	gnl|uv|X65312.3:896-994	99	90880
+12	gnl|uv|X65312.3:1530-1628	99	91136
+13	gnl|uv|X65312.3:1831-1929	99	91392
+14	gnl|uv|X65312.3:2209-2303	95	91648
+15	gnl|uv|X65312.3:2422-2520	99	91904
+16	gnl|uv|X65312.3:2548-2646	99	92160
+17	gnl|uv|X65312.3:2652-2759	108	92416
+18	gnl|uv|X65312.3:2820-2912-49	142	92672
+19	gnl|uv|X65310.2:1-196	196	92928
+20	gnl|uv|X65310.2:2263-2408	146	93184
+21	gnl|uv|X65310.2:2770-2865	96	93440
+22	gnl|uv|X65310.2:2930-2997-49	117	93696
+23	gnl|uv|X65311.2:2262-2409	148	93952
+24	gnl|uv|X65308.2:1-135	135	94208
+25	gnl|uv|X65308.2:2982-3000-49	68	94464
+26	gnl|uv|X65315.2:1-87	87	94720
+27	gnl|uv|X65315.2:2260-2355	96	94976
+28	gnl|uv|X65315.2:2396-2492	97	95232
+29	gnl|uv|X65315.2:3142-3179-49	87	95488
+30	gnl|uv|X65306.2:1-103	103	95744
+31	gnl|uv|X65306.2:3158-3197-49	89	96000
+32	gnl|uv|X65313.2:1-128	128	96256
+33	gnl|uv|X65313.2:3185-3221-49	86	96512
+34	gnl|uv|X52327.1:1-51	51	96768
+35	gnl|uv|X52327.1:412-508	97	97024
+36	gnl|uv|X52327.1:570-844	275	97280
+37	gnl|uv|X52327.1:2915-2961-49	96	97792
+38	gnl|uv|X52328.1:605-699	95	98048
+39	gnl|uv|X52328.1:714-808	95	98304
+40	gnl|uv|U37573.1:415-517	103	98560
+41	gnl|uv|U37573.1:702-859	158	98816
+42	gnl|uv|U37573.1:955-1950	996	99072
+43	gnl|uv|U37573.1:2706-4083	1378	100096
+44	gnl|uv|U37573.1:4344-4442	99	101632
+45	gnl|uv|NGB00069.1:1-19	19	101888
+46	gnl|uv|NGB00097.1:1-17	17	102144
+47	gnl|uv|NGB00018.1:1-16	16	102400
+48	gnl|uv|NGB00067.1:1-16	16	102656
+49	gnl|uv|NGB00091.1:1-14	14	102912
+50	gnl|uv|NGB00063.1:1-13	13	103168
+51	gnl|uv|NGB00065.1:1-13	13	103424
+52	gnl|uv|NGB00095.1:1-13	13	103680
+53	gnl|uv|NGB00093.1:1-12	12	103936
+54	gnl|uv|NGB00072.2:12-193	182	104192
+55	gnl|uv|NGB00001.1:1-184	184	104448
+56	gnl|uv|NGB00002.1:1-145	145	104704
+57	gnl|uv|NGB00070.1:1-68	68	104960
+58	gnl|uv|NGB00098.1:1-60	60	105216
+59	gnl|uv|NGB00012.1:1-59	59	105472
+60	gnl|uv|NGB00009.1:1-57	57	105728
+61	gnl|uv|NGB00068.1:1-56	56	105984
+62	gnl|uv|NGB00089.1:1-56	56	106240
+63	gnl|uv|NGB00005.1:1-52	52	106496
+64	gnl|uv|NGB00062.1:1-51	51	106752
+65	gnl|uv|NGB00079.1:1-50	50	107008
+66	gnl|uv|NGB00013.1:1-48	48	107264
+67	gnl|uv|NGB00092.1:1-48	48	107520
+68	gnl|uv|NGB00150.1:1-46	46	107776
+69	gnl|uv|NGB00007.1:1-45	45	108032
+70	gnl|uv|NGB00010.1:1-45	45	108288
+71	gnl|uv|NGB00149.1:1-45	45	108544
+72	gnl|uv|NGB00003.1:1-44	44	108800
+73	gnl|uv|NGB00016.1:1-44	44	109056
+74	gnl|uv|NGB00064.1:1-44	44	109312
+75	gnl|uv|NGB00066.1:1-44	44	109568
+76	gnl|uv|NGB00006.1:1-42	42	109824
+77	gnl|uv|NGB00011.1:1-39	39	110080
+78	gnl|uv|NGB00061.1:1-38	38	110336
+79	gnl|uv|NGB00090.1:1-38	38	110592
+80	gnl|uv|NGB00060.1:1-35	35	110848
+81	gnl|uv|NGB00151.1:1-35	35	111104
+82	gnl|uv|NGB00014.1:1-34	34	111360
+83	gnl|uv|NGB00015.1:1-32	32	111616
+84	gnl|uv|NGB00152.1:1-32	32	111872
+85	gnl|uv|NGB00008.1:1-30	30	112128
+86	gnl|uv|NGB00004.1:1-27	27	112384
+87	gnl|uv|NGB00096.1:1-26	26	112640
+88	gnl|uv|NGB00094.1:1-24	24	112896
+89	gnl|uv|M77815.1:1-52	52	113152
+90	gnl|uv|M77815.1:1530-1628	99	113408
+91	gnl|uv|M77815.1:2171-2269	99	113664
+92	gnl|uv|M77815.1:5820-5917	98	113920
+93	gnl|uv|M77815.1:5928-6026	99	114176
+94	gnl|uv|M77815.1:6183-6331	149	114432
+95	gnl|uv|M77815.1:6473-6571	99	114688
+96	gnl|uv|M77815.1:6663-6760	98	114944
+97	gnl|uv|M77815.1:6889-7017	129	115200
+98	gnl|uv|M77815.1:7204-7250-49	96	115456
+99	gnl|uv|L08959.1:187-307	121	115712
+100	gnl|uv|L08959.1:380-473	94	115968
+101	gnl|uv|L09128.1:189-312	124	116224
+102	gnl|uv|L08958.1:189-318	130	116480
+103	gnl|uv|L09129.1:194-321	128	116736
+104	gnl|uv|L09130.1:192-326	135	116992
+105	gnl|uv|L09137.2:360-494	135	117248
+106	gnl|uv|M77827.1:5954-6051	98	117504
+107	gnl|uv|M77827.1:6324-6421	98	117760
+108	gnl|uv|U07649.1:454-550	97	118016
+109	gnl|uv|U07649.1:927-1024	98	118272
+110	gnl|uv|X65279.1:1-76	76	118528
+111	gnl|uv|X65279.1:244-340	97	118784
+112	gnl|uv|X65279.1:1634-1729	96	119040
+113	gnl|uv|X65279.1:1742-1837	96	119296
+114	gnl|uv|X65279.1:1995-2088	94	119552
+115	gnl|uv|X65279.1:2191-2290	100	119808
+116	gnl|uv|X65279.1:2434-2527	94	120064
+117	gnl|uv|X65279.1:3044-3311	268	120320
+118	gnl|uv|X65279.1:3647-3749	103	120832
+119	gnl|uv|X65279.1:3997-4095	99	121088
+120	gnl|uv|X65279.1:4210-4704	495	121344
+121	gnl|uv|X65279.1:4865-4970	106	121856
+122	gnl|uv|X65279.1:5154-5471	318	122112
+123	gnl|uv|X65279.1:5791-5885	95	122624
+124	gnl|uv|X65279.1:5941-7353	1413	122880
+125	gnl|uv|X65279.1:7400-7496	97	124416
+126	gnl|uv|X65279.1:7680-7855	176	124672
+127	gnl|uv|X65279.1:8039-8136	98	124928
+128	gnl|uv|X02513.1:851-946	96	125184
+129	gnl|uv|X16973.1:1128-1217	90	125440
+130	gnl|uv|U02426.1:5456-5554	99	125696
+131	gnl|uv|U02426.1:19740-19836	97	125952
+132	gnl|uv|U02426.1:19992-20125	134	126208
+133	gnl|uv|U02425.1:20001-20067	67	126464
+134	gnl|uv|U02427.1:1-135	135	126720
+135	gnl|uv|U02427.1:1386-1482	97	126976
+136	gnl|uv|U02427.1:1943-2041	99	127232
+137	gnl|uv|U02427.1:2631-2729	99	127488
+138	gnl|uv|U02427.1:3962-4049	88	127744
+139	gnl|uv|U02427.1:5629-5727	99	128000
+140	gnl|uv|U02453.1:1-91	91	128256
+141	gnl|uv|U02447.1:1-1009	1009	128512
+142	gnl|uv|X65305.2:1-137	137	129536
+143	gnl|uv|X65305.2:2680-2746-49	116	129792
+144	gnl|uv|U13869.1:118-319	202	130048
+145	gnl|uv|U13869.1:833-932	100	130304
+146	gnl|uv|U13869.1:2390-2731	342	130560
+147	gnl|uv|U13869.1:2826-2883-41	99	131072
+148	gnl|uv|U13870.1:115-302	188	131328
+149	gnl|uv|U13871.1:182-319	138	131584
+150	gnl|uv|X65327.1:1-54	54	131840
+151	gnl|uv|X65327.1:2427-2523	97	132096
+152	gnl|uv|X65327.1:2707-2999-49	342	132352
+153	gnl|uv|X65329.1:1-58	58	132864
+154	gnl|uv|X65329.1:2964-3005-49	91	133120
+155	gnl|uv|X65328.2:3-135	133	133376
+156	gnl|uv|X65328.2:2458-2555	98	133632
+157	gnl|uv|X65328.2:2783-2886	104	133888
+158	gnl|uv|U13865.1:2834-3234	401	134144
+159	gnl|uv|U13866.1:2833-2922	90	134656
+160	gnl|uv|U13866.1:3145-3233	89	134912
+161	gnl|uv|U13848.1:1-65	65	135168
+162	gnl|uv|U13848.1:2047-2225	179	135424
+163	gnl|uv|U13848.1:2293-2395	103	135680
+164	gnl|uv|U13848.1:2405-2644	240	135936
+165	gnl|uv|U13848.1:3297-3395	99	136192
+166	gnl|uv|U13848.1:3511-3613	103	136448
+167	gnl|uv|U13848.1:3648-3747	100	136704
+168	gnl|uv|U13848.1:4142-4190-49	98	136960
+169	gnl|uv|X65330.1:1-143	143	137216
+170	gnl|uv|X65330.1:2290-2417-49	177	137472
+171	gnl|uv|X65331.1:1-96	96	137728
+172	gnl|uv|X65331.1:2375-2419-49	94	137984
+173	gnl|uv|X65332.2:1-115	115	138240
+174	gnl|uv|X65332.2:2436-2462-49	76	138496
+175	gnl|uv|X65333.2:1-122	122	138752
+176	gnl|uv|X65333.2:2445-2464-49	69	139008
+177	gnl|uv|X65300.1:11-142	132	139264
+178	gnl|uv|X65302.1:1-99	99	139520
+179	gnl|uv|X65302.1:2389-2482	94	139776
+180	gnl|uv|X65302.1:2832-2867-49	85	140032
+181	gnl|uv|X65301.1:12-107	96	140288
+182	gnl|uv|X65303.1:1-108	108	140544
+183	gnl|uv|X65303.1:2845-2871-49	76	140800
+184	gnl|uv|DQ133906.1:1-657	657	141056
+185	gnl|uv|DQ133906.1:727-823	97	141824
+186	gnl|uv|DQ133906.1:1084-1182	99	142080
+187	gnl|uv|DQ133906.1:1291-1389	99	142336
+188	gnl|uv|DQ133906.1:1736-1863	128	142592
+189	gnl|uv|DQ133906.1:2477-2575	99	142848
+190	gnl|uv|DQ133906.1:2593-3425-49	882	143104
+191	gnl|uv|AY753576.1:1-142	142	144128
+192	gnl|uv|AY753576.1:253-351	99	144384
+193	gnl|uv|AY753576.1:403-529	127	144640
+194	gnl|uv|AY753576.1:3446-3455-49	59	144896
+195	gnl|uv|DQ996013.1:211-472	262	145152
+196	gnl|uv|DQ996013.1:2087-3053	967	145664
+197	gnl|uv|AY753578.1:1-838	838	146688
+198	gnl|uv|AY753578.1:4129-4137-49	58	147712
+199	gnl|uv|DQ666274.1:1-149	149	147968
+200	gnl|uv|DQ666274.1:249-3225	2977	148224
+201	gnl|uv|DQ666274.1:4010-4161-49	201	151296
+202	gnl|uv|EU545992.1:1-1076	1076	151552
+203	gnl|uv|EU545992.1:1334-1432	99	152832
+204	gnl|uv|EU545992.1:4369-4377-49	58	153088
+205	gnl|uv|EU545996.1:1-119	119	153344
+206	gnl|uv|EU545996.1:414-561	148	153600
+207	gnl|uv|EU545996.1:1330-1455	126	153856
+208	gnl|uv|EU545996.1:1461-1586	126	154112
+209	gnl|uv|EU545996.1:4416-4422-49	56	154368
+210	gnl|uv|DQ666273.1:28-245	218	154624
+211	gnl|uv|DQ666273.1:1014-1110	97	154880
+212	gnl|uv|DQ666273.1:2924-3015	92	155136
+213	gnl|uv|DQ666273.1:4842-4938-1	98	155392
+214	gnl|uv|FJ160466.1:1-203	203	155648
+215	gnl|uv|FJ160466.1:291-809	519	155904
+216	gnl|uv|FJ160466.1:1061-1313	253	156672
+217	gnl|uv|FJ160466.1:1899-7260-49	5411	156928
+218	gnl|uv|EU101022.1:1-218	218	162560
+219	gnl|uv|EU101022.1:865-1079	215	162816
+220	gnl|uv|EU101022.1:1385-1535	151	163072
+221	gnl|uv|EU101022.1:1582-1679	98	163328
+222	gnl|uv|EU101022.1:3981-4079	99	163584
+223	gnl|uv|EU101022.1:4715-4813	99	163840
+224	gnl|uv|EU101022.1:6674-7648-49	1024	164096
+225	gnl|uv|AF075573.1:1-121	121	165376
+226	gnl|uv|AF075573.1:2939-3006	68	165632
+227	gnl|uv|AF075573.1:3574-3669	96	165888
+228	gnl|uv|AF075573.1:4457-4550	94	166144
+229	gnl|uv|AF075573.1:4890-5044	155	166400
+230	gnl|uv|AF075573.1:6265-6349	85	166656
+231	gnl|uv|AF075573.1:8145-8179-49	84	166912
+232	gnl|uv|HQ245711.1:57-170	114	167168
+233	gnl|uv|HQ245711.1:1853-1954	102	167424
+234	gnl|uv|HQ245711.1:1977-2121	145	167680
+235	gnl|uv|HQ245711.1:2930-3028	99	167936
+236	gnl|uv|HQ245711.1:3053-3162	110	168192
+237	gnl|uv|HQ245711.1:3318-3414	97	168448
+238	gnl|uv|HQ245711.1:3542-3639	98	168704
+239	gnl|uv|HQ245711.1:3777-4014	238	168960
+240	gnl|uv|HQ245711.1:4361-4459	99	169216
+241	gnl|uv|HQ245711.1:4683-4885	203	169472
+242	gnl|uv|HQ245711.1:5539-7450	1912	169728
+243	gnl|uv|HQ245711.1:7990-8093	104	171776
+244	gnl|uv|HQ245711.1:9357-9468	112	172032
+245	gnl|uv|HQ245711.1:9551-10454	904	172288
+246	gnl|uv|HQ245711.1:13422-13527	106	173312
+247	gnl|uv|HQ245711.1:13692-16404	2713	173568
+248	gnl|uv|EU729724.1:1-150	150	176384
+249	gnl|uv|EU729724.1:160-287	128	176640
+250	gnl|uv|EU729724.1:369-560	192	176896
+251	gnl|uv|EU729724.1:583-806	224	177152
+252	gnl|uv|EU729724.1:948-1173	226	177408
+253	gnl|uv|EU729724.1:1514-1610	97	177664
+254	gnl|uv|EU729724.1:1634-1797-49	213	177920
+255	gnl|uv|EU729725.2:1-52	52	178176
+256	gnl|uv|EU729725.2:974-1076	103	178432
+257	gnl|uv|EU729725.2:1169-1266	98	178688
+258	gnl|uv|EU729725.2:1941-1999-49	108	178944
+259	gnl|uv|AF532108.1:67-168	102	179200
+260	gnl|uv|AF532108.1:239-341	103	179456
+261	gnl|uv|AF532108.1:1960-2008-49	98	179712
+262	gnl|uv|AF532109.1:415-507	93	179968
+263	gnl|uv|AF532109.1:583-681	99	180224
+264	gnl|uv|AF532109.1:742-919	178	180480
+265	gnl|uv|AF532109.1:1058-1367	310	180736
+266	gnl|uv|EU729726.1:1-84	84	181248
+267	gnl|uv|EU729726.1:155-394	240	181504
+268	gnl|uv|EU729726.1:516-633	118	181760
+269	gnl|uv|EU729726.1:1265-1371	107	182016
+270	gnl|uv|EU729726.1:1754-1852	99	182272
+271	gnl|uv|EU729726.1:2069-2162	94	182528
+272	gnl|uv|EU729726.1:2242-2275-49	83	182784
+273	gnl|uv|NGB00026.1:1-55	55	183040
+274	gnl|uv|NGB00026.1:282-768	487	183296
+275	gnl|uv|NGB00026.1:1029-1408	380	183808
+276	gnl|uv|NGB00026.1:2210-2499-49	339	184320
+277	gnl|uv|NGB00148.1:359-531	173	184832
+278	gnl|uv|M77811.1:432-555	124	185088
+279	gnl|uv|GQ489187.1:1-238	238	185344
+280	gnl|uv|GQ489187.1:2778-2811-49	83	185600
+281	gnl|uv|NGB00147.1:1-56	56	185856
+282	gnl|uv|NGB00147.1:284-382	99	186112
+283	gnl|uv|NGB00147.1:997-1092	96	186368
+284	gnl|uv|NGB00147.1:1381-1476	96	186624
+285	gnl|uv|NGB00147.1:1507-1602	96	186880
+286	gnl|uv|NGB00147.1:2266-2362	97	187136
+287	gnl|uv|NGB00147.1:2398-2663	266	187392
+288	gnl|uv|NGB00147.1:2728-2814-49	136	187904
+289	gnl|uv|NGB00024.1:1275-1702	428	188160
+290	gnl|uv|NGB00024.1:2421-2631	211	188672
+291	gnl|uv|NGB00146.1:2420-2635	216	188928
+292	gnl|uv|L08957.1:2512-2611	100	189184
+293	gnl|uv|L08957.1:2800-2870-48	119	189440
+294	gnl|uv|EF512631.1:924-1021	98	189696
+295	gnl|uv|EF512631.1:2093-2503	411	189952
+296	gnl|uv|U46017.1:676-780	105	190464
+297	gnl|uv|L08784.1:410-508	99	190720
+298	gnl|uv|L08784.1:605-673	69	190976
+299	gnl|uv|L08784.1:743-810	68	191232
+300	gnl|uv|L08784.1:2916-2964-47	96	191488
+301	gnl|uv|L08785.1:1-50	50	191744
+302	gnl|uv|L08785.1:411-506	96	192000
+303	gnl|uv|L08785.1:2919-2964-49	95	192256
+304	gnl|uv|L08786.1:609-673	65	192512
+305	gnl|uv|L08786.1:743-808	66	192768
+306	gnl|uv|EF694056.1:1-945	945	193024
+307	gnl|uv|EF694056.1:2926-2974-49	98	194048
+308	gnl|uv|GQ489185.1:6-104	99	194304
+309	gnl|uv|U02284.1:1-198	198	194560
+310	gnl|uv|U02284.1:3059-3073-49	64	194816
+311	gnl|uv|DQ317600.1:97-231	135	195072
+312	gnl|uv|DQ317600.1:425-517	93	195328
+313	gnl|uv|DQ317600.1:975-1090	116	195584
+314	gnl|uv|DQ058733.1:11-150	140	195840
+315	gnl|uv|DQ058733.1:1486-1584	99	196096
+316	gnl|uv|DQ058733.1:1586-2178	593	196352
+317	gnl|uv|DQ058733.1:2419-2517	99	197120
+318	gnl|uv|DQ058733.1:2578-2676	99	197376
+319	gnl|uv|DQ058733.1:2725-2968	244	197632
+320	gnl|uv|DQ058733.1:3098-3161-44	108	197888
+321	gnl|uv|L08782.1:191-284	94	198144
+322	gnl|uv|L08782.1:649-742	94	198400
+323	gnl|uv|L08783.1:197-283	87	198656
+324	gnl|uv|GQ489188.1:1-59	59	198912
+325	gnl|uv|GQ489188.1:445-602	158	199168
+326	gnl|uv|GQ489188.1:3321-3369-49	98	199424
+327	gnl|uv|DQ839632.1:2195-2458	264	199680
+328	gnl|uv|DQ839632.1:2549-2647	99	200192
+329	gnl|uv|DQ839632.1:2694-2846	153	200448
+330	gnl|uv|U39779.1:220-660	441	200704
+331	gnl|uv|U39779.1:785-915	131	201216
+332	gnl|uv|U39779.1:1030-1148	119	201472
+333	gnl|uv|U39779.1:1286-1427	142	201728
+334	gnl|uv|DQ058731.1:2243-2344	102	201984
+335	gnl|uv|EU126551.1:510-695	186	202240
+336	gnl|uv|DQ058730.2:2402-2499	98	202496
+337	gnl|uv|DQ058730.2:3593-3691	99	202752
+338	gnl|uv|DQ058729.1:2448-2543	96	203008
+339	gnl|uv|NGB00143.1:742-834	93	203264
+340	gnl|uv|NGB00143.1:1426-1525	100	203520
+341	gnl|uv|NGB00143.1:2130-2222	93	203776
+342	gnl|uv|NGB00143.1:2448-2551	104	204032
+343	gnl|uv|NGB00143.1:2667-2794	128	204288
+344	gnl|uv|NGB00143.1:3812-3899-43	131	204544
+345	gnl|uv|GQ489186.1:347-454	108	204800
+346	gnl|uv|GQ489186.1:483-581	99	205056
+347	gnl|uv|GQ489186.1:1077-1175	99	205312
+348	gnl|uv|GQ489186.1:1312-1415	104	205568
+349	gnl|uv|NGB00144.1:2667-2794	128	205824
+350	gnl|uv|NGB00028.1:322-419	98	206080
+351	gnl|uv|NGB00028.1:2102-2197	96	206336
+352	gnl|uv|NGB00028.1:2745-2852	108	206592
+353	gnl|uv|NGB00028.1:2991-3089	99	206848
+354	gnl|uv|AF067646.1:554-668	115	207104
+355	gnl|uv|AF067646.1:710-856	147	207360
+356	gnl|uv|AF067646.1:1152-1272	121	207616
+357	gnl|uv|AF067646.1:2642-2740	99	207872
+358	gnl|uv|AF067646.1:2852-2950	99	208128
+359	gnl|uv|NGB00046.1:23-173	151	208384
+360	gnl|uv|NGB00046.1:396-566	171	208640
+361	gnl|uv|NGB00046.1:585-1063	479	208896
+362	gnl|uv|NGB00046.1:1474-1603	130	209408
+363	gnl|uv|NGB00046.1:1680-1794	115	209664
+364	gnl|uv|NGB00046.1:2597-2732	136	209920
+365	gnl|uv|NGB00046.1:3647-3896	250	210176
+366	gnl|uv|NGB00046.1:3899-3978	80	210432
+367	gnl|uv|NGB00047.1:596-696	101	210688
+368	gnl|uv|NGB00047.1:815-919	105	210944
+369	gnl|uv|NGB00048.1:663-920	258	211200
+370	gnl|uv|NGB00044.1:1476-1667	192	211712
+371	gnl|uv|NGB00045.1:721-847	127	211968
+372	gnl|uv|NGB00027.1:671-726	56	212224
+373	gnl|uv|NGB00027.1:1091-1188	98	212480
+374	gnl|uv|NGB00027.1:2728-2825	98	212736
+375	gnl|uv|NGB00027.1:3266-3373	108	212992
+376	gnl|uv|NGB00025.1:3266-3373	108	213248
+377	gnl|uv|EU140755.1:1669-2352	684	213504
+378	gnl|uv|EU140755.1:2369-2467	99	214272
+379	gnl|uv|EU140755.1:3162-3506	345	214528
+380	gnl|uv|U89961.1:1-4240	4240	215040
+381	gnl|uv|U89961.1:6386-6449-49	113	219392
+382	gnl|uv|AY643800.3:106-390	285	219648
+383	gnl|uv|AY643800.3:773-896	124	220160
+384	gnl|uv|L08874.1:7324-7372-48	97	220416
+385	gnl|uv|EU140754.1:1-64	64	220672
+386	gnl|uv|EU140754.1:115-170	56	220928
+387	gnl|uv|EU140754.1:354-425	72	221184
+388	gnl|uv|EU140754.1:2337-2429	93	221440
+389	gnl|uv|EU140754.1:7465-7506-49	91	221696
+390	gnl|uv|EU140753.1:310-412	103	221952
+391	gnl|uv|NGB00034.1:1-163	163	222208
+392	gnl|uv|NGB00034.1:223-321	99	222464
+393	gnl|uv|NGB00034.1:496-594	99	222720
+394	gnl|uv|NGB00034.1:1354-1455	102	222976
+395	gnl|uv|NGB00034.1:2015-2210	196	223232
+396	gnl|uv|NGB00034.1:2348-2444	97	223488
+397	gnl|uv|NGB00034.1:2588-2686	99	223744
+398	gnl|uv|NGB00034.1:2977-3078	102	224000
+399	gnl|uv|NGB00034.1:3154-3276	123	224256
+400	gnl|uv|NGB00034.1:3449-3559	111	224512
+401	gnl|uv|NGB00034.1:4293-4481	189	224768
+402	gnl|uv|NGB00034.1:4566-4664	99	225024
+403	gnl|uv|NGB00034.1:4916-5043	128	225280
+404	gnl|uv|NGB00034.1:5159-6048	890	225536
+405	gnl|uv|NGB00034.1:7957-7991-49	84	226560
+406	gnl|uv|U29899.1:1847-4463	2617	226816
+407	gnl|uv|U29899.1:4697-5948	1252	229632
+408	gnl|uv|U29899.1:8070-8117-49	97	230912
+409	gnl|uv|EU140750.1:64-162	99	231168
+410	gnl|uv|EU140750.1:2338-2433	96	231424
+411	gnl|uv|EU140750.1:5600-5698	99	231680
+412	gnl|uv|EU140752.1:315-452	138	231936
+413	gnl|uv|NGB00145.1:1943-2070	128	232192
+414	gnl|uv|NGB00145.1:2440-2592	153	232448
+415	gnl|uv|NGB00145.1:4213-4330	118	232704
+416	gnl|uv|NGB00145.1:9317-9412	96	232960
+417	gnl|uv|U89960.1:3-1162	1160	233216
+418	gnl|uv|U89960.1:1471-2257	787	234496
+419	gnl|uv|U89960.1:2491-2588	98	235520
+420	gnl|uv|U89960.1:2842-2938	97	235776
+421	gnl|uv|U89960.1:4738-7717	2980	236032
+422	gnl|uv|U89960.1:7789-7969	181	239104
+423	gnl|uv|NGB00405.1:1-198	198	239360
+424	gnl|uv|NGB00405.1:304-402	99	239616
+425	gnl|uv|NGB00405.1:1092-1185	94	239872
+426	gnl|uv|NGB00405.1:1820-1824-49	54	240128
+427	gnl|uv|AF087567.1:1-217	217	240384
+428	gnl|uv|AF087567.1:1920-1968-49	98	240640
+429	gnl|uv|AF086840.1:1-175	175	240896
+430	gnl|uv|AF086840.1:1957-1969-49	62	241152
+431	gnl|uv|AF086841.1:12-152	141	241408
+432	gnl|uv|AF086842.1:2-161	160	241664
+433	gnl|uv|AF086843.1:11-151	141	241920
+434	gnl|uv|AF086844.1:1-162	162	242176
+435	gnl|uv|AF086844.1:1969-1969-49	50	242432
+436	gnl|uv|AF086845.1:13-149	137	242688
+437	gnl|uv|AF086846.1:1-163	163	242944
+438	gnl|uv|AF086847.1:14-150	137	243200
+439	gnl|uv|AF086848.1:1-173	173	243456
+440	gnl|uv|AF086848.1:1958-1969-49	61	243712
+441	gnl|uv|AF086849.1:12-152	141	243968
+442	gnl|uv|AF086850.1:1-164	164	244224
+443	gnl|uv|AF086850.1:1969-1969-49	50	244480
+444	gnl|uv|AF086851.1:1-163	163	244736
+445	gnl|uv|AF086852.1:1-172	172	244992
+446	gnl|uv|AF086852.1:1959-1969-49	60	245248
+447	gnl|uv|AF086853.1:11-151	141	245504
+448	gnl|uv|AF087562.1:1-163	163	245760
+449	gnl|uv|AF087562.1:1968-1969-49	51	246016
+450	gnl|uv|AF087563.1:1-162	162	246272
+451	gnl|uv|AF087563.1:1969-1969-49	50	246528
+452	gnl|uv|AF087564.1:1-163	163	246784
+453	gnl|uv|AF087564.1:1969-1969-49	50	247040
+454	gnl|uv|AF087565.1:13-149	137	247296
+455	gnl|uv|AF087566.1:1-160	160	247552
+456	gnl|uv|AF087664.1:1-174	174	247808
+457	gnl|uv|AF087664.1:1958-1969-49	61	248064
+458	gnl|uv|AF087665.1:14-150	137	248320
+459	gnl|uv|AF087666.1:1-164	164	248576
+460	gnl|uv|AF087667.1:2-161	160	248832
+461	gnl|uv|NGB00591.1:1-123	123	249088
+462	gnl|uv|NGB00591.1:182-279	98	249344
+463	gnl|uv|NGB00591.1:522-724	203	249600
+464	gnl|uv|NGB00591.1:768-866	99	249856
+465	gnl|uv|NGB00591.1:951-1140	190	250112
+466	gnl|uv|NGB00591.1:1186-1451	266	250368
+467	gnl|uv|NGB00591.1:2046-2143	98	250880
+468	gnl|uv|NGB00591.1:2151-2204-49	103	251136
+469	gnl|uv|NGB00592.1:2173-2204-48	80	251392
+470	gnl|uv|NGB00609.1:86-241	156	251648
+471	gnl|uv|NGB00609.1:268-607	340	251904
+472	gnl|uv|NGB00609.1:1329-2217	889	252416
+473	gnl|uv|NGB00608.1:317-536	220	253440
+474	gnl|uv|NGB00607.1:298-397	100	253696
+475	gnl|uv|NGB00607.1:456-555	100	253952
+476	gnl|uv|NGB00607.1:1563-1661	99	254208
+477	gnl|uv|NGB00589.1:1615-1795	181	254464
+478	gnl|uv|NGB00589.1:1797-1898	102	254720
+479	gnl|uv|NGB00589.1:2617-2673-41	98	254976
+480	gnl|uv|NGB00578.1:1-52	52	255232
+481	gnl|uv|NGB00578.1:2642-2694-49	102	255488
+482	gnl|uv|NGB00579.1:1-83	83	255744
+483	gnl|uv|NGB00579.1:2620-2694-49	124	256000
+484	gnl|uv|NGB00580.1:1-53	53	256256
+485	gnl|uv|NGB00580.1:2643-2694-49	101	256512
+486	gnl|uv|NGB00581.1:1-68	68	256768
+487	gnl|uv|NGB00581.1:2107-2205	99	257024
+488	gnl|uv|NGB00581.1:2615-2694-49	129	257280
+489	gnl|uv|NGB00019.1:370-508	139	257536
+490	gnl|uv|NGB00582.1:1-53	53	257792
+491	gnl|uv|NGB00582.1:141-292	152	258048
+492	gnl|uv|NGB00582.1:2634-2738-49	154	258304
+493	gnl|uv|NGB00022.1:2415-2514	100	258560
+494	gnl|uv|NGB00022.1:2547-2646	100	258816
+495	gnl|uv|NGB00023.1:2420-2630	211	259072
+496	gnl|uv|NGB00021.1:2421-2633	213	259328
+497	gnl|uv|NGB00020.1:2420-2514	95	259584
+498	gnl|uv|NGB00020.1:2556-2635	80	259840
+499	gnl|uv|NGB00404.1:953-1048	96	260096
+500	gnl|uv|NGB00404.1:1741-1950	210	260352
+501	gnl|uv|NGB00404.1:2704-2843-49	189	260608
+502	gnl|uv|NGB00406.1:1-144	144	260864
+503	gnl|uv|NGB00406.1:262-328	67	261120
+504	gnl|uv|U46019.1:612-745	134	261376
+505	gnl|uv|NGB00399.1:354-503	150	261632
+506	gnl|uv|NGB00399.1:1531-1635	105	261888
+507	gnl|uv|NGB00399.1:2658-2791	134	262144
+508	gnl|uv|X52324.1:761-841	81	262400
+509	gnl|uv|X52326.1:743-808	66	262656
+510	gnl|uv|U02449.1:1-69	69	262912
+511	gnl|uv|U02449.1:2906-2967-49	111	263168
+512	gnl|uv|NGB00585.1:591-1576	986	263424
+513	gnl|uv|NGB00585.1:1920-2017	98	264448
+514	gnl|uv|NGB00031.1:18-109	92	264704
+515	gnl|uv|NGB00031.1:488-586	99	264960
+516	gnl|uv|NGB00031.1:1385-1483	99	265216
+517	gnl|uv|NGB00031.1:1519-1715	197	265472
+518	gnl|uv|NGB00031.1:1911-2014	104	265728
+519	gnl|uv|NGB00031.1:2329-2424	96	265984
+520	gnl|uv|NGB00031.1:2445-2543	99	266240
+521	gnl|uv|NGB00407.1:3-377	375	266496
+522	gnl|uv|U46018.1:1864-1964	101	267008
+523	gnl|uv|U46018.1:2045-2143	99	267264
+524	gnl|uv|U46018.1:2294-2392	99	267520
+525	gnl|uv|U46018.1:2582-2675	94	267776
+526	gnl|uv|U46018.1:2998-3109	112	268032
+527	gnl|uv|U46018.1:3258-3355	98	268288
+528	gnl|uv|NGB00410.1:1-474	474	268544
+529	gnl|uv|NGB00410.1:777-956	180	269056
+530	gnl|uv|NGB00410.1:1327-1434	108	269312
+531	gnl|uv|NGB00410.1:2318-2414	97	269568
+532	gnl|uv|NGB00410.1:3158-3253	96	269824
+533	gnl|uv|NGB00410.1:3374-3476-49	152	270080
+534	gnl|uv|NGB00400.1:29-159	131	270336
+535	gnl|uv|NGB00400.1:165-261	97	270592
+536	gnl|uv|NGB00400.1:275-383	109	270848
+537	gnl|uv|NGB00400.1:1422-1554	133	271104
+538	gnl|uv|NGB00400.1:3448-3495-49	97	271360
+539	gnl|uv|NGB00401.1:31-126	96	271616
+540	gnl|uv|NGB00401.1:1458-1518	61	271872
+541	gnl|uv|NGB00401.1:3448-3495-49	97	272128
+542	gnl|uv|NGB00411.1:227-519	293	272384
+543	gnl|uv|NGB00030.1:1-50	50	272896
+544	gnl|uv|NGB00030.1:537-649	113	273152
+545	gnl|uv|NGB00030.1:773-870	98	273408
+546	gnl|uv|NGB00030.1:1033-1606	574	273664
+547	gnl|uv|NGB00030.1:1698-1796	99	274432
+548	gnl|uv|NGB00030.1:2078-2243	166	274688
+549	gnl|uv|NGB00030.1:2253-2378	126	274944
+550	gnl|uv|NGB00030.1:2716-2807	92	275200
+551	gnl|uv|NGB00030.1:2980-3913	934	275456
+552	gnl|uv|NGB00030.1:3980-4033-49	103	276480
+553	gnl|uv|NGB00583.1:1008-1104	97	276736
+554	gnl|uv|NGB00583.1:3798-3896	99	276992
+555	gnl|uv|NGB00412.1:1-1359	1359	277248
+556	gnl|uv|NGB00412.1:2452-2606	155	278784
+557	gnl|uv|NGB00412.1:2779-2850	72	279040
+558	gnl|uv|NGB00412.1:3842-3940	99	279296
+559	gnl|uv|NGB00412.1:4084-4131-49	97	279552
+560	gnl|uv|AF028239.1:1736-1834	99	279808
+561	gnl|uv|NGB00033.1:114-341	228	280064
+562	gnl|uv|NGB00033.1:641-739	99	280320
+563	gnl|uv|NGB00033.1:1144-1242	99	280576
+564	gnl|uv|NGB00033.1:1576-1697	122	280832
+565	gnl|uv|NGB00029.1:270-368	99	281088
+566	gnl|uv|NGB00029.1:434-543	110	281344
+567	gnl|uv|NGB00029.1:2153-2699	547	281600
+568	gnl|uv|NGB00029.1:2738-2866	129	282368
+569	gnl|uv|NGB00029.1:2930-3028	99	282624
+570	gnl|uv|NGB00029.1:3245-3400	156	282880
+571	gnl|uv|NGB00029.1:3530-3652	123	283136
+572	gnl|uv|NGB00029.1:3710-3874	165	283392
+573	gnl|uv|U13188.1:1-53	53	283648
+574	gnl|uv|U13188.1:785-900	116	283904
+575	gnl|uv|U13188.1:1377-1484	108	284160
+576	gnl|uv|U13188.1:2331-2429	99	284416
+577	gnl|uv|U13188.1:2583-2667	85	284672
+578	gnl|uv|U13188.1:2988-3112	125	284928
+579	gnl|uv|U13188.1:3131-3296	166	285184
+580	gnl|uv|U13188.1:5438-5534	97	285440
+581	gnl|uv|U13188.1:5619-5716	98	285696
+582	gnl|uv|U13188.1:6602-6650-49	98	285952
+583	gnl|uv|U07647.1:784-907	124	286208
+584	gnl|uv|AF033313.1:789-972	184	286464
+585	gnl|uv|AF033313.1:3273-3378	106	286720
+586	gnl|uv|AF033313.1:4191-4292	102	286976
+587	gnl|uv|U02436.1:1-97	97	287232
+588	gnl|uv|U02436.1:159-288	130	287488
+589	gnl|uv|U02436.1:560-653	94	287744
+590	gnl|uv|U02436.1:1330-2607	1278	288000
+591	gnl|uv|U02436.1:3152-4436	1285	289280
+592	gnl|uv|U02436.1:4547-4644	98	290816
+593	gnl|uv|U02436.1:6848-7226	379	291072
+594	gnl|uv|U02436.1:7651-7798-49	197	291584
+595	gnl|uv|NGB00035.1:95-228	134	291840
+596	gnl|uv|NGB00035.1:622-731	110	292096
+597	gnl|uv|NGB00035.1:2541-2639	99	292352
+598	gnl|uv|NGB00035.1:3497-3598	102	292608
+599	gnl|uv|NGB00035.1:3840-3971	132	292864
+600	gnl|uv|NGB00035.1:4921-5018	98	293120
+601	gnl|uv|NGB00035.1:5128-5231	104	293376
+602	gnl|uv|NGB00035.1:5656-5754	99	293632
+603	gnl|uv|NGB00035.1:5779-5896	118	293888
+604	gnl|uv|NGB00035.1:6290-6409	120	294144
+605	gnl|uv|NGB00035.1:6440-6537	98	294400
+606	gnl|uv|NGB00035.1:6619-6738	120	294656
+607	gnl|uv|NGB00035.1:7906-7959-44	98	294912
+608	gnl|uv|NGB00620.1:1-67	67	295168
+609	gnl|uv|NGB00620.1:1102-1287	186	295424
+610	gnl|uv|NGB00620.1:1289-1397	109	295680
+611	gnl|uv|NGB00620.1:1854-2089	236	295936
+612	gnl|uv|NGB00620.1:2470-2656	187	296192
+613	gnl|uv|NGB00620.1:2867-2966	100	296448
+614	gnl|uv|NGB00620.1:3559-3707	149	296704
+615	gnl|uv|NGB00620.1:3962-4060	99	296960
+616	gnl|uv|NGB00620.1:4175-4296	122	297216
+617	gnl|uv|NGB00620.1:4381-4623	243	297472
+618	gnl|uv|NGB00620.1:7946-7987-49	91	297728
+619	gnl|uv|NGB00413.1:1-3960	3960	297984
+620	gnl|uv|NGB00413.1:4732-7508	2777	302080
+621	gnl|uv|NGB00413.1:9419-9516	98	304896
+622	gnl|uv|NGB00413.1:13247-13505	259	305152
+623	gnl|uv|NGB00413.1:15446-15448-49	52	305664
+624	gnl|uv|U13189.1:1-163	163	305920
+625	gnl|uv|U13189.1:346-456	111	306176
+626	gnl|uv|U13189.1:1214-1310	97	306432
+627	gnl|uv|U13189.1:3048-3139	92	306688
+628	gnl|uv|U13189.1:4713-4811	99	306944
+629	gnl|uv|U13189.1:6601-6703	103	307200
+630	gnl|uv|U13189.1:7302-8106	805	307456
+631	gnl|uv|U13189.1:8235-8334	100	308480
+632	gnl|uv|U13189.1:9688-10585	898	308736
+633	gnl|uv|U13189.1:12792-12883	92	309760
+634	gnl|uv|U13189.1:13856-14470	615	310016
+635	gnl|uv|U13189.1:15225-15322	98	310784
+636	gnl|uv|U13189.1:15605-15827-49	272	311040
+637	gnl|uv|U12391.1:183-309	127	311552
+638	gnl|uv|AF532106.2:140-235	96	311808
+639	gnl|uv|AF532106.2:955-1053	99	312064
+640	gnl|uv|X70275.1:203-285	83	312320
+641	gnl|uv|X70275.1:774-869	96	312576
+642	gnl|uv|DD038280.1:181-934	754	312832
+643	gnl|uv|DD038280.1:962-1153	192	313600
+644	gnl|uv|DD038280.1:1807-1942	136	313856
+645	gnl|uv|U09476.1:1-864	864	314112
+646	gnl|uv|DQ391279.1:1-10285	10285	315136
+647	gnl|uv|DQ391279.1:11528-12003	476	325632
+648	gnl|uv|DQ391279.1:12035-12230	196	326144
+649	gnl|uv|DQ391279.1:12351-12477	127	326400
+650	gnl|uv|DQ391279.1:13402-14600	1199	326656
+651	gnl|uv|EF583812.1:282-383	102	327936
+652	gnl|uv|EF583812.1:7798-7896	99	328192
+653	gnl|uv|EF583812.1:10164-10415	252	328448
+654	gnl|uv|EF583812.1:10757-10943	187	328704
+655	gnl|uv|FJ160465.1:282-383	102	328960
+656	gnl|uv|FJ160465.1:10983-11075	93	329216
+657	gnl|uv|FJ160465.1:11835-11929	95	329472
+658	gnl|uv|FJ160465.1:12092-12190	99	329728
+659	gnl|uv|GQ469986.1:124-219	96	329984
+660	gnl|uv|GQ469986.1:898-996	99	330240
+661	gnl|uv|GQ469986.1:3899-3997	99	330496
+662	gnl|uv|GQ469986.1:4496-4594	99	330752
+663	gnl|uv|GQ469986.1:5078-5176	99	331008
+664	gnl|uv|GQ469986.1:5639-5737	99	331264
+665	gnl|uv|GQ469986.1:5798-5896	99	331520
+666	gnl|uv|GQ469986.1:6794-6899	106	331776
+667	gnl|uv|GQ469986.1:8387-8480	94	332032
+668	gnl|uv|AY090111.1:1012-1107	96	332288
+669	gnl|uv|NGB00111.1:1-144	144	332544
+670	gnl|uv|NGB00308.1:1-14	14	332800
+671	gnl|uv|NGB00085.1:1-54	54	333056
+672	gnl|uv|NGB00085.1:620-744	125	333312
+673	gnl|uv|NGB00085.1:1269-1367	99	333568
+674	gnl|uv|NGB00085.1:1512-1721	210	333824
+675	gnl|uv|NGB00085.1:1749-1845	97	334080
+676	gnl|uv|NGB00085.1:3807-3908	102	334336
+677	gnl|uv|NGB00601.1:1-64	64	334592
+678	gnl|uv|NGB00601.1:2653-2716	64	334848
+679	gnl|uv|NGB00032.1:860-996	137	335104
+680	gnl|uv|NGB00120.1:1-86	86	335360
+681	gnl|uv|NGB00120.1:772-867	96	335616
+682	gnl|uv|NGB00120.1:1895-2001	107	335872
+683	gnl|uv|NGB00118.1:1-154	154	336128
+684	gnl|uv|NGB00118.1:675-771	97	336384
+685	gnl|uv|NGB00118.1:1811-1938	128	336640
+686	gnl|uv|NGB00123.1:47-143	97	336896
+687	gnl|uv|NGB00123.1:498-592	95	337152
+688	gnl|uv|NGB00123.1:603-698	96	337408
+689	gnl|uv|NGB00123.1:1691-1849	159	337664
+690	gnl|uv|NGB00122.1:1-104	104	337920
+691	gnl|uv|NGB00122.1:139-201	63	338176
+692	gnl|uv|NGB00122.1:1516-1661	146	338432
+693	gnl|uv|NGB00125.1:1-108	108	338688
+694	gnl|uv|NGB00125.1:1089-1202	114	338944
+695	gnl|uv|NGB00125.1:1395-1523	129	339200
+696	gnl|uv|NGB00115.1:3-100	98	339456
+697	gnl|uv|NGB00115.1:109-206	98	339712
+698	gnl|uv|NGB00126.1:13-109	97	339968
+699	gnl|uv|NGB00126.1:1151-1240	90	340224
+700	gnl|uv|NGB00121.1:1125-1248	124	340480
+701	gnl|uv|NGB00119.1:1-81	81	340736
+702	gnl|uv|NGB00119.1:778-962	185	340992
+703	gnl|uv|NGB00119.1:1133-1227	95	341248
+704	gnl|uv|NGB00124.1:1111-1187	77	341504
+705	gnl|uv|NGB00117.1:1-76	76	341760
+706	gnl|uv|NGB00117.1:1092-1167	76	342016
+707	gnl|uv|AY390769.1:1-1000	1000	342272
+708	gnl|uv|NGB00114.1:6-101	96	343296
+709	gnl|uv|NGB00114.1:375-473	99	343552
+710	gnl|uv|NGB00114.1:774-869	96	343808
+711	gnl|uv|NGB00350.1:415-785	371	344064
+712	gnl|uv|NGB00134.1:40-306	267	344576
+713	gnl|uv|NGB00134.1:321-408	88	345088
+714	gnl|uv|NGB00127.1:1-260	260	345344
+715	gnl|uv|NGB00127.1:290-347	58	345856
+716	gnl|uv|NGB00128.1:90-237	148	346112
+717	gnl|uv|NGB00129.1:84-241	158	346368
+718	gnl|uv|NGB00133.1:58-252	195	346624
+719	gnl|uv|NGB00130.1:58-249	192	346880
+720	gnl|uv|NGB00131.1:59-249	191	347136
+721	gnl|uv|NGB00132.1:59-249	191	347392
+722	gnl|uv|NGB00107.1:1-236	236	347648
+723	gnl|uv|NGB00106.1:88-235	148	347904
+724	gnl|uv|NGB00142.1:92-276	185	348160
+725	gnl|uv|NGB00141.1:53-211	159	348416
+726	gnl|uv|NGB00108.1:1-243	243	348672
+727	gnl|uv|NGB00140.1:1-213	213	348928
+728	gnl|uv|NGB00136.1:47-194	148	349184
+729	gnl|uv|NGB00137.1:50-197	148	349440
+730	gnl|uv|NGB00139.1:48-195	148	349696
+731	gnl|uv|NGB00105.1:1-219	219	349952
+732	gnl|uv|NGB00078.1:34-139	106	350208
+733	gnl|uv|NGB00037.1:1-60	60	350464
+734	gnl|uv|NGB00038.1:1-60	60	350720
+735	gnl|uv|NGB00036.1:67-126	60	350976
+736	gnl|uv|NGB00042.1:1-70	70	351232
+737	gnl|uv|NGB00588.1:3-90	88	351488
+738	gnl|uv|NGB00112.1:1-94	94	351744
+739	gnl|uv|NGB00057.1:1-50	50	352000
+740	gnl|uv|NGB00039.1:18-81	64	352256
+741	gnl|uv|NGB00040.1:1-62	62	352512
+742	gnl|uv|NGB00104.1:11-77	67	352768
+743	gnl|uv|NGB00043.1:1-76	76	353024
+744	gnl|uv|NGB00041.1:11-72	62	353280
+745	gnl|uv|NGB00590.1:1-72	72	353536
+746	gnl|uv|NGB00056.1:22-71	50	353792
+747	gnl|uv|NGB00747.1:1-70	70	354048
+748	gnl|uv|NGB00748.1:1-70	70	354304
+749	gnl|uv|NGB00749.1:1-70	70	354560
+750	gnl|uv|NGB00750.1:1-70	70	354816
+751	gnl|uv|NGB00751.1:1-70	70	355072
+752	gnl|uv|NGB00752.1:1-70	70	355328
+753	gnl|uv|NGB00753.1:1-70	70	355584
+754	gnl|uv|NGB00754.1:1-70	70	355840
+755	gnl|uv|NGB00100.1:13-68	56	356096
+756	gnl|uv|NGB00102.1:13-68	56	356352
+757	gnl|uv|NGB00101.1:1-66	66	356608
+758	gnl|uv|NGB00859.1:1-66	66	356864
+759	gnl|uv|NGB00860.1:1-66	66	357120
+760	gnl|uv|NGB00861.1:1-66	66	357376
+761	gnl|uv|NGB00862.1:1-66	66	357632
+762	gnl|uv|NGB00863.1:1-66	66	357888
+763	gnl|uv|NGB00864.1:1-66	66	358144
+764	gnl|uv|NGB00865.1:1-66	66	358400
+765	gnl|uv|NGB00866.1:1-66	66	358656
+766	gnl|uv|NGB00867.1:1-66	66	358912
+767	gnl|uv|NGB00868.1:1-66	66	359168
+768	gnl|uv|NGB00869.1:1-66	66	359424
+769	gnl|uv|NGB00870.1:1-66	66	359680
+770	gnl|uv|NGB00755.1:1-65	65	359936
+771	gnl|uv|NGB00756.1:1-65	65	360192
+772	gnl|uv|NGB00757.1:1-65	65	360448
+773	gnl|uv|NGB00758.1:1-65	65	360704
+774	gnl|uv|NGB00759.1:1-65	65	360960
+775	gnl|uv|NGB00760.1:1-65	65	361216
+776	gnl|uv|NGB00761.1:1-65	65	361472
+777	gnl|uv|NGB00762.1:1-65	65	361728
+778	gnl|uv|NGB00763.1:1-65	65	361984
+779	gnl|uv|NGB00764.1:1-65	65	362240
+780	gnl|uv|NGB00765.1:1-65	65	362496
+781	gnl|uv|NGB00766.1:1-65	65	362752
+782	gnl|uv|NGB00846.1:1-65	65	363008
+783	gnl|uv|NGB00847.1:1-64	64	363264
+784	gnl|uv|NGB00848.1:1-64	64	363520
+785	gnl|uv|NGB00849.1:1-64	64	363776
+786	gnl|uv|NGB00850.1:1-64	64	364032
+787	gnl|uv|NGB00851.1:1-64	64	364288
+788	gnl|uv|NGB00852.1:1-64	64	364544
+789	gnl|uv|NGB00853.1:1-64	64	364800
+790	gnl|uv|NGB00854.1:1-64	64	365056
+791	gnl|uv|NGB00855.1:1-64	64	365312
+792	gnl|uv|NGB00856.1:1-64	64	365568
+793	gnl|uv|NGB00857.1:1-64	64	365824
+794	gnl|uv|NGB00858.1:1-64	64	366080
+795	gnl|uv|NGB00382.1:1-63	63	366336
+796	gnl|uv|NGB00598.1:1-63	63	366592
+797	gnl|uv|NGB00794.1:1-63	63	366848
+798	gnl|uv|NGB00795.1:1-63	63	367104
+799	gnl|uv|NGB00796.1:1-63	63	367360
+800	gnl|uv|NGB00797.1:1-63	63	367616
+801	gnl|uv|NGB00798.1:1-63	63	367872
+802	gnl|uv|NGB00799.1:1-63	63	368128
+803	gnl|uv|NGB00800.1:1-63	63	368384
+804	gnl|uv|NGB00801.1:1-63	63	368640
+805	gnl|uv|NGB00802.1:1-63	63	368896
+806	gnl|uv|NGB00803.1:1-63	63	369152
+807	gnl|uv|NGB00804.1:1-63	63	369408
+808	gnl|uv|NGB00805.1:1-63	63	369664
+809	gnl|uv|NGB00806.1:1-63	63	369920
+810	gnl|uv|NGB00807.1:1-63	63	370176
+811	gnl|uv|NGB00808.1:1-63	63	370432
+812	gnl|uv|NGB00809.1:1-63	63	370688
+813	gnl|uv|NGB00810.1:1-63	63	370944
+814	gnl|uv|NGB00811.1:1-63	63	371200
+815	gnl|uv|NGB00812.1:1-63	63	371456
+816	gnl|uv|NGB00813.1:1-63	63	371712
+817	gnl|uv|NGB00814.1:1-63	63	371968
+818	gnl|uv|NGB00815.1:1-63	63	372224
+819	gnl|uv|NGB00816.1:1-63	63	372480
+820	gnl|uv|NGB00817.1:1-63	63	372736
+821	gnl|uv|NGB00818.1:1-63	63	372992
+822	gnl|uv|NGB00819.1:1-63	63	373248
+823	gnl|uv|NGB00820.1:1-63	63	373504
+824	gnl|uv|NGB00821.1:1-63	63	373760
+825	gnl|uv|NGB00822.1:1-63	63	374016
+826	gnl|uv|NGB00823.1:1-63	63	374272
+827	gnl|uv|NGB00824.1:1-63	63	374528
+828	gnl|uv|NGB00825.1:1-63	63	374784
+829	gnl|uv|NGB00826.1:1-63	63	375040
+830	gnl|uv|NGB00827.1:1-63	63	375296
+831	gnl|uv|NGB00828.1:1-63	63	375552
+832	gnl|uv|NGB00829.1:1-63	63	375808
+833	gnl|uv|NGB00830.1:1-63	63	376064
+834	gnl|uv|NGB00831.1:1-63	63	376320
+835	gnl|uv|NGB00832.1:1-63	63	376576
+836	gnl|uv|NGB00833.1:1-63	63	376832
+837	gnl|uv|NGB00834.1:1-63	63	377088
+838	gnl|uv|NGB00835.1:1-63	63	377344
+839	gnl|uv|NGB00836.1:1-63	63	377600
+840	gnl|uv|NGB00837.1:1-63	63	377856
+841	gnl|uv|NGB00838.1:1-63	63	378112
+842	gnl|uv|NGB00839.1:1-63	63	378368
+843	gnl|uv|NGB00840.1:1-63	63	378624
+844	gnl|uv|NGB00841.1:1-63	63	378880
+845	gnl|uv|NGB00362.1:1-61	61	379136
+846	gnl|uv|NGB00360.1:1-58	58	379392
+847	gnl|uv|NGB00597.1:1-58	58	379648
+848	gnl|uv|NGB00577.1:1-57	57	379904
+849	gnl|uv|NGB00595.1:7-57	51	380160
+850	gnl|uv|NGB00077.1:1-54	54	380416
+851	gnl|uv|NGB00103.1:1-53	53	380672
+852	gnl|uv|NGB00628.1:1-53	53	380928
+853	gnl|uv|NGB00629.1:1-53	53	381184
+854	gnl|uv|NGB00630.1:1-53	53	381440
+855	gnl|uv|NGB00631.1:1-53	53	381696
+856	gnl|uv|NGB00632.1:1-53	53	381952
+857	gnl|uv|NGB00633.1:1-53	53	382208
+858	gnl|uv|NGB00634.1:1-53	53	382464
+859	gnl|uv|NGB00635.1:1-53	53	382720
+860	gnl|uv|NGB00636.1:1-53	53	382976
+861	gnl|uv|NGB00637.1:1-53	53	383232
+862	gnl|uv|NGB00638.1:1-53	53	383488
+863	gnl|uv|NGB00639.1:1-53	53	383744
+864	gnl|uv|NGB00640.1:1-53	53	384000
+865	gnl|uv|NGB00641.1:1-53	53	384256
+866	gnl|uv|NGB00642.1:1-53	53	384512
+867	gnl|uv|NGB00643.1:1-53	53	384768
+868	gnl|uv|NGB00644.1:1-53	53	385024
+869	gnl|uv|NGB00645.1:1-53	53	385280
+870	gnl|uv|NGB00646.1:1-53	53	385536
+871	gnl|uv|NGB00647.1:1-53	53	385792
+872	gnl|uv|NGB00648.1:1-53	53	386048
+873	gnl|uv|NGB00649.1:1-53	53	386304
+874	gnl|uv|NGB00650.1:1-53	53	386560
+875	gnl|uv|NGB00651.1:1-53	53	386816
+876	gnl|uv|NGB00652.1:1-53	53	387072
+877	gnl|uv|NGB00653.1:1-53	53	387328
+878	gnl|uv|NGB00654.1:1-53	53	387584
+879	gnl|uv|NGB00655.1:1-53	53	387840
+880	gnl|uv|NGB00656.1:1-53	53	388096
+881	gnl|uv|NGB00657.1:1-53	53	388352
+882	gnl|uv|NGB00658.1:1-53	53	388608
+883	gnl|uv|NGB00659.1:1-53	53	388864
+884	gnl|uv|NGB00660.1:1-53	53	389120
+885	gnl|uv|NGB00661.1:1-53	53	389376
+886	gnl|uv|NGB00662.1:1-53	53	389632
+887	gnl|uv|NGB00663.1:1-53	53	389888
+888	gnl|uv|NGB00664.1:1-53	53	390144
+889	gnl|uv|NGB00665.1:1-53	53	390400
+890	gnl|uv|NGB00666.1:1-53	53	390656
+891	gnl|uv|NGB00667.1:1-53	53	390912
+892	gnl|uv|NGB00668.1:1-53	53	391168
+893	gnl|uv|NGB00669.1:1-53	53	391424
+894	gnl|uv|NGB00670.1:1-53	53	391680
+895	gnl|uv|NGB00671.1:1-53	53	391936
+896	gnl|uv|NGB00672.1:1-53	53	392192
+897	gnl|uv|NGB00673.1:1-53	53	392448
+898	gnl|uv|NGB00674.1:1-53	53	392704
+899	gnl|uv|NGB00675.1:1-53	53	392960
+900	gnl|uv|NGB00676.1:1-53	53	393216
+901	gnl|uv|NGB00677.1:1-53	53	393472
+902	gnl|uv|NGB00678.1:1-53	53	393728
+903	gnl|uv|NGB00679.1:1-53	53	393984
+904	gnl|uv|NGB00680.1:1-53	53	394240
+905	gnl|uv|NGB00681.1:1-53	53	394496
+906	gnl|uv|NGB00682.1:1-53	53	394752
+907	gnl|uv|NGB00683.1:1-53	53	395008
+908	gnl|uv|NGB00684.1:1-53	53	395264
+909	gnl|uv|NGB00685.1:1-53	53	395520
+910	gnl|uv|NGB00686.1:1-53	53	395776
+911	gnl|uv|NGB00687.1:1-53	53	396032
+912	gnl|uv|NGB00688.1:1-53	53	396288
+913	gnl|uv|NGB00689.1:1-53	53	396544
+914	gnl|uv|NGB00690.1:1-53	53	396800
+915	gnl|uv|NGB00691.1:1-53	53	397056
+916	gnl|uv|NGB00692.1:1-53	53	397312
+917	gnl|uv|NGB00693.1:1-53	53	397568
+918	gnl|uv|NGB00694.1:1-53	53	397824
+919	gnl|uv|NGB00695.1:1-53	53	398080
+920	gnl|uv|NGB00696.1:1-53	53	398336
+921	gnl|uv|NGB00697.1:1-53	53	398592
+922	gnl|uv|NGB00698.1:1-53	53	398848
+923	gnl|uv|NGB00699.1:1-53	53	399104
+924	gnl|uv|NGB00700.1:1-53	53	399360
+925	gnl|uv|NGB00701.1:1-53	53	399616
+926	gnl|uv|NGB00702.1:1-53	53	399872
+927	gnl|uv|NGB00703.1:1-53	53	400128
+928	gnl|uv|NGB00704.1:1-53	53	400384
+929	gnl|uv|NGB00705.1:1-53	53	400640
+930	gnl|uv|NGB00706.1:1-53	53	400896
+931	gnl|uv|NGB00707.1:1-53	53	401152
+932	gnl|uv|NGB00708.1:1-53	53	401408
+933	gnl|uv|NGB00709.1:1-53	53	401664
+934	gnl|uv|NGB00710.1:1-53	53	401920
+935	gnl|uv|NGB00711.1:1-53	53	402176
+936	gnl|uv|NGB00712.1:1-53	53	402432
+937	gnl|uv|NGB00713.1:1-53	53	402688
+938	gnl|uv|NGB00714.1:1-53	53	402944
+939	gnl|uv|NGB00715.1:1-53	53	403200
+940	gnl|uv|NGB00716.1:1-53	53	403456
+941	gnl|uv|NGB00717.1:1-53	53	403712
+942	gnl|uv|NGB00718.1:1-53	53	403968
+943	gnl|uv|NGB00719.1:1-53	53	404224
+944	gnl|uv|NGB00720.1:1-53	53	404480
+945	gnl|uv|NGB00721.1:1-53	53	404736
+946	gnl|uv|NGB00722.1:1-53	53	404992
+947	gnl|uv|NGB00723.1:1-53	53	405248
+948	gnl|uv|NGB00970.1:1-53	53	405504
+949	gnl|uv|NGB00596.1:1-52	52	405760
+950	gnl|uv|NGB00571.1:1-51	51	406016
+951	gnl|uv|NGB00573.1:1-51	51	406272
+952	gnl|uv|NGB00574.1:1-51	51	406528
+953	gnl|uv|NGB00575.1:1-51	51	406784
+954	gnl|uv|NGB00727.1:1-51	51	407040
+955	gnl|uv|NGB00728.1:1-51	51	407296
+956	gnl|uv|NGB00729.1:1-51	51	407552
+957	gnl|uv|NGB00730.1:1-51	51	407808
+958	gnl|uv|NGB00731.1:1-51	51	408064
+959	gnl|uv|NGB00732.1:1-51	51	408320
+960	gnl|uv|NGB00733.1:1-51	51	408576
+961	gnl|uv|NGB00734.1:1-51	51	408832
+962	gnl|uv|NGB00381.1:1-50	50	409088
+963	gnl|uv|NGB00572.1:1-50	50	409344
+964	gnl|uv|NGB00793.1:1-50	50	409600
+965	gnl|uv|NGB00099.1:1-48	48	409856
+966	gnl|uv|NGB00309.1:1-48	48	410112
+967	gnl|uv|NGB00570.1:1-48	48	410368
+968	gnl|uv|NGB00844.1:1-48	48	410624
+969	gnl|uv|NGB00599.1:1-47	47	410880
+970	gnl|uv|NGB00735.1:1-47	47	411136
+971	gnl|uv|NGB00736.1:1-47	47	411392
+972	gnl|uv|NGB00737.1:1-47	47	411648
+973	gnl|uv|NGB00738.1:1-47	47	411904
+974	gnl|uv|NGB00739.1:1-47	47	412160
+975	gnl|uv|NGB00740.1:1-47	47	412416
+976	gnl|uv|NGB00741.1:1-47	47	412672
+977	gnl|uv|NGB00742.1:1-47	47	412928
+978	gnl|uv|NGB00743.1:1-47	47	413184
+979	gnl|uv|NGB00744.1:1-47	47	413440
+980	gnl|uv|NGB00745.1:1-47	47	413696
+981	gnl|uv|NGB00746.1:1-47	47	413952
+982	gnl|uv|NGB00576.1:1-45	45	414208
+983	gnl|uv|NGB00905.1:1-45	45	414464
+984	gnl|uv|NGB00907.1:1-45	45	414720
+985	gnl|uv|NGB00909.1:1-45	45	414976
+986	gnl|uv|NGB00910.1:1-45	45	415232
+987	gnl|uv|NGB00916.1:1-45	45	415488
+988	gnl|uv|NGB00917.1:1-45	45	415744
+989	gnl|uv|NGB00919.1:1-45	45	416000
+990	gnl|uv|NGB00921.1:1-45	45	416256
+991	gnl|uv|NGB00923.1:1-45	45	416512
+992	gnl|uv|NGB00925.1:1-45	45	416768
+993	gnl|uv|NGB00926.1:1-45	45	417024
+994	gnl|uv|NGB00928.1:1-45	45	417280
+995	gnl|uv|NGB00929.1:1-45	45	417536
+996	gnl|uv|NGB00931.1:1-45	45	417792
+997	gnl|uv|NGB00934.1:1-45	45	418048
+998	gnl|uv|NGB00936.1:1-45	45	418304
+999	gnl|uv|NGB00937.1:1-45	45	418560
+1000	gnl|uv|NGB00939.1:1-45	45	418816
+1001	gnl|uv|NGB00943.1:1-45	45	419072
+1002	gnl|uv|NGB00944.1:1-45	45	419328
+1003	gnl|uv|NGB00948.1:1-45	45	419584
+1004	gnl|uv|NGB00950.1:1-45	45	419840
+1005	gnl|uv|NGB00952.1:1-45	45	420096
+1006	gnl|uv|NGB00953.1:1-45	45	420352
+1007	gnl|uv|NGB00972.1:1-45	45	420608
+1008	gnl|uv|NGB00076.1:1-44	44	420864
+1009	gnl|uv|NGB00376.1:1-44	44	421120
+1010	gnl|uv|NGB00385.1:1-44	44	421376
+1011	gnl|uv|NGB00906.1:1-44	44	421632
+1012	gnl|uv|NGB00908.1:1-44	44	421888
+1013	gnl|uv|NGB00911.1:1-44	44	422144
+1014	gnl|uv|NGB00912.1:1-44	44	422400
+1015	gnl|uv|NGB00913.1:1-44	44	422656
+1016	gnl|uv|NGB00915.1:1-44	44	422912
+1017	gnl|uv|NGB00918.1:1-44	44	423168
+1018	gnl|uv|NGB00920.1:1-44	44	423424
+1019	gnl|uv|NGB00922.1:1-44	44	423680
+1020	gnl|uv|NGB00924.1:1-44	44	423936
+1021	gnl|uv|NGB00927.1:1-44	44	424192
+1022	gnl|uv|NGB00930.1:1-44	44	424448
+1023	gnl|uv|NGB00932.1:1-44	44	424704
+1024	gnl|uv|NGB00933.1:1-44	44	424960
+1025	gnl|uv|NGB00935.1:1-44	44	425216
+1026	gnl|uv|NGB00938.1:1-44	44	425472
+1027	gnl|uv|NGB00940.1:1-44	44	425728
+1028	gnl|uv|NGB00949.1:1-44	44	425984
+1029	gnl|uv|NGB00955.1:1-44	44	426240
+1030	gnl|uv|NGB00957.1:1-44	44	426496
+1031	gnl|uv|NGB00958.1:1-44	44	426752
+1032	gnl|uv|NGB00960.1:1-44	44	427008
+1033	gnl|uv|NGB00961.1:1-44	44	427264
+1034	gnl|uv|NGB00962.1:1-44	44	427520
+1035	gnl|uv|NGB00963.1:1-44	44	427776
+1036	gnl|uv|NGB00964.1:1-44	44	428032
+1037	gnl|uv|NGB00965.1:1-44	44	428288
+1038	gnl|uv|NGB00071.1:1-43	43	428544
+1039	gnl|uv|NGB00364.1:1-43	43	428800
+1040	gnl|uv|NGB00365.1:1-43	43	429056
+1041	gnl|uv|NGB00366.1:1-43	43	429312
+1042	gnl|uv|NGB00367.1:1-43	43	429568
+1043	gnl|uv|NGB00368.1:1-43	43	429824
+1044	gnl|uv|NGB00369.1:1-43	43	430080
+1045	gnl|uv|NGB00370.1:1-43	43	430336
+1046	gnl|uv|NGB00371.1:1-43	43	430592
+1047	gnl|uv|NGB00372.1:1-43	43	430848
+1048	gnl|uv|NGB00373.1:1-43	43	431104
+1049	gnl|uv|NGB00374.1:1-43	43	431360
+1050	gnl|uv|NGB00375.1:1-43	43	431616
+1051	gnl|uv|NGB00623.1:1-43	43	431872
+1052	gnl|uv|NGB00627.1:1-43	43	432128
+1053	gnl|uv|NGB00872.1:1-43	43	432384
+1054	gnl|uv|NGB00873.1:1-43	43	432640
+1055	gnl|uv|NGB00874.1:1-43	43	432896
+1056	gnl|uv|NGB00875.1:1-43	43	433152
+1057	gnl|uv|NGB00876.1:1-43	43	433408
+1058	gnl|uv|NGB00877.1:1-43	43	433664
+1059	gnl|uv|NGB00878.1:1-43	43	433920
+1060	gnl|uv|NGB00879.1:1-43	43	434176
+1061	gnl|uv|NGB00880.1:1-43	43	434432
+1062	gnl|uv|NGB00881.1:1-43	43	434688
+1063	gnl|uv|NGB00882.1:1-43	43	434944
+1064	gnl|uv|NGB00883.1:1-43	43	435200
+1065	gnl|uv|NGB00884.1:1-43	43	435456
+1066	gnl|uv|NGB00885.1:1-43	43	435712
+1067	gnl|uv|NGB00886.1:1-43	43	435968
+1068	gnl|uv|NGB00887.1:1-43	43	436224
+1069	gnl|uv|NGB00888.1:1-43	43	436480
+1070	gnl|uv|NGB00889.1:1-43	43	436736
+1071	gnl|uv|NGB00890.1:1-43	43	436992
+1072	gnl|uv|NGB00891.1:1-43	43	437248
+1073	gnl|uv|NGB00892.1:1-43	43	437504
+1074	gnl|uv|NGB00893.1:1-43	43	437760
+1075	gnl|uv|NGB00894.1:1-43	43	438016
+1076	gnl|uv|NGB00895.1:1-43	43	438272
+1077	gnl|uv|NGB00896.1:1-43	43	438528
+1078	gnl|uv|NGB00897.1:1-43	43	438784
+1079	gnl|uv|NGB00898.1:1-43	43	439040
+1080	gnl|uv|NGB00899.1:1-43	43	439296
+1081	gnl|uv|NGB00900.1:1-43	43	439552
+1082	gnl|uv|NGB00901.1:1-43	43	439808
+1083	gnl|uv|NGB00902.1:1-43	43	440064
+1084	gnl|uv|NGB00903.1:1-43	43	440320
+1085	gnl|uv|NGB00904.1:1-43	43	440576
+1086	gnl|uv|NGB00914.1:1-43	43	440832
+1087	gnl|uv|NGB00941.1:1-43	43	441088
+1088	gnl|uv|NGB00942.1:1-43	43	441344
+1089	gnl|uv|NGB00945.1:1-43	43	441600
+1090	gnl|uv|NGB00946.1:1-43	43	441856
+1091	gnl|uv|NGB00947.1:1-43	43	442112
+1092	gnl|uv|NGB00951.1:1-43	43	442368
+1093	gnl|uv|NGB00954.1:1-43	43	442624
+1094	gnl|uv|NGB00956.1:1-43	43	442880
+1095	gnl|uv|NGB00959.1:1-43	43	443136
+1096	gnl|uv|NGB00966.1:1-43	43	443392
+1097	gnl|uv|NGB00967.1:1-43	43	443648
+1098	gnl|uv|NGB00968.1:1-43	43	443904
+1099	gnl|uv|NGB00600.1:1-42	42	444160
+1100	gnl|uv|NGB00594.1:1-41	41	444416
+1101	gnl|uv|NGB00384.1:1-40	40	444672
+1102	gnl|uv|NGB00417.1:1-40	40	444928
+1103	gnl|uv|NGB00418.1:1-40	40	445184
+1104	gnl|uv|NGB00419.1:1-40	40	445440
+1105	gnl|uv|NGB00420.1:1-40	40	445696
+1106	gnl|uv|NGB00421.1:1-40	40	445952
+1107	gnl|uv|NGB00422.1:1-40	40	446208
+1108	gnl|uv|NGB00423.1:1-40	40	446464
+1109	gnl|uv|NGB00424.1:1-40	40	446720
+1110	gnl|uv|NGB00425.1:1-40	40	446976
+1111	gnl|uv|NGB00426.1:1-40	40	447232
+1112	gnl|uv|NGB00427.1:1-40	40	447488
+1113	gnl|uv|NGB00428.1:1-40	40	447744
+1114	gnl|uv|NGB00429.1:1-40	40	448000
+1115	gnl|uv|NGB00430.1:1-40	40	448256
+1116	gnl|uv|NGB00431.1:1-40	40	448512
+1117	gnl|uv|NGB00432.1:1-40	40	448768
+1118	gnl|uv|NGB00433.1:1-40	40	449024
+1119	gnl|uv|NGB00434.1:1-40	40	449280
+1120	gnl|uv|NGB00435.1:1-40	40	449536
+1121	gnl|uv|NGB00436.1:1-40	40	449792
+1122	gnl|uv|NGB00437.1:1-40	40	450048
+1123	gnl|uv|NGB00438.1:1-40	40	450304
+1124	gnl|uv|NGB00439.1:1-40	40	450560
+1125	gnl|uv|NGB00440.1:1-40	40	450816
+1126	gnl|uv|NGB00441.1:1-40	40	451072
+1127	gnl|uv|NGB00442.1:1-40	40	451328
+1128	gnl|uv|NGB00443.1:1-40	40	451584
+1129	gnl|uv|NGB00444.1:1-40	40	451840
+1130	gnl|uv|NGB00445.1:1-40	40	452096
+1131	gnl|uv|NGB00446.1:1-40	40	452352
+1132	gnl|uv|NGB00447.1:1-40	40	452608
+1133	gnl|uv|NGB00448.1:1-40	40	452864
+1134	gnl|uv|NGB00449.1:1-40	40	453120
+1135	gnl|uv|NGB00450.1:1-40	40	453376
+1136	gnl|uv|NGB00451.1:1-40	40	453632
+1137	gnl|uv|NGB00452.1:1-40	40	453888
+1138	gnl|uv|NGB00453.1:1-40	40	454144
+1139	gnl|uv|NGB00454.1:1-40	40	454400
+1140	gnl|uv|NGB00455.1:1-40	40	454656
+1141	gnl|uv|NGB00456.1:1-40	40	454912
+1142	gnl|uv|NGB00457.1:1-40	40	455168
+1143	gnl|uv|NGB00458.1:1-40	40	455424
+1144	gnl|uv|NGB00459.1:1-40	40	455680
+1145	gnl|uv|NGB00460.1:1-40	40	455936
+1146	gnl|uv|NGB00461.1:1-40	40	456192
+1147	gnl|uv|NGB00462.1:1-40	40	456448
+1148	gnl|uv|NGB00463.1:1-40	40	456704
+1149	gnl|uv|NGB00464.1:1-40	40	456960
+1150	gnl|uv|NGB00465.1:1-40	40	457216
+1151	gnl|uv|NGB00466.1:1-40	40	457472
+1152	gnl|uv|NGB00467.1:1-40	40	457728
+1153	gnl|uv|NGB00468.1:1-40	40	457984
+1154	gnl|uv|NGB00469.1:1-40	40	458240
+1155	gnl|uv|NGB00470.1:1-40	40	458496
+1156	gnl|uv|NGB00471.1:1-40	40	458752
+1157	gnl|uv|NGB00472.1:1-40	40	459008
+1158	gnl|uv|NGB00473.1:1-40	40	459264
+1159	gnl|uv|NGB00474.1:1-40	40	459520
+1160	gnl|uv|NGB00475.1:1-40	40	459776
+1161	gnl|uv|NGB00476.1:1-40	40	460032
+1162	gnl|uv|NGB00477.1:1-40	40	460288
+1163	gnl|uv|NGB00478.1:1-40	40	460544
+1164	gnl|uv|NGB00479.1:1-40	40	460800
+1165	gnl|uv|NGB00480.1:1-40	40	461056
+1166	gnl|uv|NGB00481.1:1-40	40	461312
+1167	gnl|uv|NGB00482.1:1-40	40	461568
+1168	gnl|uv|NGB00483.1:1-40	40	461824
+1169	gnl|uv|NGB00484.1:1-40	40	462080
+1170	gnl|uv|NGB00485.1:1-40	40	462336
+1171	gnl|uv|NGB00486.1:1-40	40	462592
+1172	gnl|uv|NGB00487.1:1-40	40	462848
+1173	gnl|uv|NGB00488.1:1-40	40	463104
+1174	gnl|uv|NGB00489.1:1-40	40	463360
+1175	gnl|uv|NGB00490.1:1-40	40	463616
+1176	gnl|uv|NGB00491.1:1-40	40	463872
+1177	gnl|uv|NGB00492.1:1-40	40	464128
+1178	gnl|uv|NGB00493.1:1-40	40	464384
+1179	gnl|uv|NGB00494.1:1-40	40	464640
+1180	gnl|uv|NGB00495.1:1-40	40	464896
+1181	gnl|uv|NGB00496.1:1-40	40	465152
+1182	gnl|uv|NGB00497.1:1-40	40	465408
+1183	gnl|uv|NGB00498.1:1-40	40	465664
+1184	gnl|uv|NGB00499.1:1-40	40	465920
+1185	gnl|uv|NGB00500.1:1-40	40	466176
+1186	gnl|uv|NGB00501.1:1-40	40	466432
+1187	gnl|uv|NGB00502.1:1-40	40	466688
+1188	gnl|uv|NGB00503.1:1-40	40	466944
+1189	gnl|uv|NGB00504.1:1-40	40	467200
+1190	gnl|uv|NGB00505.1:1-40	40	467456
+1191	gnl|uv|NGB00506.1:1-40	40	467712
+1192	gnl|uv|NGB00507.1:1-40	40	467968
+1193	gnl|uv|NGB00508.1:1-40	40	468224
+1194	gnl|uv|NGB00509.1:1-40	40	468480
+1195	gnl|uv|NGB00510.1:1-40	40	468736
+1196	gnl|uv|NGB00511.1:1-40	40	468992
+1197	gnl|uv|NGB00512.1:1-40	40	469248
+1198	gnl|uv|NGB00513.1:1-40	40	469504
+1199	gnl|uv|NGB00514.1:1-40	40	469760
+1200	gnl|uv|NGB00515.1:1-40	40	470016
+1201	gnl|uv|NGB00516.1:1-40	40	470272
+1202	gnl|uv|NGB00517.1:1-40	40	470528
+1203	gnl|uv|NGB00518.1:1-40	40	470784
+1204	gnl|uv|NGB00519.1:1-40	40	471040
+1205	gnl|uv|NGB00520.1:1-40	40	471296
+1206	gnl|uv|NGB00521.1:1-40	40	471552
+1207	gnl|uv|NGB00522.1:1-40	40	471808
+1208	gnl|uv|NGB00523.1:1-40	40	472064
+1209	gnl|uv|NGB00524.1:1-40	40	472320
+1210	gnl|uv|NGB00525.1:1-40	40	472576
+1211	gnl|uv|NGB00526.1:1-40	40	472832
+1212	gnl|uv|NGB00527.1:1-40	40	473088
+1213	gnl|uv|NGB00528.1:1-40	40	473344
+1214	gnl|uv|NGB00529.1:1-40	40	473600
+1215	gnl|uv|NGB00530.1:1-40	40	473856
+1216	gnl|uv|NGB00531.1:1-40	40	474112
+1217	gnl|uv|NGB00532.1:1-40	40	474368
+1218	gnl|uv|NGB00533.1:1-40	40	474624
+1219	gnl|uv|NGB00534.1:1-40	40	474880
+1220	gnl|uv|NGB00535.1:1-40	40	475136
+1221	gnl|uv|NGB00536.1:1-40	40	475392
+1222	gnl|uv|NGB00537.1:1-40	40	475648
+1223	gnl|uv|NGB00538.1:1-40	40	475904
+1224	gnl|uv|NGB00539.1:1-40	40	476160
+1225	gnl|uv|NGB00540.1:1-40	40	476416
+1226	gnl|uv|NGB00541.1:1-40	40	476672
+1227	gnl|uv|NGB00542.1:1-40	40	476928
+1228	gnl|uv|NGB00543.1:1-40	40	477184
+1229	gnl|uv|NGB00544.1:1-40	40	477440
+1230	gnl|uv|NGB00545.1:1-40	40	477696
+1231	gnl|uv|NGB00546.1:1-40	40	477952
+1232	gnl|uv|NGB00547.1:1-40	40	478208
+1233	gnl|uv|NGB00548.1:1-40	40	478464
+1234	gnl|uv|NGB00549.1:1-40	40	478720
+1235	gnl|uv|NGB00550.1:1-40	40	478976
+1236	gnl|uv|NGB00551.1:1-40	40	479232
+1237	gnl|uv|NGB00552.1:1-40	40	479488
+1238	gnl|uv|NGB00553.1:1-40	40	479744
+1239	gnl|uv|NGB00554.1:1-40	40	480000
+1240	gnl|uv|NGB00555.1:1-40	40	480256
+1241	gnl|uv|NGB00556.1:1-40	40	480512
+1242	gnl|uv|NGB00557.1:1-40	40	480768
+1243	gnl|uv|NGB00558.1:1-40	40	481024
+1244	gnl|uv|NGB00559.1:1-40	40	481280
+1245	gnl|uv|NGB00560.1:1-40	40	481536
+1246	gnl|uv|NGB00561.1:1-40	40	481792
+1247	gnl|uv|NGB00562.1:1-40	40	482048
+1248	gnl|uv|NGB00563.1:1-40	40	482304
+1249	gnl|uv|NGB00564.1:1-40	40	482560
+1250	gnl|uv|NGB00565.1:1-40	40	482816
+1251	gnl|uv|NGB00566.1:1-40	40	483072
+1252	gnl|uv|NGB00567.1:1-40	40	483328
+1253	gnl|uv|NGB00614.1:1-40	40	483584
+1254	gnl|uv|NGB00842.1:1-38	38	483840
+1255	gnl|uv|NGB00843.1:1-38	38	484096
+1256	gnl|uv|NGB00626.1:1-36	36	484352
+1257	gnl|uv|NGB00973.1:1-35	35	484608
+1258	gnl|uv|NGB00361.2:1-34	34	484864
+1259	gnl|uv|NGB00363.1:1-34	34	485120
+1260	gnl|uv|NGB00613.1:1-34	34	485376
+1261	gnl|uv|NGB00726.1:1-34	34	485632
+1262	gnl|uv|NGB00569.1:1-33	33	485888
+1263	gnl|uv|NGB00725.1:1-33	33	486144
+1264	gnl|uv|NGB00971.1:1-33	33	486400
+1265	gnl|uv|NGB00109.1:1-32	32	486656
+1266	gnl|uv|NGB00377.1:1-32	32	486912
+1267	gnl|uv|NGB00378.1:1-32	32	487168
+1268	gnl|uv|NGB00871.1:1-32	32	487424
+1269	gnl|uv|NGB00969.1:1-32	32	487680
+1270	gnl|uv|NGB00975.1:1-32	32	487936
+1271	gnl|uv|NGB00416.1:1-30	30	488192
+1272	gnl|uv|NGB00568.1:1-30	30	488448
+1273	gnl|uv|NGB00593.1:1-30	30	488704
+1274	gnl|uv|NGB00724.1:1-27	27	488960
+1275	gnl|uv|NGB00380.1:1-26	26	489216
+1276	gnl|uv|NGB00414.1:1-25	25	489472
+1277	gnl|uv|NGB00415.1:1-25	25	489728
+1278	gnl|uv|NGB00624.1:1-25	25	489984
+1279	gnl|uv|NGB00625.1:1-25	25	490240
+1280	gnl|uv|NGB00845.1:1-25	25	490496
+1281	gnl|uv|NGB00379.1:1-23	23	490752
+1282	gnl|uv|NGB00612.1:1-23	23	491008
+1283	gnl|uv|NGB00974.1:1-23	23	491264
+1284	gnl|uv|NGB00387.1:1-22	22	491520
+1285	gnl|uv|NGB00791.1:1-22	22	491776
+1286	gnl|uv|NGB00792.1:1-22	22	492032
+1287	gnl|uv|NGB00615.1:1-21	21	492288
+1288	gnl|uv|NGB00616.1:1-21	21	492544
+1289	gnl|uv|NGB00383.1:1-20	20	492800
+1290	gnl|uv|JX560331.2:1-199	199	493056
+1291	gnl|uv|JX560331.2:204-327	124	493312
+1292	gnl|uv|JX560331.2:1016-1121	106	493568
+1293	gnl|uv|JX560331.2:1143-1241	99	493824
+1294	gnl|uv|JX560331.2:1268-1380	113	494080
+1295	gnl|uv|JX560331.2:1557-1788	232	494336
+1296	gnl|uv|JX560331.2:1790-1838-49	98	494592
+1297	gnl|uv|JX560346.2:232-328	97	494848
+1298	gnl|uv|JX560346.2:375-473	99	495104
+1299	gnl|uv|JX560346.2:792-890	99	495360
+1300	gnl|uv|JX560346.2:1016-1149	134	495616
+1301	gnl|uv|JX560326.2:234-328	95	495872
+1302	gnl|uv|JX560326.2:346-1260	915	496128
+1303	gnl|uv|JX560336.2:228-1330	1103	497152
+1304	gnl|uv|JX560321.2:232-363	132	498432
+1305	gnl|uv|JX560321.2:370-1372	1003	498688
+1306	gnl|uv|JX560377.2:1-70	70	499712
+1307	gnl|uv|JX560377.2:202-397	196	499968
+1308	gnl|uv|JX560377.2:459-594	136	500224
+1309	gnl|uv|JX560377.2:2199-2239-49	90	500480
+1310	gnl|uv|D14641.1:1-453	453	500736
+1311	gnl|uv|D14641.1:585-716	132	501248
+1312	gnl|uv|D14641.1:890-1085	196	501504
+1313	gnl|uv|D14641.1:1293-1390	98	501760
+1314	gnl|uv|D14641.1:2120-2246-49	176	502016
+1315	gnl|uv|JX560341.2:239-361	123	502272
+1316	gnl|uv|JX560341.2:789-1048	260	502528
+1317	gnl|uv|JX560341.2:1506-1602	97	503040
+1318	gnl|uv|D45833.1:343-436	94	503296
+1319	gnl|uv|D45833.1:610-708	99	503552
+1320	gnl|uv|D45833.1:811-909	99	503808
+1321	gnl|uv|D45833.1:1156-1254	99	504064
+1322	gnl|uv|D45833.1:2212-2309	98	504320
+1323	gnl|uv|D14640.1:340-432	93	504576
+1324	gnl|uv|D14640.1:1724-1822	99	504832
+1325	gnl|uv|D14640.1:2275-2376	102	505088
+1326	gnl|uv|EU496089.1:1-376	376	505344
+1327	gnl|uv|EU496089.1:401-757	357	505856
+1328	gnl|uv|EU496089.1:776-994	219	506368
+1329	gnl|uv|EU496089.1:999-1588	590	506624
+1330	gnl|uv|EU496089.1:1713-1960	248	507392
+1331	gnl|uv|EU496089.1:2390-2438-49	98	507648
+1332	gnl|uv|JX560378.2:495-592	98	507904
+1333	gnl|uv|Y14837.1:365-513	149	508160
+1334	gnl|uv|JX560333.1:1278-1394	117	508416
+1335	gnl|uv|JX560333.1:1962-2057	96	508672
+1336	gnl|uv|JX560333.1:2371-2467	97	508928
+1337	gnl|uv|JX560333.1:2798-2895	98	509184
+1338	gnl|uv|JX560334.1:1281-1375	95	509440
+1339	gnl|uv|JX560334.1:1797-1895	99	509696
+1340	gnl|uv|JX560334.1:1968-3342	1375	509952
+1341	gnl|uv|JX560359.1:1-57	57	511488
+1342	gnl|uv|JX560359.1:545-638	94	511744
+1343	gnl|uv|JX560359.1:3377-3417-49	90	512000
+1344	gnl|uv|JX560332.1:1279-1382	104	512256
+1345	gnl|uv|JX560332.1:1716-1814	99	512512
+1346	gnl|uv|JX560332.1:2129-2227	99	512768
+1347	gnl|uv|JX560332.1:2339-2437	99	513024
+1348	gnl|uv|JX560332.1:2507-2625	119	513280
+1349	gnl|uv|JX560332.1:2798-2896	99	513536
+1350	gnl|uv|JX560332.1:3401-3597	197	513792
+1351	gnl|uv|EU496103.1:133-236	104	514048
+1352	gnl|uv|EU496103.1:533-630	98	514304
+1353	gnl|uv|EU496103.1:1365-1456	92	514560
+1354	gnl|uv|EU496103.1:1689-1802	114	514816
+1355	gnl|uv|EU496103.1:1820-1918	99	515072
+1356	gnl|uv|EU496103.1:2006-2565	560	515328
+1357	gnl|uv|EU496103.1:3366-3506	141	516096
+1358	gnl|uv|EU496103.1:3572-3670	99	516352
+1359	gnl|uv|EU496102.1:1697-1794	98	516608
+1360	gnl|uv|EU496102.1:1877-2002	126	516864
+1361	gnl|uv|EU496102.1:2055-2491	437	517120
+1362	gnl|uv|EU496102.1:2501-2638	138	517632
+1363	gnl|uv|EU496102.1:2662-2755	94	517888
+1364	gnl|uv|U01668.1:7-1288	1282	518144
+1365	gnl|uv|U01668.1:4087-4133-47	94	519680
+1366	gnl|uv|EU496100.1:135-249	115	519936
+1367	gnl|uv|EU496100.1:270-2269	2000	520192
+1368	gnl|uv|EU496104.1:1698-1795	98	522240
+1369	gnl|uv|EU496104.1:1815-2234	420	522496
+1370	gnl|uv|EU496104.1:2250-2567	318	523008
+1371	gnl|uv|EU496104.1:2586-3070	485	523520
+1372	gnl|uv|EU496098.1:2180-2277	98	524032
+1373	gnl|uv|EU496098.1:3123-3213	91	524288
+1374	gnl|uv|EU496099.1:133-225	93	524544
+1375	gnl|uv|EU496099.1:1110-1197	88	524800
+1376	gnl|uv|EU496099.1:3154-3246	93	525056
+1377	gnl|uv|EU496101.1:2181-2269	89	525312
+1378	gnl|uv|JX560335.1:1278-1375	98	525568
+1379	gnl|uv|JX560335.1:4452-4599	148	525824
+1380	gnl|uv|JX560335.1:4952-5048	97	526080
+1381	gnl|uv|KF680545.1:1-2837	2837	526336
+1382	gnl|uv|KF680545.1:4529-4624	96	529408
+1383	gnl|uv|KF680545.1:4632-4726	95	529664
+1384	gnl|uv|KF680545.1:4955-5051	97	529920
+1385	gnl|uv|KF680545.1:5074-5225	152	530176
+1386	gnl|uv|KF680545.1:5409-5507	99	530432
+1387	gnl|uv|KF680545.1:6272-6420-49	198	530688
+1388	gnl|uv|KF680544.1:323-942	620	530944
+1389	gnl|uv|KF680544.1:1121-1218	98	531712
+1390	gnl|uv|KF680544.1:2357-2669	313	531968
+1391	gnl|uv|KF680544.1:5787-5884	98	532480
+1392	gnl|uv|KF680544.1:5991-6092	102	532736
+1393	gnl|uv|KF680544.1:7180-7403-37	261	532992
+1394	gnl|uv|GU933126.1:587-684	98	533504
+1395	gnl|uv|GU933126.1:771-869	99	533760
+1396	gnl|uv|GU933126.1:1826-2013	188	534016
+1397	gnl|uv|GU933126.1:2231-2547	317	534272
+1398	gnl|uv|GU933126.1:2560-2849	290	534784
+1399	gnl|uv|GU933126.1:7522-7626	105	535296
+1400	gnl|uv|GU933126.1:8135-8237	103	535552
+1401	gnl|uv|U09128.1:1-1663	1663	535808
+1402	gnl|uv|U09128.1:1881-2118	238	537600
+1403	gnl|uv|U09128.1:2136-2290	155	537856
+1404	gnl|uv|U09128.1:2329-2426	98	538112
+1405	gnl|uv|U09128.1:2938-3036	99	538368
+1406	gnl|uv|U09128.1:3334-10218	6885	538624
+1407	gnl|uv|U09128.1:11347-11449	103	545536
+1408	gnl|uv|U09128.1:11913-12244	332	545792
+1409	gnl|uv|U09128.1:12430-14537	2108	546304
+1410	gnl|uv|U09128.1:15303-15399	97	548608
+1411	gnl|uv|U09128.1:15891-16011-49	170	548864
+1412	gnl|uv|AF133437.1:1-78	78	549120
+1413	gnl|uv|AF133437.1:13948-14066	119	549376
+1414	gnl|uv|AF133437.1:16659-16823	165	549632
+1415	gnl|uv|AF133437.1:18452-18567	116	549888
+1416	gnl|uv|AF133437.1:18740-18772-49	82	550144
+1417	gnl|uv|U75992.1:1-64	64	550400
+1418	gnl|uv|U75992.1:2696-2793	98	550656
+1419	gnl|uv|U75992.1:4463-4557	95	550912
+1420	gnl|uv|U75992.1:4807-5386	580	551168
+1421	gnl|uv|U75992.1:6278-6405	128	551936
+1422	gnl|uv|U75992.1:6713-6822	110	552192
+1423	gnl|uv|U75992.1:7377-7563	187	552448
+1424	gnl|uv|U75992.1:11880-11976	97	552704
+1425	gnl|uv|U75992.1:16925-19409	2485	552960
+1426	gnl|uv|U75992.1:19457-19500-49	93	555520
+1427	gnl|uv|AF061788.1:14-112	99	555776
+1428	gnl|uv|AF061788.1:156-294	139	556032
+1429	gnl|uv|AF061788.1:814-985	172	556288
+1430	gnl|uv|AF061788.1:1140-1238	99	556544
+1431	gnl|uv|AF061788.1:1587-1642-49	105	556800
+1432	gnl|uv|U74374.1:1-111	111	557056
+1433	gnl|uv|U74374.1:2356-2450-49	144	557312
+1434	gnl|uv|Z50148.1:1-178	178	557568
+1435	gnl|uv|Z50148.1:1343-1445	103	557824
+1436	gnl|uv|Z50148.1:1711-1815	105	558080
+1437	gnl|uv|Z50148.1:2448-2538-49	140	558336
+1438	gnl|uv|Z50149.1:1-266	266	558592
+1439	gnl|uv|Z50149.1:1824-1918	95	559104
+1440	gnl|uv|Z50149.1:2604-2646-49	92	559360
+1441	gnl|uv|FM991888.1:1-77	77	559616
+1442	gnl|uv|FM991888.1:2635-2676-49	91	559872
+1443	gnl|uv|FM991887.1:1-89	89	560128
+1444	gnl|uv|FM991887.1:2667-2707-49	90	560384
+1445	gnl|uv|U03991.1:411-494	84	560640
+1446	gnl|uv|AF253496.1:405-549	145	560896
+1447	gnl|uv|JN204890.1:1-108	108	561152
+1448	gnl|uv|JN204890.1:1024-1127	104	561408
+1449	gnl|uv|JN204890.1:1917-2013	97	561664
+1450	gnl|uv|JN204890.1:3044-3071-49	77	561920
+1451	gnl|uv|JN204908.1:1-90	90	562176
+1452	gnl|uv|JN204908.1:3047-3074-49	77	562432
+1453	gnl|uv|JN204909.1:1-91	91	562688
+1454	gnl|uv|JN204909.1:3049-3074-49	75	562944
+1455	gnl|uv|JN204888.1:1-94	94	563200
+1456	gnl|uv|JN204888.1:3052-3077-49	75	563456
+1457	gnl|uv|JN204891.1:1-94	94	563712
+1458	gnl|uv|JN204891.1:3050-3077-49	77	563968
+1459	gnl|uv|JN204889.1:1-95	95	564224
+1460	gnl|uv|JN204889.1:3054-3080-49	76	564480
+1461	gnl|uv|JN204895.1:1-104	104	564736
+1462	gnl|uv|JN204895.1:3063-3089-49	76	564992
+1463	gnl|uv|JN204896.1:1-104	104	565248
+1464	gnl|uv|JN204896.1:3075-3089-49	64	565504
+1465	gnl|uv|JN204897.1:1-105	105	565760
+1466	gnl|uv|JN204897.1:3064-3089-49	75	566016
+1467	gnl|uv|JN204877.1:1-108	108	566272
+1468	gnl|uv|JN204877.1:3067-3092-49	75	566528
+1469	gnl|uv|JN204906.1:1-108	108	566784
+1470	gnl|uv|JN204906.1:3066-3092-49	76	567040
+1471	gnl|uv|JN204878.1:1-70	70	567296
+1472	gnl|uv|JN204878.1:3068-3093-49	75	567552
+1473	gnl|uv|JN204879.1:1-70	70	567808
+1474	gnl|uv|JN204879.1:3069-3094-49	75	568064
+1475	gnl|uv|JN204899.1:1-109	109	568320
+1476	gnl|uv|JN204899.1:3069-3095-49	76	568576
+1477	gnl|uv|JN204894.1:1-116	116	568832
+1478	gnl|uv|JN204894.1:3079-3101-49	72	569088
+1479	gnl|uv|JN204902.1:1-117	117	569344
+1480	gnl|uv|JN204902.1:3077-3101-49	74	569600
+1481	gnl|uv|JN204901.1:1-118	118	569856
+1482	gnl|uv|JN204901.1:3078-3103-49	75	570112
+1483	gnl|uv|JN204900.1:1-118	118	570368
+1484	gnl|uv|JN204900.1:3082-3107-49	75	570624
+1485	gnl|uv|JN204907.1:1-135	135	570880
+1486	gnl|uv|JN204907.1:3095-3119-49	74	571136
+1487	gnl|uv|JN204892.1:1-137	137	571392
+1488	gnl|uv|JN204892.1:3105-3122-49	67	571648
+1489	gnl|uv|JN204903.1:1-141	141	571904
+1490	gnl|uv|JN204903.1:3099-3125-49	76	572160
+1491	gnl|uv|JN204870.1:1-80	80	572416
+1492	gnl|uv|JN204870.1:1023-1119	97	572672
+1493	gnl|uv|JN204870.1:3173-3198-49	75	572928
+1494	gnl|uv|JN204869.1:1-80	80	573184
+1495	gnl|uv|JN204869.1:3182-3199-49	67	573440
+1496	gnl|uv|JN204871.1:1-98	98	573696
+1497	gnl|uv|JN204871.1:3193-3219-49	76	573952
+1498	gnl|uv|JN204904.1:1-137	137	574208
+1499	gnl|uv|JN204904.1:3231-3257-49	76	574464
+1500	gnl|uv|JN204874.1:1-99	99	574720
+1501	gnl|uv|JN204874.1:1042-1136	95	574976
+1502	gnl|uv|JN204874.1:2319-2414	96	575232
+1503	gnl|uv|JN204874.1:3449-3474-49	75	575488
+1504	gnl|uv|JN204875.1:1-70	70	575744
+1505	gnl|uv|JN204875.1:3450-3475-49	75	576000
+1506	gnl|uv|JN204876.1:1-70	70	576256
+1507	gnl|uv|JN204876.1:3452-3476-49	74	576512
+1508	gnl|uv|JN204872.1:1-70	70	576768
+1509	gnl|uv|JN204872.1:3457-3477-49	70	577024
+1510	gnl|uv|JN204873.1:1-70	70	577280
+1511	gnl|uv|JN204873.1:3454-3478-49	74	577536
+1512	gnl|uv|JN204898.1:1-283	283	577792
+1513	gnl|uv|JN204898.1:479-571	93	578304
+1514	gnl|uv|JN204898.1:3531-3557-49	76	578560
+1515	gnl|uv|JN204905.1:1-455	455	578816
+1516	gnl|uv|JN204905.1:3549-3574-49	75	579328
+1517	gnl|uv|JN204881.1:1-674	674	579584
+1518	gnl|uv|JN204881.1:3641-3659-49	68	580352
+1519	gnl|uv|JN204884.1:1-781	781	580608
+1520	gnl|uv|JN204884.1:3741-3767-49	76	581632
+1521	gnl|uv|JN204885.1:1-763	763	581888
+1522	gnl|uv|JN204885.1:3763-3767-49	54	582656
+1523	gnl|uv|JN204886.1:60-742	683	582912
+1524	gnl|uv|U07165.1:138-235	98	583680
+1525	gnl|uv|U07165.1:1400-1509	110	583936
+1526	gnl|uv|JN204880.1:1-75	75	584192
+1527	gnl|uv|JN204880.1:772-867	96	584448
+1528	gnl|uv|JN204880.1:3971-3988-49	67	584704
+1529	gnl|uv|U07167.1:3157-3276	120	584960
+1530	gnl|uv|U07167.1:3474-3572	99	585216
+1531	gnl|uv|U07167.1:3988-4036-49	98	585472
+1532	gnl|uv|DQ845760.1:668-812	145	585728
+1533	gnl|uv|JN204887.1:1-998	998	585984
+1534	gnl|uv|JN204887.1:4095-4117-49	72	587008
+1535	gnl|uv|AF061931.1:1-127	127	587264
+1536	gnl|uv|AF061931.1:144-204	61	587520
+1537	gnl|uv|AF061931.1:424-579	156	587776
+1538	gnl|uv|AF061931.1:630-934	305	588032
+1539	gnl|uv|AF061931.1:1075-1324	250	588544
+1540	gnl|uv|AF061931.1:2277-2421	145	588800
+1541	gnl|uv|AF061931.1:2607-2795	189	589056
+1542	gnl|uv|AF061931.1:2946-4188-49	1292	589312
+1543	gnl|uv|JN204882.1:1-1203	1203	590848
+1544	gnl|uv|JN204882.1:4173-4190-49	67	592128
+1545	gnl|uv|AF061929.1:472-568	97	592384
+1546	gnl|uv|AF061929.1:1285-1383	99	592640
+1547	gnl|uv|AF061926.1:29-125	97	592896
+1548	gnl|uv|AF061926.1:137-230	94	593152
+1549	gnl|uv|AF061926.1:737-829	93	593408
+1550	gnl|uv|U07164.1:190-287	98	593664
+1551	gnl|uv|U07164.1:360-458	99	593920
+1552	gnl|uv|U07164.1:652-893	242	594176
+1553	gnl|uv|FM991889.1:1-391	391	594432
+1554	gnl|uv|FM991889.1:599-697	99	594944
+1555	gnl|uv|FM991889.1:857-1060	204	595200
+1556	gnl|uv|FM991889.1:1217-1352	136	595456
+1557	gnl|uv|FM991889.1:1361-1498	138	595712
+1558	gnl|uv|FM991889.1:4525-4608-49	133	595968
+1559	gnl|uv|JN204883.1:1-1492	1492	596224
+1560	gnl|uv|JN204883.1:4588-4612-49	74	597760
+1561	gnl|uv|AF061918.1:750-829	80	598016
+1562	gnl|uv|AF061919.1:748-839	92	598272
+1563	gnl|uv|AF061919.1:1570-1659	90	598528
+1564	gnl|uv|AF061920.1:749-843	95	598784
+1565	gnl|uv|AF061920.1:1580-1673	94	599040
+1566	gnl|uv|U07166.1:139-235	97	599296
+1567	gnl|uv|DQ657243.1:1-62	62	599552
+1568	gnl|uv|DQ657243.1:635-1056	422	599808
+1569	gnl|uv|DQ657243.1:1098-1206	109	600320
+1570	gnl|uv|DQ657243.1:1529-1779	251	600576
+1571	gnl|uv|DQ657243.1:2277-2374	98	600832
+1572	gnl|uv|DQ657243.1:2454-2552	99	601088
+1573	gnl|uv|DQ657243.1:2908-3006	99	601344
+1574	gnl|uv|DQ657243.1:3206-3304	99	601600
+1575	gnl|uv|DQ657243.1:4700-4750-49	100	601856
+1576	gnl|uv|AF306519.1:1-118	118	602112
+1577	gnl|uv|AF306519.1:742-835	94	602368
+1578	gnl|uv|AF306519.1:1007-1102	96	602624
+1579	gnl|uv|AF306519.1:1247-1387	141	602880
+1580	gnl|uv|AF306519.1:1430-1528	99	603136
+1581	gnl|uv|AF306519.1:1667-1763	97	603392
+1582	gnl|uv|AF306519.1:4759-4778-49	69	603648
+1583	gnl|uv|AF061930.1:471-568	98	603904
+1584	gnl|uv|AF061930.1:1707-1804	98	604160
+1585	gnl|uv|U07168.1:3158-3254	97	604416
+1586	gnl|uv|U07168.1:4529-4633	105	604672
+1587	gnl|uv|U07168.1:4929-4977-49	98	604928
+1588	gnl|uv|AF061921.1:749-839	91	605184
+1589	gnl|uv|AF061921.1:1992-2070	79	605440
+1590	gnl|uv|AF061922.1:761-829	69	605696
+1591	gnl|uv|U23751.1:3545-3652	108	605952
+1592	gnl|uv|U23751.1:3672-3768	97	606208
+1593	gnl|uv|U23751.1:4902-5025	124	606464
+1594	gnl|uv|AF061924.1:751-845	95	606720
+1595	gnl|uv|AF061924.1:2094-2210	117	606976
+1596	gnl|uv|AF061925.1:748-839	92	607232
+1597	gnl|uv|AF061925.1:2120-2208	89	607488
+1598	gnl|uv|AF061932.1:30-134	105	607744
+1599	gnl|uv|AF061932.1:561-660	100	608000
+1600	gnl|uv|AF061932.1:1400-1686	287	608256
+1601	gnl|uv|AF129072.1:1-60	60	608768
+1602	gnl|uv|AF129072.1:387-485	99	609024
+1603	gnl|uv|AF129072.1:540-638	99	609280
+1604	gnl|uv|AF129072.1:907-3477	2571	609536
+1605	gnl|uv|AF129072.1:3613-3797	185	612352
+1606	gnl|uv|AF129072.1:4551-4649	99	612608
+1607	gnl|uv|AF129072.1:5274-5321-49	97	612864
+1608	gnl|uv|AF061923.1:29-1852	1824	613120
+1609	gnl|uv|AF061923.1:2484-2570	87	615168
+1610	gnl|uv|L05083.1:1-447	447	615424
+1611	gnl|uv|L05083.1:511-606	96	615936
+1612	gnl|uv|L05083.1:1597-1740	144	616192
+1613	gnl|uv|L05083.1:2309-2762	454	616448
+1614	gnl|uv|L05083.1:3669-3775	107	616960
+1615	gnl|uv|L05083.1:3796-4440	645	617216
+1616	gnl|uv|L05083.1:5894-5941-49	97	617984
+1617	gnl|uv|AF061927.1:35-126	92	618240
+1618	gnl|uv|AF061927.1:857-947	91	618496
+1619	gnl|uv|AF061928.1:36-120	85	618752
+1620	gnl|uv|AF061928.1:863-948	86	619008
+1621	gnl|uv|L05081.1:2594-3343	750	619264
+1622	gnl|uv|GU339046.1:1-107	107	620032
+1623	gnl|uv|GU339046.1:798-956	159	620288
+1624	gnl|uv|GU339046.1:1263-1389	127	620544
+1625	gnl|uv|GU339046.1:1698-1794	97	620800
+1626	gnl|uv|GU339046.1:1927-2025	99	621056
+1627	gnl|uv|GU339046.1:3357-4718	1362	621312
+1628	gnl|uv|GU339046.1:4751-4847	97	622848
+1629	gnl|uv|GU339046.1:5854-6432-49	628	623104
+1630	gnl|uv|L05082.1:2594-2691	98	623872
+1631	gnl|uv|L05082.1:2969-3028	60	624128
+1632	gnl|uv|L05082.1:3960-4403	444	624384
+1633	gnl|uv|L05082.1:4537-4632	96	624896
+1634	gnl|uv|JX069764.1:1-100	100	625152
+1635	gnl|uv|JX069764.1:3363-3461	99	625408
+1636	gnl|uv|JX069764.1:3739-3837	99	625664
+1637	gnl|uv|JX069764.1:3841-4011	171	625920
+1638	gnl|uv|JX069764.1:4231-4329	99	626176
+1639	gnl|uv|JX069764.1:4573-4671	99	626432
+1640	gnl|uv|JX069764.1:9156-9498	343	626688
+1641	gnl|uv|JX069764.1:9534-9633	100	627200
+1642	gnl|uv|JX069764.1:9741-9848-49	157	627456
+1643	gnl|uv|JX069763.1:1-106	106	627712
+1644	gnl|uv|JX069763.1:9818-9863-49	95	627968
+1645	gnl|uv|JX069762.1:1-134	134	628224
+1646	gnl|uv|JX069762.1:9774-9902-49	178	628480
+1647	gnl|uv|JX069761.1:1-102	102	628736
+1648	gnl|uv|JX069761.1:9887-9905-49	68	628992
+1649	gnl|uv|GU593054.1:1-1305	1305	629248
+1650	gnl|uv|GU593054.1:3056-3235	180	630784
+1651	gnl|uv|GU593054.1:6136-8806	2671	631040
+1652	gnl|uv|GU593054.1:9213-9310	98	633856
+1653	gnl|uv|GU593054.1:10062-10135-49	123	634112
+1654	gnl|uv|EF437940.1:555-646	92	634368
+1655	gnl|uv|EF437940.1:661-755	95	634624
+1656	gnl|uv|EF437940.1:1035-1126	92	634880
+1657	gnl|uv|EF437940.1:1482-1571	90	635136
+1658	gnl|uv|EF437940.1:2257-2347	91	635392
+1659	gnl|uv|EF437940.1:2628-3510	883	635648
+1660	gnl|uv|EF437940.1:3516-6082	2567	636672
+1661	gnl|uv|EF437940.1:7199-10690-48	3540	639488
+1662	gnl|uv|U80929.2:1-85	85	643072
+1663	gnl|uv|U80929.2:2715-2856	142	643328
+1664	gnl|uv|U80929.2:2858-2951	94	643584
+1665	gnl|uv|U80929.2:4028-4126	99	643840
+1666	gnl|uv|U80929.2:4767-4937	171	644096
+1667	gnl|uv|U80929.2:9514-9612	99	644352
+1668	gnl|uv|U80929.2:11234-11328	95	644608
+1669	gnl|uv|U80929.2:11415-11517	103	644864
+1670	gnl|uv|U80929.2:11570-11612-49	92	645120
+1671	gnl|uv|U09365.1:787-1365	579	645376
+1672	gnl|uv|U09365.1:1592-3128	1537	646144
+1673	gnl|uv|U09365.1:4579-4677	99	647936
+1674	gnl|uv|U09365.1:5095-5190	96	648192
+1675	gnl|uv|U09365.1:5556-6239	684	648448
+1676	gnl|uv|U09365.1:6574-6668	95	649216
+1677	gnl|uv|U09365.1:7010-7108	99	649472
+1678	gnl|uv|U09365.1:7452-8024	573	649728
+1679	gnl|uv|U09365.1:8346-8444	99	650496
+1680	gnl|uv|U09365.1:8904-9482	579	650752
+1681	gnl|uv|U09365.1:9634-9732	99	651520
+1682	gnl|uv|U09365.1:11717-11777-40	101	651776
+1683	gnl|uv|KC442291.1:227-329	103	652032
+1684	gnl|uv|KC442291.1:333-442	110	652288
+1685	gnl|uv|KC442291.1:1579-1677	99	652544
+1686	gnl|uv|KC442291.1:2147-2253	107	652800
+1687	gnl|uv|KC442291.1:2258-2353	96	653056
+1688	gnl|uv|KC442291.1:5922-6015	94	653312
+1689	gnl|uv|KC442291.1:7661-7754	94	653568
+1690	gnl|uv|GU593055.1:1-75	75	653824
+1691	gnl|uv|GU593055.1:2840-2943	104	654080
+1692	gnl|uv|GU593055.1:4102-4364	263	654336
+1693	gnl|uv|GU593055.1:9726-9820	95	654848
+1694	gnl|uv|GU593055.1:11275-11372	98	655104
+1695	gnl|uv|GU593055.1:12653-12794	142	655360
+1696	gnl|uv|GU593055.1:13024-13902-49	928	655616
+1697	gnl|uv|U75991.1:7457-7550	94	656640
+1698	gnl|uv|U75991.1:7867-7965	99	656896
+1699	gnl|uv|U75991.1:10205-10303	99	657152
+1700	gnl|uv|U75991.1:13732-13821	90	657408
+1701	gnl|uv|L08875.1:151-283	133	657664
+1702	gnl|uv|L08875.1:832-885-45	99	657920
+1703	gnl|uv|L08918.1:1-159	159	658176
+1704	gnl|uv|L08918.1:270-368	99	658432
+1705	gnl|uv|L08918.1:763-902-49	189	658688
+1706	gnl|uv|DQ058723.1:1934-1979-35	81	658944
+1707	gnl|uv|DQ058743.1:1895-2039-34	179	659200
+1708	gnl|uv|AF223639.1:108-415	308	659456
+1709	gnl|uv|AF223639.1:514-603	90	659968
+1710	gnl|uv|AF223639.1:840-938	99	660224
+1711	gnl|uv|AF223639.1:1086-1184	99	660480
+1712	gnl|uv|AF223639.1:1268-1459	192	660736
+1713	gnl|uv|AF223639.1:1494-1596	103	660992
+1714	gnl|uv|AF223639.1:2086-2134-46	95	661248
+1715	gnl|uv|D63842.1:620-716	97	661504
+1716	gnl|uv|D63842.1:2153-2203-46	97	661760
+1717	gnl|uv|D63843.1:2172-2203-46	78	662016
+1718	gnl|uv|D63840.1:1-116	116	662272
+1719	gnl|uv|D63840.1:2197-2215-49	68	662528
+1720	gnl|uv|D63841.1:1-115	115	662784
+1721	gnl|uv|D63841.1:2198-2215-49	67	663040
+1722	gnl|uv|L08952.1:1-181	181	663296
+1723	gnl|uv|L08952.1:2195-2238-49	93	663552
+1724	gnl|uv|L08951.1:26-122	97	663808
+1725	gnl|uv|M64731.1:536-628	93	664064
+1726	gnl|uv|M64731.1:982-1074	93	664320
+1727	gnl|uv|M64731.1:1825-1921	97	664576
+1728	gnl|uv|AF264618.1:79-174	96	664832
+1729	gnl|uv|AF264618.1:2322-2368-49	96	665088
+1730	gnl|uv|U00800.1:1-58	58	665344
+1731	gnl|uv|U00800.1:495-593	99	665600
+1732	gnl|uv|U00800.1:846-944	99	665856
+1733	gnl|uv|U00800.1:1129-1226	98	666112
+1734	gnl|uv|U00800.1:1814-1911	98	666368
+1735	gnl|uv|U00800.1:2387-2432-49	95	666624
+1736	gnl|uv|AY330212.1:119-333	215	666880
+1737	gnl|uv|L38948.1:25-127	103	667136
+1738	gnl|uv|L38948.1:345-452	108	667392
+1739	gnl|uv|L38948.1:525-616	92	667648
+1740	gnl|uv|L38948.1:2287-2403	117	667904
+1741	gnl|uv|L38949.1:28-124	97	668160
+1742	gnl|uv|L38949.1:351-455	105	668416
+1743	gnl|uv|JF826242.2:431-533	103	668672
+1744	gnl|uv|JF826242.2:1604-1698	95	668928
+1745	gnl|uv|JF826242.2:2418-2508	91	669184
+1746	gnl|uv|L08880.1:187-311	125	669440
+1747	gnl|uv|AB669432.1:193-324	132	669696
+1748	gnl|uv|AF016541.1:355-496	142	669952
+1749	gnl|uv|L08911.1:223-311	89	670208
+1750	gnl|uv|L09138.1:187-338	152	670464
+1751	gnl|uv|L09139.1:189-339	151	670720
+1752	gnl|uv|L09140.1:190-339	150	670976
+1753	gnl|uv|L09141.1:189-339	151	671232
+1754	gnl|uv|L09145.1:67-192	126	671488
+1755	gnl|uv|L09145.1:792-887	96	671744
+1756	gnl|uv|L09145.1:1061-1160	100	672000
+1757	gnl|uv|L09145.1:1626-1717	92	672256
+1758	gnl|uv|L09145.1:1807-1903	97	672512
+1759	gnl|uv|L09145.1:1928-2134	207	672768
+1760	gnl|uv|L09145.1:2143-2317	175	673024
+1761	gnl|uv|L08910.1:221-311	91	673280
+1762	gnl|uv|L08941.1:192-351	160	673536
+1763	gnl|uv|L08942.1:186-345	160	673792
+1764	gnl|uv|M12787.1:1-136	136	674048
+1765	gnl|uv|M12787.1:260-358	99	674304
+1766	gnl|uv|M12787.1:407-550	144	674560
+1767	gnl|uv|M12787.1:700-815	116	674816
+1768	gnl|uv|M12787.1:2662-2706-49	94	675072
+1769	gnl|uv|L09142.1:254-349	96	675328
+1770	gnl|uv|L09143.1:190-278	89	675584
+1771	gnl|uv|L08939.1:186-290	105	675840
+1772	gnl|uv|L08940.1:263-359	97	676096
+1773	gnl|uv|L08913.1:221-309	89	676352
+1774	gnl|uv|L08937.1:191-292	102	676608
+1775	gnl|uv|L08938.1:271-359	89	676864
+1776	gnl|uv|L08912.1:247-331	85	677120
+1777	gnl|uv|L08949.1:418-576	159	677376
+1778	gnl|uv|L08950.1:481-581	101	677632
+1779	gnl|uv|L08947.1:702-844	143	677888
+1780	gnl|uv|M21875.1:132-255	124	678144
+1781	gnl|uv|M21875.1:2361-2482	122	678400
+1782	gnl|uv|M21875.1:2574-2727	154	678656
+1783	gnl|uv|M21875.1:2754-2854-45	146	678912
+1784	gnl|uv|L08876.1:252-365	114	679168
+1785	gnl|uv|L08876.1:690-1006	317	679424
+1786	gnl|uv|L08876.1:1178-1279	102	679936
+1787	gnl|uv|L08876.1:1576-1680	105	680192
+1788	gnl|uv|L08876.1:2693-2793	101	680448
+1789	gnl|uv|L08948.1:2831-2884-42	96	680704
+1790	gnl|uv|L08877.1:186-344	159	680960
+1791	gnl|uv|L08953.1:118-230	113	681216
+1792	gnl|uv|L08953.1:1438-1533	96	681472
+1793	gnl|uv|L08953.1:1649-1744	96	681728
+1794	gnl|uv|L08953.1:2383-2476	94	681984
+1795	gnl|uv|L08953.1:2840-2887-7	55	682240
+1796	gnl|uv|L08954.1:115-206	92	682496
+1797	gnl|uv|U09942.1:121-256	136	682752
+1798	gnl|uv|L08860.1:1-1129	1129	683008
+1799	gnl|uv|L08860.1:1134-1231	98	684288
+1800	gnl|uv|L08860.1:1858-2910-49	1102	684544
+1801	gnl|uv|L08879.1:293-419	127	685824
+1802	gnl|uv|L08878.1:186-419	234	686080
+1803	gnl|uv|EU182593.1:176-1026	851	686336
+1804	gnl|uv|EU182593.1:1905-2003	99	687360
+1805	gnl|uv|EU182593.1:2865-2931-48	115	687616
+1806	gnl|uv|AY599226.1:262-430	169	687872
+1807	gnl|uv|AY599226.1:540-726	187	688128
+1808	gnl|uv|AY599226.1:797-926	130	688384
+1809	gnl|uv|DQ058722.1:1586-1679	94	688640
+1810	gnl|uv|DQ058722.1:2780-2877	98	688896
+1811	gnl|uv|U56996.1:1-759	759	689152
+1812	gnl|uv|U56996.1:2892-2939-49	97	689920
+1813	gnl|uv|U56997.1:666-762	97	690176
+1814	gnl|uv|AF092940.1:1-94	94	690432
+1815	gnl|uv|AF092940.1:2911-2943-49	82	690688
+1816	gnl|uv|DQ059139.1:570-793	224	690944
+1817	gnl|uv|AY597269.1:406-717	312	691200
+1818	gnl|uv|U25267.1:664-784	121	691712
+1819	gnl|uv|DQ867071.1:2191-2316	126	691968
+1820	gnl|uv|L08946.1:672-767	96	692224
+1821	gnl|uv|AF092546.1:1-95	95	692480
+1822	gnl|uv|AF092546.1:3010-3012-49	52	692736
+1823	gnl|uv|U25268.1:6-130	125	692992
+1824	gnl|uv|U25272.1:8-128	121	693248
+1825	gnl|uv|DQ917670.1:4-137	134	693504
+1826	gnl|uv|JN900237.1:1-200	200	693760
+1827	gnl|uv|JN900237.1:1037-1143	107	694016
+1828	gnl|uv|JN900237.1:1151-3072-49	1971	694272
+1829	gnl|uv|AF223640.1:744-840	97	696320
+1830	gnl|uv|AF223640.1:1198-1303	106	696576
+1831	gnl|uv|AF223640.1:1345-1534	190	696832
+1832	gnl|uv|AF223640.1:2224-2292	69	697088
+1833	gnl|uv|JN835257.1:94-190	97	697344
+1834	gnl|uv|JN835257.1:1276-1366	91	697600
+1835	gnl|uv|L09144.1:366-463	98	697856
+1836	gnl|uv|L09144.1:880-977	98	698112
+1837	gnl|uv|DQ058718.1:55-179	125	698368
+1838	gnl|uv|AY599229.2:535-672	138	698624
+1839	gnl|uv|AY599229.2:681-868	188	698880
+1840	gnl|uv|AY599229.2:871-985	115	699136
+1841	gnl|uv|AY599229.2:1260-1399	140	699392
+1842	gnl|uv|AY599229.2:1427-1525	99	699648
+1843	gnl|uv|AB038146.1:909-1000	92	699904
+1844	gnl|uv|AB038146.1:3204-3249-45	91	700160
+1845	gnl|uv|AY599228.1:1302-1358	57	700416
+1846	gnl|uv|AY599228.1:1362-1520	159	700672
+1847	gnl|uv|AY599228.1:1739-1841	103	700928
+1848	gnl|uv|EF025088.1:168-276	109	701184
+1849	gnl|uv|EF025088.1:899-1007	109	701440
+1850	gnl|uv|V00083.1:1382-1476	95	701696
+1851	gnl|uv|HM162834.1:358-1197	840	701952
+1852	gnl|uv|AB009864.2:1-55	55	702976
+1853	gnl|uv|AB009864.2:304-865	562	703232
+1854	gnl|uv|AB009864.2:888-986	99	704000
+1855	gnl|uv|AB009864.2:1040-1283	244	704256
+1856	gnl|uv|AB009864.2:1386-1506	121	704512
+1857	gnl|uv|AB009864.2:3344-3392-49	98	704768
+1858	gnl|uv|GU733833.1:1101-1219	119	705024
+1859	gnl|uv|AY712953.1:1300-1416	117	705280
+1860	gnl|uv|AY712953.1:1561-1667	107	705536
+1861	gnl|uv|AF416744.1:1-56	56	705792
+1862	gnl|uv|AF416744.1:635-951	317	706048
+1863	gnl|uv|AF416744.1:2480-2576	97	706560
+1864	gnl|uv|AF416744.1:3466-3506-49	90	706816
+1865	gnl|uv|AY599230.2:1300-1391	92	707072
+1866	gnl|uv|AY599230.2:1574-1665	92	707328
+1867	gnl|uv|JN900238.1:104-232	129	707584
+1868	gnl|uv|JN900238.1:564-662	99	707840
+1869	gnl|uv|JN900238.1:1477-1577	101	708096
+1870	gnl|uv|L08920.1:756-862	107	708352
+1871	gnl|uv|L08920.1:3195-3290	96	708608
+1872	gnl|uv|AY712951.1:520-617	98	708864
+1873	gnl|uv|AY712951.1:1127-1227	101	709120
+1874	gnl|uv|L08857.1:1382-1491	110	709376
+1875	gnl|uv|L08857.1:1764-1865	102	709632
+1876	gnl|uv|L08862.1:1-2039	2039	709888
+1877	gnl|uv|L08862.1:2848-3728-49	930	711936
+1878	gnl|uv|L08931.1:57-159	103	712960
+1879	gnl|uv|L08931.1:167-360	194	713216
+1880	gnl|uv|L08931.1:720-820	101	713472
+1881	gnl|uv|L08931.1:2520-2613	94	713728
+1882	gnl|uv|L08931.1:2636-2804	169	713984
+1883	gnl|uv|L08931.1:2974-3072	99	714240
+1884	gnl|uv|L08931.1:3678-3788-47	158	714496
+1885	gnl|uv|AY597270.1:519-615	97	714752
+1886	gnl|uv|AY597270.1:1351-1447	97	715008
+1887	gnl|uv|L08930.1:2637-2749	113	715264
+1888	gnl|uv|AY597271.1:519-615	97	715520
+1889	gnl|uv|AY597271.1:1412-1509	98	715776
+1890	gnl|uv|M13163.1:477-1287	811	716032
+1891	gnl|uv|M13163.1:1762-1858	97	717056
+1892	gnl|uv|L08919.1:1220-1337	118	717312
+1893	gnl|uv|L08919.1:1395-1946	552	717568
+1894	gnl|uv|L08919.1:2005-2103	99	718336
+1895	gnl|uv|L08919.1:2524-2622	99	718592
+1896	gnl|uv|L08919.1:3396-3494	99	718848
+1897	gnl|uv|X06404.1:375-460	86	719104
+1898	gnl|uv|X06404.1:1619-1704	86	719360
+1899	gnl|uv|L08863.1:377-473	97	719616
+1900	gnl|uv|L08863.1:697-793	97	719872
+1901	gnl|uv|L08863.1:1644-1744	101	720128
+1902	gnl|uv|L08864.1:382-470	89	720384
+1903	gnl|uv|L08864.1:1651-1739	89	720640
+1904	gnl|uv|AY597272.1:522-619	98	720896
+1905	gnl|uv|AY597272.1:1108-1176	69	721152
+1906	gnl|uv|AY597272.1:1300-1398	99	721408
+1907	gnl|uv|AY597272.1:1496-1594	99	721664
+1908	gnl|uv|L08776.1:2232-2330	99	721920
+1909	gnl|uv|L08776.1:2975-3561	587	722176
+1910	gnl|uv|X06402.1:3128-3225	98	722944
+1911	gnl|uv|X06402.1:3467-3537	71	723200
+1912	gnl|uv|AY619004.1:536-633	98	723456
+1913	gnl|uv|AY619004.1:645-746	102	723712
+1914	gnl|uv|AY619004.1:1486-1573	88	723968
+1915	gnl|uv|AY619004.1:1590-1685	96	724224
+1916	gnl|uv|AY737005.1:894-991	98	724480
+1917	gnl|uv|AY737005.1:1744-1841	98	724736
+1918	gnl|uv|L08859.1:189-285	97	724992
+1919	gnl|uv|L08859.1:1452-1550	99	725248
+1920	gnl|uv|L08859.1:3272-3370	99	725504
+1921	gnl|uv|L08859.1:3450-3547	98	725760
+1922	gnl|uv|X06403.1:3090-3263	174	726016
+1923	gnl|uv|DQ493876.2:897-990	94	726272
+1924	gnl|uv|DQ493876.2:1018-1658	641	726528
+1925	gnl|uv|DQ493876.2:1669-1762	94	727296
+1926	gnl|uv|DQ493875.2:894-991	98	727552
+1927	gnl|uv|DQ493875.2:1332-1456	125	727808
+1928	gnl|uv|DQ493875.2:1465-1545	81	728064
+1929	gnl|uv|AB215109.1:1-65	65	728320
+1930	gnl|uv|AB215109.1:941-1090	150	728576
+1931	gnl|uv|AB215109.1:1703-1800	98	728832
+1932	gnl|uv|AB215109.1:2405-2552	148	729088
+1933	gnl|uv|AB215109.1:3575-3672	98	729344
+1934	gnl|uv|AB215109.1:4349-4398-49	99	729600
+1935	gnl|uv|AY619006.1:900-988	89	729856
+1936	gnl|uv|AY619006.1:1993-2089	97	730112
+1937	gnl|uv|AY619006.1:2096-2193	98	730368
+1938	gnl|uv|AY619006.1:2571-2669	99	730624
+1939	gnl|uv|AY599232.2:914-988	75	730880
+1940	gnl|uv|DQ091275.1:1587-3699	2113	731136
+1941	gnl|uv|DQ091275.1:3873-4400	528	733440
+1942	gnl|uv|DQ091275.1:4461-4555	95	734208
+1943	gnl|uv|AY712950.1:520-614	95	734464
+1944	gnl|uv|AY712950.1:2292-2392	101	734720
+1945	gnl|uv|U73899.1:1-227	227	734976
+1946	gnl|uv|U73899.1:376-486	111	735232
+1947	gnl|uv|U73899.1:1574-1625	52	735488
+1948	gnl|uv|U73899.1:1651-1749	99	735744
+1949	gnl|uv|U73899.1:1933-2031	99	736000
+1950	gnl|uv|U73899.1:2100-2306	207	736256
+1951	gnl|uv|U73899.1:3736-3840	105	736512
+1952	gnl|uv|U73899.1:4116-4207	92	736768
+1953	gnl|uv|U73899.1:4739-4788-49	99	737024
+1954	gnl|uv|L08858.1:4859-4907-49	98	737280
+1955	gnl|uv|AY712952.1:1975-2113	139	737536
+1956	gnl|uv|AY712952.1:2400-2521	122	737792
+1957	gnl|uv|L19898.1:1-101	101	738048
+1958	gnl|uv|L19898.1:404-806	403	738304
+1959	gnl|uv|L19898.1:3634-3726	93	738816
+1960	gnl|uv|L19898.1:5132-5194-49	112	739072
+1961	gnl|uv|JF837313.1:1-192	192	739328
+1962	gnl|uv|JF837313.1:474-562	89	739584
+1963	gnl|uv|JF837313.1:1344-1447	104	739840
+1964	gnl|uv|JF837313.1:2094-3122	1029	740096
+1965	gnl|uv|JF837313.1:4365-4541	177	741376
+1966	gnl|uv|JF837313.1:5219-5276-49	107	741632
+1967	gnl|uv|Y14439.1:1343-1439	97	741888
+1968	gnl|uv|Y14439.1:2594-2690	97	742144
+1969	gnl|uv|Y14439.1:4065-4162	98	742400
+1970	gnl|uv|Y14439.1:4997-5090	94	742656
+1971	gnl|uv|AF327713.1:1-51	51	742912
+1972	gnl|uv|AF327713.1:667-938	272	743168
+1973	gnl|uv|AF327713.1:1671-1769	99	743680
+1974	gnl|uv|AF327713.1:3041-3138	98	743936
+1975	gnl|uv|AF327713.1:4538-4629	92	744192
+1976	gnl|uv|AF327713.1:4881-4979	99	744448
+1977	gnl|uv|AF327713.1:5283-5329-49	96	744704
+1978	gnl|uv|L09147.1:3234-3350	117	744960
+1979	gnl|uv|L09148.1:3235-3332	98	745216
+1980	gnl|uv|L09150.1:3248-3353	106	745472
+1981	gnl|uv|L09151.1:3249-3332	84	745728
+1982	gnl|uv|L09146.1:3239-3335	97	745984
+1983	gnl|uv|L09149.1:3253-3335	83	746240
+1984	gnl|uv|DQ493888.2:1683-1779	97	746496
+1985	gnl|uv|DQ493888.2:2010-2931	922	746752
+1986	gnl|uv|JX025643.1:1-2941	2941	747776
+1987	gnl|uv|JX025643.1:3764-3860	97	750848
+1988	gnl|uv|JX025643.1:4759-4857	99	751104
+1989	gnl|uv|JX025643.1:5074-5255	182	751360
+1990	gnl|uv|JX025643.1:5331-5389-49	108	751616
+1991	gnl|uv|GQ231553.1:323-508	186	751872
+1992	gnl|uv|GQ231553.1:512-1019	508	752128
+1993	gnl|uv|GQ231553.1:1390-1488	99	752640
+1994	gnl|uv|GQ231553.1:1598-1695	98	752896
+1995	gnl|uv|GQ231553.1:2503-2742	240	753152
+1996	gnl|uv|GQ231553.1:2758-2849	92	753408
+1997	gnl|uv|U00003.1:1-55	55	753664
+1998	gnl|uv|U00003.1:1773-1865	93	753920
+1999	gnl|uv|U00003.1:2198-2293	96	754176
+2000	gnl|uv|U00003.1:5356-5406-49	100	754432
+2001	gnl|uv|AF016889.1:470-568	99	754688
+2002	gnl|uv|AF016889.1:2245-2399	155	754944
+2003	gnl|uv|AF016889.1:2414-2510	97	755200
+2004	gnl|uv|AF016889.1:5434-5434-49	50	755456
+2005	gnl|uv|DQ493885.2:2011-2200	190	755712
+2006	gnl|uv|DQ493885.2:2202-2403	202	755968
+2007	gnl|uv|DQ493885.2:2427-2634	208	756224
+2008	gnl|uv|DQ493885.2:2722-2922	201	756480
+2009	gnl|uv|DQ493881.2:1820-1916	97	756736
+2010	gnl|uv|DQ493881.2:2963-3059	97	756992
+2011	gnl|uv|DQ493884.2:2971-3072	102	757248
+2012	gnl|uv|DQ493886.2:1696-1794	99	757504
+2013	gnl|uv|DQ493886.2:2014-2112	99	757760
+2014	gnl|uv|DQ493886.2:2240-2390	151	758016
+2015	gnl|uv|DQ493886.2:2531-2630	100	758272
+2016	gnl|uv|DQ493886.2:2728-2826	99	758528
+2017	gnl|uv|DQ493886.2:2848-2947	100	758784
+2018	gnl|uv|DQ493886.2:3027-3123	97	759040
+2019	gnl|uv|DQ493887.2:2121-2220	100	759296
+2020	gnl|uv|DQ493887.2:2527-2637	111	759552
+2021	gnl|uv|U75325.1:1-856	856	759808
+2022	gnl|uv|U75325.1:5554-5594-49	90	760832
+2023	gnl|uv|JX025644.1:3766-3860	95	761088
+2024	gnl|uv|JX025644.1:3874-4022	149	761344
+2025	gnl|uv|JX025644.1:4719-4956	238	761600
+2026	gnl|uv|JX025644.1:5002-5103	102	761856
+2027	gnl|uv|DQ493882.2:1833-1916	84	762112
+2028	gnl|uv|DQ493882.2:3165-3260	96	762368
+2029	gnl|uv|Y14437.1:4266-4355	90	762624
+2030	gnl|uv|Y14437.1:4680-4776	97	762880
+2031	gnl|uv|Y14438.1:4678-4775	98	763136
+2032	gnl|uv|DQ493880.2:2026-2122	97	763392
+2033	gnl|uv|L09152.1:1416-1509	94	763648
+2034	gnl|uv|L09152.1:1712-1810	99	763904
+2035	gnl|uv|L09152.1:1924-2018	95	764160
+2036	gnl|uv|L09152.1:2046-2208	163	764416
+2037	gnl|uv|L09152.1:2519-2617	99	764672
+2038	gnl|uv|L09152.1:2921-3019	99	764928
+2039	gnl|uv|L09152.1:3135-3331	197	765184
+2040	gnl|uv|L09152.1:3447-3535	89	765440
+2041	gnl|uv|L09152.1:3759-3857	99	765696
+2042	gnl|uv|U07340.1:2069-2160	92	765952
+2043	gnl|uv|U07340.1:3806-3903	98	766208
+2044	gnl|uv|U07340.1:5743-5793-46	97	766464
+2045	gnl|uv|AY737006.1:1802-1936	135	766720
+2046	gnl|uv|AY737006.1:1961-2077	117	766976
+2047	gnl|uv|AY737006.1:2315-2413	99	767232
+2048	gnl|uv|AY737006.1:2533-2631	99	767488
+2049	gnl|uv|AY737006.1:2649-2733	85	767744
+2050	gnl|uv|AY737006.1:3337-3513	177	768000
+2051	gnl|uv|AY737006.1:3536-3642	107	768256
+2052	gnl|uv|L08855.1:1-53	53	768512
+2053	gnl|uv|L08855.1:5953-5996-49	93	768768
+2054	gnl|uv|U75323.1:1-50	50	769024
+2055	gnl|uv|U75323.1:1187-1308	122	769280
+2056	gnl|uv|U75323.1:1437-1487	51	769536
+2057	gnl|uv|U75323.1:1696-1746	51	769792
+2058	gnl|uv|U75323.1:2832-2883	52	770048
+2059	gnl|uv|U75323.1:5050-5099	50	770304
+2060	gnl|uv|U75323.1:6003-6052-49	99	770560
+2061	gnl|uv|U75322.1:1-58	58	770816
+2062	gnl|uv|U75322.1:239-426	188	771072
+2063	gnl|uv|U75322.1:1300-1484	185	771328
+2064	gnl|uv|U75322.1:5231-5280	50	771584
+2065	gnl|uv|U75322.1:6188-6227-49	89	771840
+2066	gnl|uv|L08873.1:3780-3878	99	772096
+2067	gnl|uv|U13761.1:431-526	96	772352
+2068	gnl|uv|U13761.1:763-901	139	772608
+2069	gnl|uv|U13761.1:3051-3147	97	772864
+2070	gnl|uv|U13761.1:3239-3361	123	773120
+2071	gnl|uv|U13761.1:6091-6188	98	773376
+2072	gnl|uv|U13761.1:6428-6524	97	773632
+2073	gnl|uv|U13762.1:3018-3186	169	773888
+2074	gnl|uv|JQ927446.1:1-50	50	774144
+2075	gnl|uv|JQ927446.1:863-2607	1745	774400
+2076	gnl|uv|JQ927446.1:4474-4573	100	776192
+2077	gnl|uv|JQ927446.1:4743-4840	98	776448
+2078	gnl|uv|JQ927446.1:4885-6835-49	2000	776704
+2079	gnl|uv|L08837.1:5679-5772	94	778752
+2080	gnl|uv|L08837.1:5827-5933	107	779008
+2081	gnl|uv|L08837.1:6005-6080	76	779264
+2082	gnl|uv|L08837.1:6135-6314	180	779520
+2083	gnl|uv|L08840.1:5830-5922	93	779776
+2084	gnl|uv|L08846.1:5843-5935	93	780032
+2085	gnl|uv|AF327714.1:671-768	98	780288
+2086	gnl|uv|AF327714.1:2576-2673	98	780544
+2087	gnl|uv|L08851.1:5828-5995	168	780800
+2088	gnl|uv|AB095955.1:534-626	93	781056
+2089	gnl|uv|AB095955.1:1204-1302	99	781312
+2090	gnl|uv|AB095955.1:2190-2252	63	781568
+2091	gnl|uv|AB095955.1:2407-3399	993	781824
+2092	gnl|uv|AB095955.1:4693-4820	128	782848
+2093	gnl|uv|AB095955.1:6160-6250	91	783104
+2094	gnl|uv|U75324.1:1-92	92	783360
+2095	gnl|uv|U75324.1:216-271	56	783616
+2096	gnl|uv|U75324.1:1161-1267	107	783872
+2097	gnl|uv|U75324.1:1556-1654	99	784128
+2098	gnl|uv|U75324.1:1777-1874	98	784384
+2099	gnl|uv|U75324.1:6579-6888	310	784640
+2100	gnl|uv|U75324.1:7062-7069-49	57	785152
+2101	gnl|uv|L08813.1:6865-6933	69	785408
+2102	gnl|uv|L08818.1:6189-6277	89	785664
+2103	gnl|uv|KF947528.1:1-174	174	785920
+2104	gnl|uv|KF947528.1:837-1064	228	786176
+2105	gnl|uv|KF947528.1:1647-1760	114	786432
+2106	gnl|uv|KF947528.1:2136-2314	179	786688
+2107	gnl|uv|KF947528.1:2343-2837	495	786944
+2108	gnl|uv|KF947528.1:3245-4749	1505	787456
+2109	gnl|uv|KF947528.1:4787-5103	317	788992
+2110	gnl|uv|KF947528.1:6331-6429	99	789504
+2111	gnl|uv|KF947528.1:7185-7232-49	97	789760
+2112	gnl|uv|L08828.1:6252-6347	96	790016
+2113	gnl|uv|L08833.1:6185-6285	101	790272
+2114	gnl|uv|AB015619.1:307-489	183	790528
+2115	gnl|uv|AB013921.2:1-113	113	790784
+2116	gnl|uv|AB013921.2:198-295	98	791040
+2117	gnl|uv|AB013921.2:832-970	139	791296
+2118	gnl|uv|AB013921.2:1852-1948	97	791552
+2119	gnl|uv|AB013921.2:2196-2442	247	791808
+2120	gnl|uv|AB013921.2:7008-7117	110	792064
+2121	gnl|uv|AB013921.2:7282-7376	95	792320
+2122	gnl|uv|AB013921.2:7482-7570-49	138	792576
+2123	gnl|uv|AF327715.1:1-52	52	792832
+2124	gnl|uv|AF327715.1:664-719	56	793088
+2125	gnl|uv|AF327715.1:3690-3787	98	793344
+2126	gnl|uv|AF327715.1:4942-5039	98	793600
+2127	gnl|uv|AY599233.1:2026-2274	249	793856
+2128	gnl|uv|AY599233.1:5214-5312	99	794112
+2129	gnl|uv|AY599233.1:5335-5438	104	794368
+2130	gnl|uv|L09156.1:1-50	50	794624
+2131	gnl|uv|L09156.1:2197-2321	125	794880
+2132	gnl|uv|L09156.1:3390-3486	97	795136
+2133	gnl|uv|L09156.1:7728-7769-49	91	795392
+2134	gnl|uv|AF327711.1:665-1379	715	795648
+2135	gnl|uv|AF327711.1:2165-2256	92	796416
+2136	gnl|uv|AF327711.1:3010-3102	93	796672
+2137	gnl|uv|AF327711.1:4819-4917	99	796928
+2138	gnl|uv|AB070708.1:325-421	97	797184
+2139	gnl|uv|AB070708.1:7264-7361	98	797440
+2140	gnl|uv|KF947529.1:831-929	99	797696
+2141	gnl|uv|KF947529.1:6291-6389	99	797952
+2142	gnl|uv|EU118176.1:951-1153	203	798208
+2143	gnl|uv|EU118176.1:1479-1577	99	798464
+2144	gnl|uv|EU118176.1:2782-2879	98	798720
+2145	gnl|uv|EU118176.1:4233-4333	101	798976
+2146	gnl|uv|EU118176.1:4918-5018	101	799232
+2147	gnl|uv|EU118176.1:6216-6266	51	799488
+2148	gnl|uv|EU118176.1:6891-6986	96	799744
+2149	gnl|uv|EU292740.1:313-410	98	800000
+2150	gnl|uv|EU292740.1:1395-1507	113	800256
+2151	gnl|uv|AY619005.1:1641-1748	108	800512
+2152	gnl|uv|AY619005.1:4663-4760	98	800768
+2153	gnl|uv|AY619005.1:5979-6103	125	801024
+2154	gnl|uv|AY785149.1:7713-7932	220	801280
+2155	gnl|uv|AY785149.1:8381-8479	99	801536
+2156	gnl|uv|AY785149.1:8490-8652-41	204	801792
+2157	gnl|uv|EU292739.1:313-410	98	802048
+2158	gnl|uv|EU292739.1:1941-2037	97	802304
+2159	gnl|uv|HQ670404.1:1-89	89	802560
+2160	gnl|uv|HQ670404.1:8819-8821-49	52	802816
+2161	gnl|uv|AY292466.1:1755-1838	84	803072
+2162	gnl|uv|AY292466.1:9030-9077-49	97	803328
+2163	gnl|uv|HQ670403.1:1-482	482	803584
+2164	gnl|uv|HQ670403.1:485-779	295	804096
+2165	gnl|uv|HQ670403.1:787-905	119	804608
+2166	gnl|uv|HQ670403.1:1107-1224	118	804864
+2167	gnl|uv|HQ670403.1:1275-1373	99	805120
+2168	gnl|uv|HQ670403.1:1402-1660	259	805376
+2169	gnl|uv|HQ670403.1:1749-2155	407	805888
+2170	gnl|uv|HQ670403.1:7882-7972	91	806400
+2171	gnl|uv|HQ670403.1:8058-8152	95	806656
+2172	gnl|uv|HQ670403.1:9216-9260-49	94	806912
+2173	gnl|uv|L08817.1:1-2924	2924	807168
+2174	gnl|uv|L08817.1:8943-9038	96	810240
+2175	gnl|uv|L08817.1:9536-9583-49	97	810496
+2176	gnl|uv|HQ418395.1:1714-1829	116	810752
+2177	gnl|uv|HQ418395.1:1892-1995	104	811008
+2178	gnl|uv|HQ418395.1:2279-2407	129	811264
+2179	gnl|uv|HQ418395.1:2834-3936	1103	811520
+2180	gnl|uv|HQ418395.1:4218-4316	99	812800
+2181	gnl|uv|HQ418395.1:5572-6400	829	813056
+2182	gnl|uv|HQ418395.1:7430-7530	101	814080
+2183	gnl|uv|HQ418395.1:9315-9443	129	814336
+2184	gnl|uv|JX181778.1:143-238	96	814592
+2185	gnl|uv|JX181778.1:7915-8003	89	814848
+2186	gnl|uv|JX181778.1:8204-8308	105	815104
+2187	gnl|uv|JX181778.1:9389-9501	113	815360
+2188	gnl|uv|JX181778.1:9820-9937	118	815616
+2189	gnl|uv|JX181778.1:10046-10181	136	815872
+2190	gnl|uv|JX181778.1:10266-10316-48	99	816128
+2191	gnl|uv|JX310868.1:340-393	54	816384
+2192	gnl|uv|JX310868.1:599-694	96	816640
+2193	gnl|uv|JX310868.1:2617-2712	96	816896
+2194	gnl|uv|JX310868.1:3171-3326	156	817152
+2195	gnl|uv|JX310868.1:4244-4342	99	817408
+2196	gnl|uv|JX310868.1:5399-5497	99	817664
+2197	gnl|uv|JX310868.1:5772-5871	100	817920
+2198	gnl|uv|JX310868.1:6394-6492	99	818176
+2199	gnl|uv|JX310868.1:8741-8839	99	818432
+2200	gnl|uv|JX310868.1:9047-9201	155	818688
+2201	gnl|uv|JX310868.1:9306-9403	98	818944
+2202	gnl|uv|JX310868.1:10330-10501	172	819200
+2203	gnl|uv|JX310868.1:10577-10680	104	819456
+2204	gnl|uv|JX310868.1:10962-11074	113	819712
+2205	gnl|uv|JX310866.1:1010-1160	151	819968
+2206	gnl|uv|JX310866.1:1293-1483	191	820224
+2207	gnl|uv|JX310866.1:2211-2467	257	820480
+2208	gnl|uv|JX310866.1:2534-2633	100	820992
+2209	gnl|uv|JX310866.1:2937-3038	102	821248
+2210	gnl|uv|DQ092493.1:2022-2077	56	821504
+2211	gnl|uv|DQ092493.1:2165-2240	76	821760
+2212	gnl|uv|DQ092493.1:5324-5419	96	822016
+2213	gnl|uv|DQ092493.1:5726-5822	97	822272
+2214	gnl|uv|DQ092493.1:6531-6629	99	822528
+2215	gnl|uv|DQ092493.1:7097-7193	97	822784
+2216	gnl|uv|DQ092493.1:7260-7355	96	823040
+2217	gnl|uv|DQ092493.1:8086-8184	99	823296
+2218	gnl|uv|DQ092493.1:11480-11576	97	823552
+2219	gnl|uv|DQ092493.1:11618-11660-49	92	823808
+2220	gnl|uv|JX310867.1:571-669	99	824064
+2221	gnl|uv|JX310867.1:868-3760	2893	824320
+2222	gnl|uv|AY487253.1:1-56	56	827392
+2223	gnl|uv|AY487253.1:2686-2789	104	827648
+2224	gnl|uv|AY487253.1:4465-4562	98	827904
+2225	gnl|uv|AY487253.1:4582-4714	133	828160
+2226	gnl|uv|AY487253.1:4805-4901	97	828416
+2227	gnl|uv|AY487253.1:5045-5157	113	828672
+2228	gnl|uv|AY487253.1:5696-5856	161	828928
+2229	gnl|uv|AY487253.1:6236-6404	169	829184
+2230	gnl|uv|AY487253.1:6569-6689	121	829440
+2231	gnl|uv|AY487253.1:9202-9300	99	829696
+2232	gnl|uv|AY487253.1:13276-13325	50	829952
+2233	gnl|uv|AY487253.1:13349-13397-49	98	830208
+2234	gnl|uv|EF081457.1:1-61	61	830464
+2235	gnl|uv|EF081457.1:96-146	51	830720
+2236	gnl|uv|EF081457.1:2688-2798	111	830976
+2237	gnl|uv|EF081457.1:13286-13335	50	831232
+2238	gnl|uv|EF081457.1:13360-13407-49	97	831488
+2239	gnl|uv|AY487252.1:91-141	51	831744
+2240	gnl|uv|AY487252.1:13345-13394	50	832000
+2241	gnl|uv|AF327712.1:709-1247	539	832256
+2242	gnl|uv|AF327712.1:1582-7289	5708	833024
+2243	gnl|uv|AF327712.1:9368-9466	99	838912
+2244	gnl|uv|AF327712.1:10246-10321	76	839168
+2245	gnl|uv|AF327712.1:10357-10624	268	839424
+2246	gnl|uv|AF327712.1:13096-13193	98	839936
+2247	gnl|uv|AF327712.1:16794-18581	1788	840192
+2248	gnl|uv|AY532632.1:2905-3003	99	841984
+2249	gnl|uv|AY532632.1:3233-3330	98	842240
+2250	gnl|uv|AY532632.1:4828-4926	99	842496
+2251	gnl|uv|AY532632.1:5216-5418	203	842752
+2252	gnl|uv|AY532632.1:6816-6915	100	843008
+2253	gnl|uv|AY532632.1:6981-7077	97	843264
+2254	gnl|uv|AY532632.1:7747-7840	94	843520
+2255	gnl|uv|AY532632.1:12748-12843	96	843776
+2256	gnl|uv|AY532632.1:17413-17504	92	844032
+2257	gnl|uv|AY532632.1:19152-19300	149	844288
+2258	gnl|uv|AB521037.1:1112-1195	84	844544
+2259	gnl|uv|AB521037.1:20307-20392-47	133	844800
+2260	gnl|uv|FJ710109.1:1-109	109	845056
+2261	gnl|uv|FJ710109.1:6726-9221	2496	845312
+2262	gnl|uv|FJ710109.1:9775-9906	132	847872
+2263	gnl|uv|FJ710109.1:19122-19183	62	848128
+2264	gnl|uv|FJ710109.1:21645-21743	99	848384
+2265	gnl|uv|FJ710109.1:21875-21981	107	848640
+2266	gnl|uv|FJ710109.1:22598-22714	117	848896
+2267	gnl|uv|FJ710109.1:23206-23329	124	849152
+2268	gnl|uv|NGB00080.1:1-166	166	849408
+2269	gnl|uv|NGB00080.1:725-887	163	849664
+2270	gnl|uv|NGB00080.1:1495-1654-49	209	849920
+2271	gnl|uv|NGB00088.1:29-349	321	850176
+2272	gnl|uv|NGB00088.1:1029-1136	108	850688
+2273	gnl|uv|NGB00087.1:86-319	234	850944
+2274	gnl|uv|M19087.1:910-986	77	851200
+2275	gnl|uv|M19415.1:1615-1711	97	851456
+2276	gnl|uv|M19415.1:1759-1857	99	851712
+2277	gnl|uv|NGB00082.1:1-67	67	851968
+2278	gnl|uv|NGB00082.1:2663-2737-49	124	852224
+2279	gnl|uv|NGB00606.1:617-714	98	852480
+2280	gnl|uv|NGB00606.1:838-981	144	852736
+2281	gnl|uv|NGB00606.1:1994-2104	111	852992
+2282	gnl|uv|AF324725.1:1-84	84	853248
+2283	gnl|uv|AF324725.1:3009-3018-49	59	853504
+2284	gnl|uv|AF324726.1:12-224	213	853760
+2285	gnl|uv|NGB00081.1:853-951	99	854016
+2286	gnl|uv|NGB00081.1:1020-1141	122	854272
+2287	gnl|uv|NGB00081.1:3108-3153-46	92	854528
+2288	gnl|uv|EF207440.1:115-212	98	854784
+2289	gnl|uv|EF207440.1:835-1038	204	855040
+2290	gnl|uv|NGB00135.2:617-729	113	855296
+2291	gnl|uv|NGB00135.2:1326-1423	98	855552
+2292	gnl|uv|NGB00135.2:2133-2279	147	855808
+2293	gnl|uv|NGB00135.2:2729-2827	99	856064
+2294	gnl|uv|NGB00602.1:615-665	51	856320
+2295	gnl|uv|NGB00602.1:1794-1891	98	856576
+2296	gnl|uv|NGB00602.1:3103-3166	64	856832
+2297	gnl|uv|GU339051.1:1629-1755	127	857088
+2298	gnl|uv|GU339051.1:2255-2374	120	857344
+2299	gnl|uv|GU339051.1:3408-3504	97	857600
+2300	gnl|uv|GU339051.1:3590-3721	132	857856
+2301	gnl|uv|X98613.1:1-56	56	858112
+2302	gnl|uv|X98613.1:214-299	86	858368
+2303	gnl|uv|X98613.1:3718-3813	96	858624
+2304	gnl|uv|X98613.1:4517-4613	97	858880
+2305	gnl|uv|X98613.1:4676-4796	121	859136
+2306	gnl|uv|X98613.1:5131-5551-49	470	859392
+2307	gnl|uv|NGB00611.1:771-875	105	859904
+2308	gnl|uv|NGB00611.1:1221-1316	96	860160
+2309	gnl|uv|NGB00611.1:3467-3561	95	860416
+2310	gnl|uv|NGB00611.1:4816-4913	98	860672
+2311	gnl|uv|GU339044.1:1699-1795	97	860928
+2312	gnl|uv|GU339044.1:2132-2230	99	861184
+2313	gnl|uv|GU339044.1:3206-3282	77	861440
+2314	gnl|uv|GU339045.1:1468-1564	97	861696
+2315	gnl|uv|GU339045.1:1921-2019	99	861952
+2316	gnl|uv|GU339045.1:2186-2279	94	862208
+2317	gnl|uv|GU339049.1:3416-3548	133	862464
+2318	gnl|uv|GU339052.1:1094-1318	225	862720
+2319	gnl|uv|GU339052.1:4271-4399	129	862976
+2320	gnl|uv|GU339052.1:5069-5166	98	863232
+2321	gnl|uv|GU339052.1:5381-5478	98	863488
+2322	gnl|uv|GU339052.1:6513-6682	170	863744
+2323	gnl|uv|GU339048.1:3458-3555	98	864000
+2324	gnl|uv|GU339048.1:3596-3692	97	864256
+2325	gnl|uv|GU339048.1:5053-5144	92	864512
+2326	gnl|uv|GU339053.1:3669-3764	96	864768
+2327	gnl|uv|GU339053.1:5225-5316	92	865024
+2328	gnl|uv|GU339053.1:5922-6020	99	865280
+2329	gnl|uv|GU339053.1:6036-6134	99	865536
+2330	gnl|uv|U03463.1:764-939	176	865792
+2331	gnl|uv|U03463.1:2202-2302	101	866048
+2332	gnl|uv|U03463.1:2893-2988	96	866304
+2333	gnl|uv|U03463.1:5371-5460	90	866560
+2334	gnl|uv|U03463.1:8267-8360	94	866816
+2335	gnl|uv|U03463.1:8482-8574	93	867072
+2336	gnl|uv|U03462.1:843-998	156	867328
+2337	gnl|uv|U03462.1:8530-8621	92	867584
+2338	gnl|uv|U03460.1:842-1010	169	867840
+2339	gnl|uv|U03460.1:1354-1457	104	868096
+2340	gnl|uv|U03460.1:1729-1820	92	868352
+2341	gnl|uv|U03460.1:2148-2245	98	868608
+2342	gnl|uv|U03460.1:4569-4671	103	868864
+2343	gnl|uv|NGB00358.1:1-59	59	869120
+2344	gnl|uv|NGB00358.1:2687-2859	173	869376
+2345	gnl|uv|NGB00358.1:3997-4095	99	869632
+2346	gnl|uv|NGB00358.1:4408-4664	257	869888
+2347	gnl|uv|NGB00358.1:5319-5417	99	870400
+2348	gnl|uv|NGB00358.1:6088-6186	99	870656
+2349	gnl|uv|NGB00358.1:6499-6597	99	870912
+2350	gnl|uv|NGB00358.1:6614-6712	99	871168
+2351	gnl|uv|NGB00358.1:6722-6820	99	871424
+2352	gnl|uv|NGB00358.1:9998-10096	99	871680
+2353	gnl|uv|NGB00358.1:10988-11108	121	871936
+2354	gnl|uv|NGB00358.1:11190-11231-49	91	872192
+2355	gnl|uv|NGB00357.1:2806-2858	53	872448
+2356	gnl|uv|U03461.1:5370-5459	90	872704
+2357	gnl|uv|NGB00354.1:5-60	56	872960
+2358	gnl|uv|NGB00354.1:2745-2799	55	873216
+2359	gnl|uv|NGB00354.1:4051-4244	194	873472
+2360	gnl|uv|NGB00354.1:4468-4560	93	873728
+2361	gnl|uv|NGB00354.1:5725-5822	98	873984
+2362	gnl|uv|NGB00354.1:6315-6408	94	874240
+2363	gnl|uv|NGB00354.1:7060-7120	61	874496
+2364	gnl|uv|NGB00354.1:13358-13402-48	93	874752
+2365	gnl|uv|NGB00353.1:13419-13463-6	51	875008
+2366	gnl|uv|NGB00356.1:2730-2796	67	875264
+2367	gnl|uv|NGB00356.1:4537-4630	94	875520
+2368	gnl|uv|NGB00356.1:5273-5333	61	875776
+2369	gnl|uv|NGB00356.1:9493-9590	98	876032
+2370	gnl|uv|NGB00356.1:11340-11437	98	876288
+2371	gnl|uv|NGB00356.1:11620-11718	99	876544
+2372	gnl|uv|NGB00356.1:13423-13466-48	92	876800
+2373	gnl|uv|NGB00355.1:4529-4626	98	877056
+2374	gnl|uv|NGB00355.1:4823-4918	96	877312
+2375	gnl|uv|NGB00355.1:5014-5166	153	877568
+2376	gnl|uv|NGB00355.1:5322-5421	100	877824
+2377	gnl|uv|NGB00355.1:5840-6020	181	878080
+2378	gnl|uv|NGB00355.1:6454-6631	178	878336
+2379	gnl|uv|NGB00355.1:6838-6938	101	878592
+2380	gnl|uv|NGB00355.1:11417-11467	51	878848
+2381	gnl|uv|NGB00359.1:4718-4816	99	879104
+2382	gnl|uv|NGB00359.1:14080-14141	62	879360
+2383	gnl|uv|NGB00359.1:14942-14992	51	879616
+2384	gnl|uv|NGB00359.1:15175-15224	50	879872
+2385	gnl|uv|NGB00359.1:15514-15610	97	880128
+2386	gnl|uv|NGB00359.1:16223-16317	95	880384
+2387	gnl|uv|NGB00359.1:16778-16874	97	880640
+2388	gnl|uv|NGB00359.1:18160-18216	57	880896
+2389	gnl|uv|NGB00359.1:18632-18681	50	881152
+2390	gnl|uv|M34519.1:1-352	352	881408
+2391	gnl|uv|M34519.1:472-1398	927	881920
+2392	gnl|uv|M34519.1:1746-1844	99	882944
+2393	gnl|uv|U66885.1:3752-3849	98	883200
+2394	gnl|uv|U66885.1:3950-4135	186	883456
+2395	gnl|uv|U66885.1:4370-4461	92	883712
+2396	gnl|uv|U66885.1:4484-4613	130	883968
+2397	gnl|uv|U66885.1:7363-7460	98	884224
+2398	gnl|uv|U66885.1:7667-7764	98	884480
+2399	gnl|uv|X70276.1:1380-1487	108	884736
+2400	gnl|uv|X70276.1:2552-2659	108	884992
+2401	gnl|uv|X70276.1:3201-3299	99	885248
+2402	gnl|uv|X70276.1:4179-4959	781	885504
+2403	gnl|uv|X70276.1:5610-5702	93	886528
+2404	gnl|uv|U25059.1:3547-3643	97	886784
+2405	gnl|uv|AF310136.1:1-74	74	887040
+2406	gnl|uv|AF310136.1:224-2163	1940	887296
+2407	gnl|uv|AF310136.1:3504-3805	302	889344
+2408	gnl|uv|AF310136.1:4127-5198	1072	889856
+2409	gnl|uv|U25060.1:3670-3762	93	891136
+2410	gnl|uv|U25060.1:4709-4804	96	891392
+2411	gnl|uv|U25061.1:3672-3794	123	891648
+2412	gnl|uv|U25061.1:4526-4622	97	891904
+2413	gnl|uv|L37382.1:1-50	50	892160
+2414	gnl|uv|L37382.1:98-196	99	892416
+2415	gnl|uv|L37382.1:475-524	50	892672
+2416	gnl|uv|L19900.1:1-667	667	892928
+2417	gnl|uv|L19900.1:680-778	99	893696
+2418	gnl|uv|L19900.1:803-1010	208	893952
+2419	gnl|uv|L19900.1:1058-1156	99	894208
+2420	gnl|uv|L19900.1:1504-1678	175	894464
+2421	gnl|uv|L19900.1:1720-1818	99	894720
+2422	gnl|uv|L19900.1:2072-2259	188	894976
+2423	gnl|uv|L19900.1:2265-2362	98	895232
+2424	gnl|uv|L19900.1:2493-3111	619	895488
+2425	gnl|uv|L19900.1:7629-7727	99	896256
+2426	gnl|uv|L19900.1:8006-8093	88	896512
+2427	gnl|uv|L19900.1:9017-9115	99	896768
+2428	gnl|uv|L19900.1:9121-9201	81	897024
+2429	gnl|uv|M20189.1:2170-2332	163	897280
+2430	gnl|uv|M20189.1:6892-6981	90	897536
+2431	gnl|uv|M20189.1:7346-7438	93	897792
+2432	gnl|uv|M99569.1:1-83	83	898048
+2433	gnl|uv|L19899.1:1565-1749	185	898304
+2434	gnl|uv|L19899.1:2608-2705	98	898560
+2435	gnl|uv|L19899.1:3703-3794	92	898816
+2436	gnl|uv|L19899.1:4704-4795	92	899072
+2437	gnl|uv|L19899.1:5053-5151	99	899328
+2438	gnl|uv|L19899.1:5177-5275	99	899584
+2439	gnl|uv|L19899.1:5482-5579	98	899840
+2440	gnl|uv|L19899.1:5877-5975	99	900096
+2441	gnl|uv|L19899.1:7886-7941	56	900352
+2442	gnl|uv|M99566.1:52-149	98	900608
+2443	gnl|uv|M99566.1:573-1230	658	900864
+2444	gnl|uv|M99566.1:1654-2277	624	901632
+2445	gnl|uv|Y10545.1:141-239	99	902400
+2446	gnl|uv|Y10545.1:345-446	102	902656
+2447	gnl|uv|Y10545.1:830-924	95	902912
+2448	gnl|uv|Y10545.1:2559-2699	141	903168
+2449	gnl|uv|Y10545.1:2940-3095	156	903424
+2450	gnl|uv|Y10545.1:3863-3961	99	903680
+2451	gnl|uv|Y10545.1:4097-4193	97	903936
+2452	gnl|uv|Y10544.1:290-387	98	904192
+2453	gnl|uv|Y10544.1:2018-2113	96	904448
+2454	gnl|uv|Y10544.1:3359-3456	98	904704
+2455	gnl|uv|Y10544.1:4047-4143	97	904960
+2456	gnl|uv|Y10544.1:4398-4492	95	905216
+2457	gnl|uv|M18328.1:375-467	93	905472
+2458	gnl|uv|M18328.1:554-649	96	905728
+2459	gnl|uv|M18328.1:1541-1636	96	905984
+2460	gnl|uv|M18328.1:2128-2226	99	906240
+2461	gnl|uv|M18328.1:2252-2347	96	906496
+2462	gnl|uv|M18328.1:2607-2705	99	906752
+2463	gnl|uv|M18328.1:3377-3475	99	907008
+2464	gnl|uv|M18328.1:3623-3721	99	907264
+2465	gnl|uv|M18328.1:4308-4357	50	907520
+2466	gnl|uv|M18329.1:1541-1636	96	907776
+2467	gnl|uv|M18329.1:2252-2347	96	908032
+2468	gnl|uv|M18329.1:3377-3475	99	908288
+2469	gnl|uv|M18329.1:3623-3721	99	908544
+2470	gnl|uv|X04995.1:377-475	99	908800
+2471	gnl|uv|X04995.1:1648-1746	99	909056
+2472	gnl|uv|X04996.1:377-475	99	909312
+2473	gnl|uv|X04996.1:1648-1746	99	909568
+2474	gnl|uv|M18327.1:2685-2783	99	909824
+2475	gnl|uv|M18327.1:2931-3029	99	910080
+2476	gnl|uv|D88215.1:168-258	91	910336
+2477	gnl|uv|D88215.1:1336-1428	93	910592
+2478	gnl|uv|D88215.1:3216-3307	92	910848
+2479	gnl|uv|X98501.1:258-396	139	911104
+2480	gnl|uv|X98501.1:849-945	97	911360
+2481	gnl|uv|X98500.1:225-349	125	911616
+2482	gnl|uv|L38498.1:1855-1951	97	911872
+2483	gnl|uv|D10669.1:1-64	64	912128
+2484	gnl|uv|X14353.1:36-134	99	912384
+2485	gnl|uv|Z12112.1:1-108	108	912640
+2486	gnl|uv|Z12112.1:8105-8213	109	912896
+2487	gnl|uv|X98409.1:206-341	136	913152
+2488	gnl|uv|X98409.1:5178-5334	157	913408
+2489	gnl|uv|X98409.1:5383-5451	69	913664
+2490	gnl|uv|M15423.1:3-107	105	913920
+2491	gnl|uv|M15423.1:212-306	95	914176
+2492	gnl|uv|M15423.1:418-612	195	914432
+2493	gnl|uv|M15423.1:843-957	115	914688
+2494	gnl|uv|M15423.1:1119-1224	106	914944
+2495	gnl|uv|M15423.1:5057-5153	97	915200
+2496	gnl|uv|M15423.1:5548-5614	67	915456
+2497	gnl|uv|X99439.1:3192-3387	196	915712
+2498	gnl|uv|X99439.1:4529-4609	81	915968
+2499	gnl|uv|X99439.1:4985-5077	93	916224
+2500	gnl|uv|X99439.1:5351-5407	57	916480
+2501	gnl|uv|X98450.1:4135-4267	133	916736
+2502	gnl|uv|X98450.1:5205-5260	56	916992
+2503	gnl|uv|X53938.1:790-885	96	917248
+2504	gnl|uv|X53938.1:1293-1389	97	917504
+2505	gnl|uv|M18131.1:1-186	186	917760
+2506	gnl|uv|M18131.1:211-309	99	918016
+2507	gnl|uv|M18131.1:962-1051	90	918272
+2508	gnl|uv|M18131.1:1313-1410	98	918528
+2509	gnl|uv|M18128.1:32-122	91	918784
+2510	gnl|uv|M18125.1:28-106	79	919040
+2511	gnl|uv|U87107.1:4364-4418	55	919296
+2512	gnl|uv|U87107.1:4516-4582	67	919552
+2513	gnl|uv|M12904.1:1-69	69	919808
+2514	gnl|uv|M12904.1:882-970	89	920064
+2515	gnl|uv|M83743.1:1-100	100	920320
+2516	gnl|uv|M83744.1:7-100	94	920576
+2517	gnl|uv|M62983.1:27-213	187	920832
+2518	gnl|uv|M62983.1:235-330	96	921088
+2519	gnl|uv|D16587.1:1-258	258	921344
+2520	gnl|uv|D16592.1:102-255	154	921856
+2521	gnl|uv|M95177.1:2-185	184	922112
+2522	gnl|uv|M22850.1:1-97	97	922368
+2523	gnl|uv|D16588.1:1-171	171	922624
+2524	gnl|uv|D16589.1:1-115	115	922880
+2525	gnl|uv|D16590.1:106-170	65	923136
+2526	gnl|uv|D16591.1:106-170	65	923392
+2527	gnl|uv|X05401.1:1-147	147	923648
+2528	gnl|uv|M95176.1:22-126	105	923904
+2529	gnl|uv|M64051.1:1-99	99	924160
+2530	gnl|uv|M64053.1:5-99	95	924416
+2531	gnl|uv|M64054.1:6-99	94	924672
+2532	gnl|uv|M64055.1:6-99	94	924928
+2533	gnl|uv|M64056.1:5-99	95	925184
+2534	gnl|uv|M64057.1:8-99	92	925440
+2535	gnl|uv|M64058.1:6-99	94	925696
+2536	gnl|uv|M64059.1:6-99	94	925952
+2537	gnl|uv|M64060.1:7-99	93	926208
+2538	gnl|uv|M64061.1:10-99	90	926464
+2539	gnl|uv|M64052.1:1-98	98	926720
+2540	gnl|uv|X13070.1:7-93	87	926976
+2541	gnl|uv|X13068.1:1-90	90	927232
+2542	gnl|uv|M21340.1:34-88	55	927488
+2543	gnl|uv|M16694.1:1-81	81	927744
+2544	gnl|uv|M22004.1:1-60	60	928000
+2545	gnl|uv|K01156.1:1-66	66	928256
+2546	gnl|uv|K01678.1:1-66	66	928512
+2547	gnl|uv|M10216.1:1-66	66	928768
+2548	gnl|uv|K01679.1:1-63	63	929024
+2549	gnl|uv|K01680.1:1-60	60	929280
+2550	gnl|uv|M21341.1:1-59	59	929536
+2551	gnl|uv|K01157.1:1-54	54	929792
+2552	gnl|uv|X13074.1:1-53	53	930048
+2553	gnl|uv|X05042.1:1-51	51	930304
+2554	gnl|uv|M10294.1:1-46	46	930560
+2555	gnl|uv|NGB00320.1:1-40	40	930816
+2556	gnl|uv|NGB00286.1:1-35	35	931072
+2557	gnl|uv|NGB00288.1:1-14	14	931328
+2558	gnl|uv|NGB00290.1:1-14	14	931584
+2559	gnl|uv|NGB00292.1:1-14	14	931840
+2560	gnl|uv|NGB00294.1:1-14	14	932096
+2561	gnl|uv|NGB00296.1:1-14	14	932352
+2562	gnl|uv|NGB00298.1:1-14	14	932608
+2563	gnl|uv|NGB00300.1:1-14	14	932864
+2564	gnl|uv|NGB00302.1:1-14	14	933120
+2565	gnl|uv|NGB00304.1:1-14	14	933376
+2566	gnl|uv|NGB00306.1:1-14	14	933632
+2567	gnl|uv|NGB00310.1:1-14	14	933888
+2568	gnl|uv|NGB00312.1:1-14	14	934144
+2569	gnl|uv|NGB00314.1:1-14	14	934400
+2570	gnl|uv|NGB00316.1:1-14	14	934656
+2571	gnl|uv|NGB00083.1:1-75	75	934912
+2572	gnl|uv|NGB00083.1:2871-2990	120	935168
+2573	gnl|uv|J02531.1:832-889	58	935424
+2574	gnl|uv|M14395.1:82-180	99	935680
+2575	gnl|uv|NGB00603.1:1-319	319	935936
+2576	gnl|uv|NGB00604.1:154-251	98	936448
+2577	gnl|uv|NGB00605.1:155-249	95	936704
+2578	gnl|uv|BD084663.1:113-212	100	936960
+2579	gnl|uv|BD084663.1:304-375	72	937216
+2580	gnl|uv|BD084659.1:262-359	98	937472
+2581	gnl|uv|NGB00075.1:11-260	250	937728
+2582	gnl|uv|NGB00074.1:98-200	103	937984
+2583	gnl|uv|BD084662.1:8-112	105	938240
+2584	gnl|uv|BD084662.1:159-249	91	938496
+2585	gnl|uv|NGB00153.1:1-234	234	938752
+2586	gnl|uv|NGB00113.1:1-136	136	939008
+2587	gnl|uv|NGB00981.1:168-234	67	939264
+2588	gnl|uv|NGB00351.1:1-167	167	939520
+2589	gnl|uv|AF067142.1:51-138	88	939776
+2590	gnl|uv|NGB00352.1:1-151	151	940032
+2591	gnl|uv|S65693.1:1-177	177	940288
+2592	gnl|uv|S65694.1:1-177	177	940544
+2593	gnl|uv|S65683.1:1-157	157	940800
+2594	gnl|uv|S65686.1:1-63	63	941056
+2595	gnl|uv|S65686.1:102-157	56	941312
+2596	gnl|uv|M22848.1:1-81	81	941568
+2597	gnl|uv|M22848.1:92-147	56	941824
+2598	gnl|uv|M22847.1:1-63	63	942080
+2599	gnl|uv|M22847.1:95-144	50	942336
+2600	gnl|uv|NGB00341.1:1-121	121	942592
+2601	gnl|uv|M37057.1:1-115	115	942848
+2602	gnl|uv|NGB00388.1:1-111	111	943104
+2603	gnl|uv|NGB00389.1:1-111	111	943360
+2604	gnl|uv|NGB00332.1:1-108	108	943616
+2605	gnl|uv|M37056.1:1-105	105	943872
+2606	gnl|uv|NGB00333.1:1-97	97	944128
+2607	gnl|uv|NGB00334.1:1-97	97	944384
+2608	gnl|uv|NGB00336.1:1-97	97	944640
+2609	gnl|uv|NGB00337.1:1-97	97	944896
+2610	gnl|uv|NGB00338.1:1-97	97	945152
+2611	gnl|uv|NGB00339.1:1-97	97	945408
+2612	gnl|uv|NGB00335.1:1-93	93	945664
+2613	gnl|uv|NGB00340.1:1-93	93	945920
+2614	gnl|uv|NGB00342.1:1-91	91	946176
+2615	gnl|uv|M22135.1:1-84	84	946432
+2616	gnl|uv|NGB00343.2:1-84	84	946688
+2617	gnl|uv|NGB00344.1:1-84	84	946944
+2618	gnl|uv|M27233.1:1-81	81	947200
+2619	gnl|uv|M28735.1:1-81	81	947456
+2620	gnl|uv|K00611.1:1-79	79	947712
+2621	gnl|uv|A14152.1:1-72	72	947968
+2622	gnl|uv|NGB00287.1:1-70	70	948224
+2623	gnl|uv|A14149.1:1-69	69	948480
+2624	gnl|uv|A14153.1:1-68	68	948736
+2625	gnl|uv|A14163.1:1-54	54	948992
+2626	gnl|uv|NGB00171.1:8-66	59	949248
+2627	gnl|uv|A14164.1:15-64	50	949504
+2628	gnl|uv|M54945.1:1-64	64	949760
+2629	gnl|uv|NGB00265.1:1-64	64	950016
+2630	gnl|uv|NGB00231.1:1-63	63	950272
+2631	gnl|uv|NGB00215.1:1-61	61	950528
+2632	gnl|uv|NGB00248.1:1-60	60	950784
+2633	gnl|uv|NGB00281.1:1-60	60	951040
+2634	gnl|uv|NGB00331.1:1-60	60	951296
+2635	gnl|uv|NGB00190.1:1-59	59	951552
+2636	gnl|uv|NGB00191.1:1-59	59	951808
+2637	gnl|uv|NGB00193.1:1-59	59	952064
+2638	gnl|uv|NGB00197.1:1-59	59	952320
+2639	gnl|uv|NGB00206.1:1-59	59	952576
+2640	gnl|uv|NGB00213.1:1-59	59	952832
+2641	gnl|uv|NGB00214.1:1-59	59	953088
+2642	gnl|uv|NGB00217.1:1-59	59	953344
+2643	gnl|uv|NGB00221.1:1-59	59	953600
+2644	gnl|uv|NGB00223.1:1-59	59	953856
+2645	gnl|uv|NGB00225.1:1-59	59	954112
+2646	gnl|uv|NGB00230.1:1-59	59	954368
+2647	gnl|uv|NGB00233.1:1-59	59	954624
+2648	gnl|uv|NGB00240.1:1-59	59	954880
+2649	gnl|uv|NGB00244.1:1-59	59	955136
+2650	gnl|uv|NGB00247.1:1-59	59	955392
+2651	gnl|uv|NGB00249.1:1-59	59	955648
+2652	gnl|uv|NGB00250.1:1-59	59	955904
+2653	gnl|uv|NGB00255.1:1-59	59	956160
+2654	gnl|uv|NGB00256.1:1-59	59	956416
+2655	gnl|uv|NGB00257.1:1-59	59	956672
+2656	gnl|uv|NGB00259.1:1-59	59	956928
+2657	gnl|uv|NGB00269.1:1-59	59	957184
+2658	gnl|uv|NGB00199.1:1-58	58	957440
+2659	gnl|uv|NGB00219.1:1-58	58	957696
+2660	gnl|uv|NGB00222.1:1-58	58	957952
+2661	gnl|uv|NGB00234.1:1-58	58	958208
+2662	gnl|uv|NGB00235.1:1-58	58	958464
+2663	gnl|uv|NGB00262.1:1-58	58	958720
+2664	gnl|uv|NGB00267.1:1-58	58	958976
+2665	gnl|uv|NGB00275.1:1-58	58	959232
+2666	gnl|uv|A14157.1:1-57	57	959488
+2667	gnl|uv|A14159.1:1-57	57	959744
+2668	gnl|uv|M18741.1:1-57	57	960000
+2669	gnl|uv|M60088.1:1-57	57	960256
+2670	gnl|uv|NGB00192.1:1-57	57	960512
+2671	gnl|uv|NGB00196.1:1-57	57	960768
+2672	gnl|uv|NGB00201.1:1-57	57	961024
+2673	gnl|uv|NGB00202.1:1-57	57	961280
+2674	gnl|uv|NGB00207.1:1-57	57	961536
+2675	gnl|uv|NGB00208.1:1-57	57	961792
+2676	gnl|uv|NGB00210.1:1-57	57	962048
+2677	gnl|uv|NGB00211.1:1-57	57	962304
+2678	gnl|uv|NGB00212.1:1-57	57	962560
+2679	gnl|uv|NGB00227.1:1-57	57	962816
+2680	gnl|uv|NGB00238.1:1-57	57	963072
+2681	gnl|uv|NGB00253.1:1-57	57	963328
+2682	gnl|uv|NGB00260.1:1-57	57	963584
+2683	gnl|uv|NGB00261.1:1-57	57	963840
+2684	gnl|uv|NGB00270.1:1-57	57	964096
+2685	gnl|uv|NGB00271.1:1-57	57	964352
+2686	gnl|uv|NGB00272.1:1-57	57	964608
+2687	gnl|uv|NGB00273.1:1-57	57	964864
+2688	gnl|uv|NGB00274.1:1-57	57	965120
+2689	gnl|uv|NGB00277.1:1-57	57	965376
+2690	gnl|uv|NGB00278.1:1-57	57	965632
+2691	gnl|uv|NGB00279.1:1-57	57	965888
+2692	gnl|uv|M28734.1:1-56	56	966144
+2693	gnl|uv|NGB00205.1:1-56	56	966400
+2694	gnl|uv|NGB00229.1:1-56	56	966656
+2695	gnl|uv|NGB00241.1:1-56	56	966912
+2696	gnl|uv|NGB00254.1:1-56	56	967168
+2697	gnl|uv|NGB00276.1:1-56	56	967424
+2698	gnl|uv|NGB00280.1:1-56	56	967680
+2699	gnl|uv|NGB00347.1:1-56	56	967936
+2700	gnl|uv|NGB00263.1:1-55	55	968192
+2701	gnl|uv|A14161.1:1-54	54	968448
+2702	gnl|uv|A14173.1:1-54	54	968704
+2703	gnl|uv|NGB00194.1:1-54	54	968960
+2704	gnl|uv|NGB00203.1:1-54	54	969216
+2705	gnl|uv|NGB00246.1:1-54	54	969472
+2706	gnl|uv|A13800.1:1-50	50	969728
+2707	gnl|uv|A14139.1:1-50	50	969984
+2708	gnl|uv|A14172.1:1-53	53	970240
+2709	gnl|uv|NGB00175.1:1-53	53	970496
+2710	gnl|uv|NGB00232.1:1-53	53	970752
+2711	gnl|uv|NGB00242.1:1-53	53	971008
+2712	gnl|uv|NGB00252.1:1-53	53	971264
+2713	gnl|uv|NGB00198.1:1-52	52	971520
+2714	gnl|uv|NGB00209.1:1-52	52	971776
+2715	gnl|uv|NGB00216.1:1-52	52	972032
+2716	gnl|uv|NGB00218.1:1-52	52	972288
+2717	gnl|uv|NGB00228.1:1-52	52	972544
+2718	gnl|uv|NGB00245.1:1-52	52	972800
+2719	gnl|uv|NGB00251.1:1-52	52	973056
+2720	gnl|uv|NGB00327.1:1-52	52	973312
+2721	gnl|uv|NGB00349.1:1-52	52	973568
+2722	gnl|uv|NGB00165.1:1-51	51	973824
+2723	gnl|uv|NGB00169.1:1-51	51	974080
+2724	gnl|uv|NGB00170.1:1-51	51	974336
+2725	gnl|uv|NGB00176.1:1-51	51	974592
+2726	gnl|uv|NGB00195.1:1-51	51	974848
+2727	gnl|uv|NGB00200.1:1-51	51	975104
+2728	gnl|uv|NGB00204.1:1-51	51	975360
+2729	gnl|uv|NGB00220.1:1-51	51	975616
+2730	gnl|uv|NGB00236.1:1-51	51	975872
+2731	gnl|uv|NGB00239.1:1-51	51	976128
+2732	gnl|uv|NGB00243.1:1-51	51	976384
+2733	gnl|uv|NGB00264.1:1-51	51	976640
+2734	gnl|uv|A14151.1:1-50	50	976896
+2735	gnl|uv|A14162.1:1-50	50	977152
+2736	gnl|uv|A14174.1:1-50	50	977408
+2737	gnl|uv|NGB00185.1:1-50	50	977664
+2738	gnl|uv|NGB00224.1:1-50	50	977920
+2739	gnl|uv|NGB00266.1:1-50	50	978176
+2740	gnl|uv|NGB00268.1:1-50	50	978432
+2741	gnl|uv|NGB00329.1:1-50	50	978688
+2742	gnl|uv|NGB00621.1:1-50	50	978944
+2743	gnl|uv|NGB00186.1:1-49	49	979200
+2744	gnl|uv|NGB00226.1:1-49	49	979456
+2745	gnl|uv|NGB00237.1:1-49	49	979712
+2746	gnl|uv|NGB00258.1:1-49	49	979968
+2747	gnl|uv|NGB00330.1:1-49	49	980224
+2748	gnl|uv|NGB00073.1:1-48	48	980480
+2749	gnl|uv|NGB00289.1:1-48	48	980736
+2750	gnl|uv|NGB00291.1:1-48	48	980992
+2751	gnl|uv|NGB00293.1:1-48	48	981248
+2752	gnl|uv|NGB00295.1:1-48	48	981504
+2753	gnl|uv|NGB00297.1:1-48	48	981760
+2754	gnl|uv|NGB00299.1:1-48	48	982016
+2755	gnl|uv|NGB00301.1:1-48	48	982272
+2756	gnl|uv|NGB00303.1:1-48	48	982528
+2757	gnl|uv|NGB00305.1:1-48	48	982784
+2758	gnl|uv|NGB00307.1:1-48	48	983040
+2759	gnl|uv|NGB00311.1:1-48	48	983296
+2760	gnl|uv|NGB00313.1:1-48	48	983552
+2761	gnl|uv|NGB00315.1:1-48	48	983808
+2762	gnl|uv|NGB00317.1:1-48	48	984064
+2763	gnl|uv|NGB00172.1:1-47	47	984320
+2764	gnl|uv|NGB00155.1:1-46	46	984576
+2765	gnl|uv|NGB00157.1:1-46	46	984832
+2766	gnl|uv|NGB00159.1:1-46	46	985088
+2767	gnl|uv|NGB00160.1:1-46	46	985344
+2768	gnl|uv|NGB00164.1:1-46	46	985600
+2769	gnl|uv|NGB00167.1:1-46	46	985856
+2770	gnl|uv|NGB00168.1:1-46	46	986112
+2771	gnl|uv|NGB00177.1:1-46	46	986368
+2772	gnl|uv|NGB00188.1:1-46	46	986624
+2773	gnl|uv|NGB00156.1:1-45	45	986880
+2774	gnl|uv|NGB00158.1:1-45	45	987136
+2775	gnl|uv|NGB00161.1:1-45	45	987392
+2776	gnl|uv|NGB00163.1:1-45	45	987648
+2777	gnl|uv|NGB00173.1:1-45	45	987904
+2778	gnl|uv|NGB00166.1:1-44	44	988160
+2779	gnl|uv|NGB00178.1:1-44	44	988416
+2780	gnl|uv|NGB00284.1:1-44	44	988672
+2781	gnl|uv|NGB00617.1:1-44	44	988928
+2782	gnl|uv|NGB00154.1:1-43	43	989184
+2783	gnl|uv|NGB00179.1:1-43	43	989440
+2784	gnl|uv|NGB00180.1:1-43	43	989696
+2785	gnl|uv|NGB00181.1:1-43	43	989952
+2786	gnl|uv|NGB00184.1:1-43	43	990208
+2787	gnl|uv|NGB00326.1:1-43	43	990464
+2788	gnl|uv|A13775.1:1-42	42	990720
+2789	gnl|uv|A13776.1:1-42	42	990976
+2790	gnl|uv|A13777.1:1-42	42	991232
+2791	gnl|uv|A13778.1:1-42	42	991488
+2792	gnl|uv|NGB00162.1:1-42	42	991744
+2793	gnl|uv|NGB00189.1:1-42	42	992000
+2794	gnl|uv|NGB00110.1:1-40	40	992256
+2795	gnl|uv|NGB00325.1:1-39	39	992512
+2796	gnl|uv|NGB00324.1:1-38	38	992768
+2797	gnl|uv|NGB00328.1:1-38	38	993024
+2798	gnl|uv|NGB00187.1:1-37	37	993280
+2799	gnl|uv|NGB00323.1:1-37	37	993536
+2800	gnl|uv|NGB00283.1:1-36	36	993792
+2801	gnl|uv|NGB00622.1:1-36	36	994048
+2802	gnl|uv|NGB00182.1:1-35	35	994304
+2803	gnl|uv|NGB00183.1:1-34	34	994560
+2804	gnl|uv|NGB00282.1:1-34	34	994816
+2805	gnl|uv|NGB00174.1:1-32	32	995072
+2806	gnl|uv|NGB00983.1:1-31	31	995328
+2807	gnl|uv|NGB00345.1:1-30	30	995584
+2808	gnl|uv|NGB00346.1:1-28	28	995840
+2809	gnl|uv|NGB00322.1:1-27	27	996096
+2810	gnl|uv|NGB00618.1:1-27	27	996352
+2811	gnl|uv|NGB00619.1:1-27	27	996608
+2812	gnl|uv|NGB00348.1:1-26	26	996864
+2813	gnl|uv|NGB00982.1:1-26	26	997120
+2814	gnl|uv|NGB00977.1:1-25	25	997376
+2815	gnl|uv|NGB00978.1:1-25	25	997632
+2816	gnl|uv|NGB00979.1:1-25	25	997888
+2817	gnl|uv|NGB00980.1:1-25	25	998144
+2818	gnl|uv|NGB00321.1:1-23	23	998400
+2819	gnl|uv|NGB00976.1:1-21	21	998656
+2820	gnl|uv|NGB00319.1:1-20	20	998912
+2821	gnl|uv|NGB00318.1:1-16	16	999168
+2822	gnl|uv|NGB00285.1:1-12	12	999424
+Started loading the genome: Sun Mar 18 20:31:22 2018
+
+Checking Genome sizefile size: 999680 bytes; state: good=1 eof=0 fail=0 bad=0
+Checking SA sizefile size: 4404799 bytes; state: good=1 eof=0 fail=0 bad=0
+/SAindex: size given as a parameter = 1
+Read from SAindex: genomeSAindexNbases=9  nSAi=349524
+nGenome=999680;  nSAbyte=4404799
+GstrandBit=32   SA number of indices=1067830
+Shared memory is not used for genomes. Allocated a private copy of the genome.
+Genome file size: 999680 bytes; state: good=1 eof=0 fail=0 bad=0
+Loading Genome ... done! state: good=1 eof=0 fail=0 bad=0; loaded 999680 bytes
+SA file size: 4404802 bytes; state: good=1 eof=0 fail=0 bad=0
+Loading SA ... done! state: good=0 eof=1 fail=1 bad=0; loaded 4404799 bytes
+Loading SAindex ... done: 1529259 bytes
+Finished loading the genome: Sun Mar 18 20:31:23 2018
+
+To accomodate alignIntronMax=1 redefined winBinNbits=8
+To accomodate alignIntronMax=1 and alignMatesGapMax=0, redefined winFlankNbins=1 and winAnchorDistNbins=2
+Opening the file: /exceRptOutput/testData_human.fastq/filteringAlignments_UniVec__STARtmp//Unmapped.out.mate1.thread0 ... ok
+Opening the file: /exceRptOutput/testData_human.fastq/filteringAlignments_UniVec__STARtmp//Unmapped.out.mate1.thread1 ... ok
+Opening the file: /exceRptOutput/testData_human.fastq/filteringAlignments_UniVec__STARtmp//Unmapped.out.mate1.thread2 ... ok
+Opening the file: /exceRptOutput/testData_human.fastq/filteringAlignments_UniVec__STARtmp//Unmapped.out.mate1.thread3 ... ok
+Created thread # 1
+Starting to map file # 0
+mate 1:   /exceRptOutput/testData_human.fastq/testData_human.fastq.clipped.trimmed.filtered.fastq.gz
+Created thread # 2
+Created thread # 2
+Thread #1 end of input stream, nextChar=-1
+Created thread # 3
+Completed: thread #2
+Completed: thread #3
+Completed: thread #0
+Completed: thread #1
+Joined thread # 1
+Joined thread # 2
+Joined thread # 3
+ALL DONE!

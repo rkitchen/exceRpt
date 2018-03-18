@@ -1,0 +1,2 @@
+ReferenceID	uniqueReadCount	totalReadCount	multimapAdjustedReadCount	multimapAdjustedBarcodeCount
+hsa-mir-6723:MI0022558:Homo:sapiens:miR-6723:stem-loop	1	1	1.0	0.0

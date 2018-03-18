@@ -17,10 +17,10 @@
 ##                                                                                          ##
 ##   Learn more at github.com/rkitchen/exceRpt                                              ##
 ##                                                                                          ##
-##   Version 4.6.2 (2016-10-04)                                                             ##
+##   Version 4.6.3 (2018-03-18)                                                             ##
 ##                                                                                          ##
 ##############################################################################################
-EXCERPT_VERSION := 4.6.2
+EXCERPT_VERSION := 4.6.3
 
 
 ##
@@ -106,9 +106,9 @@ ifeq ($(LOCAL_EXECUTION),true)
 	#MAX_RAM   			:= 64000000000
 	MAX_RAM   			:= 10000000000
 	BOWTIE_CHUNKMBS 	:= 2000
-	SAMTOOLS_SORT_MEM 	:= 8G
+	SAMTOOLS_SORT_MEM 	:= 2G
 	## NB: The 'EXE_DIR' MUST be an ABSOLUTE PATH or sRNABench will fail!
-	EXE_DIR   := /gpfs/scratch/fas/gerstein/rrk24/bin/smallRNAPipeline
+	EXE_DIR   := home/bin/smallRNAPipeline
 	mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 	#current_dir_rel := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
 	EXE_DIR := $(dir $(mkfile_path))
@@ -119,18 +119,16 @@ ifeq ($(LOCAL_EXECUTION),true)
 	JAVA_EXE              := /usr/bin/java
 	FASTX_CLIP_EXE        := $(EXE_DIR)/fastx_0.0.14/bin/fastx_clipper
 	FASTX_FILTER_EXE      := $(EXE_DIR)/fastx_0.0.14/bin/fastq_quality_filter
-	#VIENNA_PATH          := $(EXE_DIR)/ViennaRNA_2.1.5/bin
-	BOWTIE2_EXE           := $(EXE_DIR)/bowtie2-2.2.4/bowtie2
-	#SAMTOOLS_EXE          := $(EXE_DIR)/samtools-1.1/samtools
-	SAMTOOLS_EXE          := $(EXE_DIR)/samtools-1.3/samtools
-	FASTQC_EXE            := $(JAVA_EXE) -classpath $(EXE_DIR)/FastQC_0.11.2:$(EXE_DIR)/FastQC_0.11.2/sam-1.103.jar:$(EXE_DIR)/FastQC_0.11.2/jbzip2-0.9.jar
-	SRATOOLS_EXE          := $(EXE_DIR)/sratoolkit.2.5.1-centos_linux64/bin/fastq-dump
+	BOWTIE2_EXE           := $(EXE_DIR)/bowtie2-2.3.4.1/bowtie2
+	SAMTOOLS_EXE          := $(EXE_DIR)/samtools-1.7/samtools
+	FASTQC_EXE            := $(JAVA_EXE) -classpath $(EXE_DIR)/FastQC_0.11.7:$(EXE_DIR)/FastQC_0.11.7/sam-1.103.jar:$(EXE_DIR)/FastQC_0.11.7/jbzip2-0.9.jar
+	SRATOOLS_EXE          := $(EXE_DIR)/sratoolkit.2.9.0/bin/fastq-dump
 	EXCERPT_TOOLS_EXE     := $(EXE_DIR)/exceRpt_Tools.jar
 	DATABASE_PATH         := $(EXE_DIR)/DATABASE
-	STAR_EXE              := $(EXE_DIR)/STAR_2.4.2a/bin/Linux_x86_64/STAR
+	STAR_EXE              := $(EXE_DIR)/STAR-2.5.4b/bin/Linux_x86_64/STAR
 	STAR_GENOMES_DIR      := $(DATABASE_PATH)/Genomes_BacteriaFungiMammalPlantProtistVirus
 	STAR_PARAMS_FILE_PATH := $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in
-	EXPRESS_EXE           := $(EXE_DIR)/express-1.5.1-linux_x86_64/express
+	#EXPRESS_EXE           := $(EXE_DIR)/express-1.5.1-linux_x86_64/express
 
 	##
 	## Use the input path to infer filetype and short name
@@ -528,7 +526,6 @@ processSample: $(OUTDIR)/$(PROCESS_SAMPLE_REQFILE)
 	#
 	## Compress core results files automatically
 	$(COMPRESS_COMMAND)
-	#tar -cvz -C $(OUTPUT_DIR) -T $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt -f $(OUTPUT_DIR)/$(SAMPLE_ID)_results.tgz 2> /dev/null
 	tar -cvz -C $(OUTPUT_DIR) -T $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt -f $(OUTPUT_DIR)/$(SAMPLE_ID)_CORE_RESULTS_v$(EXCERPT_VERSION).tgz 2> /dev/null
 	rm $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt
 	## END PIPELINE
@@ -611,8 +608,6 @@ $(OUTDIR)/$(SAMPLE_ID).clipped.fastq.gz: $(OUTDIR)/$(SAMPLE_ID).qualityEncoding
 $(OUTDIR)/$(SAMPLE_ID).clipped.trimmed.fastq.gz: $(OUTDIR)/$(SAMPLE_ID).clipped.fastq.gz
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(PIPELINE_NAME): Trimming $(TRIM_N_BASES_5p) bases from the 5' and $(TRIM_N_BASES_3p) bases from the 3' of all reads:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	#@echo -e "$(ts) $(PIPELINE_NAME): gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz | $(FASTX_TRIMMER_EXE) -z -Q$(shell cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).qualityEncoding) -f $(shell expr $(TRIM_N_BASES_5p) + $(ONE) ) > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.fastq.gz 2>>$(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	#gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz | $(FASTX_TRIMMER_EXE) -z -Q$(shell cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).qualityEncoding) -f $(shell expr $(TRIM_N_BASES_5p) + $(ONE) ) > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.fastq.gz 2>>$(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(PIPELINE_NAME): gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz | $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) TrimFastq -5p $(TRIM_N_BASES_5p) -3p $(TRIM_N_BASES_3p) | gzip -c > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.fastq.gz 2>>$(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.gz | $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) TrimFastq -5p $(TRIM_N_BASES_5p) -3p $(TRIM_N_BASES_3p) | gzip -c > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.fastq.gz 2>>$(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(PIPELINE_NAME): Finished trimming bases from the 5' and 3' end of all reads\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
@@ -624,8 +619,6 @@ $(OUTDIR)/$(SAMPLE_ID).clipped.trimmed.fastq.gz: $(OUTDIR)/$(SAMPLE_ID).clipped.
 $(OUTDIR)/$(SAMPLE_ID).clipped.trimmed.filtered.fastq.gz: $(OUTDIR)/$(SAMPLE_ID).clipped.trimmed.fastq.gz $(OUTDIR)/$(SAMPLE_ID).qualityEncoding
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(PIPELINE_NAME): Filtering reads by base quality:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	#@echo -e "$(ts) $(PIPELINE_NAME): $(COMMAND_FILTER_BY_QUALITY)\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
-	#$(COMMAND_FILTER_BY_QUALITY)
 	@echo -e "$(ts) $(PIPELINE_NAME): gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.fastq.gz | $(FASTX_FILTER_EXE) -v -Q$(shell cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).qualityEncoding) -p $(QFILTER_MIN_READ_FRAC) -q $(QFILTER_MIN_QUAL) > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.tmp\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
 	gunzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.fastq.gz | $(FASTX_FILTER_EXE) -v -Q$(shell cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).qualityEncoding) -p $(QFILTER_MIN_READ_FRAC) -q $(QFILTER_MIN_QUAL) > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.tmp 2>>$(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(PIPELINE_NAME): Finished filtering reads by base quality\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
@@ -701,8 +694,7 @@ $(OUTDIR)/$(SAMPLE_ID).clipped.trimmed.filtered.noRiboRNA.fastq.gz: $(OUTDIR)/$(
 	## Count rRNA reads
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.rRNA.readCount | awk ' {print "rRNA\t"$$1}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	#
-	#$(SAMTOOLS_EXE) sort $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.rRNAmapped.bam $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.rRNAmapped.sorted
-	$(SAMTOOLS_EXE) sort -@ $(N_THREADS) -m 8G -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp $(OUTPUT_DIR)/$(SAMPLE_ID)/filteringAlignments_rRNA_Aligned.out.bam > $(OUTPUT_DIR)/$(SAMPLE_ID)/filteringAlignments_rRNA_Aligned.out.sorted.bam
+	$(SAMTOOLS_EXE) sort -@ $(N_THREADS) -m $(SAMTOOLS_SORT_MEM) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp $(OUTPUT_DIR)/$(SAMPLE_ID)/filteringAlignments_rRNA_Aligned.out.bam > $(OUTPUT_DIR)/$(SAMPLE_ID)/filteringAlignments_rRNA_Aligned.out.sorted.bam
 	$(SAMTOOLS_EXE) index $(OUTPUT_DIR)/$(SAMPLE_ID)/filteringAlignments_rRNA_Aligned.out.sorted.bam
 	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/filteringAlignments_rRNA_Aligned.out.bam
 	@echo -e "$(ts) $(PIPELINE_NAME): Finished mapping to the rRNAs\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
@@ -756,7 +748,6 @@ $(OUTDIR)/endogenousAlignments_genomeUnmapped_transcriptome_Unmapped.R1.fastq.gz
 	#
 	## Count # mapped reads
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genome_Log.final.out | grep "Number of input reads" | awk -F "|\t" '{print "reads_used_for_alignment\t"$$2}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
-	#cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genome_Log.final.out | grep "Uniquely mapped reads number\|Number of reads mapped to multiple loci" | awk -F "|\t" '{SUM+=$$2}END{print "reads_used_for_alignment\t"SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genome*apped_transcriptome_Log.final.out | grep "Number of input reads\|Uniquely mapped reads number\|Number of reads mapped to multiple loci" | sed '2,4d' | awk -F "|\t" '{SUM+=$$2}END{print "genome\t"SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	#
 	## Compress STAR logs
@@ -777,8 +768,8 @@ $(OUTDIR)/endogenousAlignments_genomeUnmapped_transcriptome_Unmapped.R1.fastq.gz
 $(OUTDIR)/endogenousAlignments_unspliced.wig: $(OUTDIR)/endogenousAlignments_genomeUnmapped_transcriptome_Unmapped.R1.fastq.gz
 	@echo -e "======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(PIPELINE_NAME): Converting genomic alignments to .wig format:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) $(PIPELINE_NAME): $(SAMTOOLS_EXE) sort -@ $(N_THREADS) -m 8G -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genome_Aligned.out.bam | $(SAMTOOLS_EXE) mpileup -t SP - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | perl -ne 'BEGIN{print "track type=wiggle_0 name=$(SAMPLE_ID) description=$(SAMPLE_ID)\n"};($$c, $$start, undef, $$depth) = split; if ($$c ne $$lastC) { print "variableStep chrom=$$c\n"; };$$lastC=$$c;next unless $$. % 10 ==0;print "$$start\t$$depth\n" unless $$depth<3;' > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genome_Aligned.wig 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 
-	$(SAMTOOLS_EXE) sort -@ $(N_THREADS) -m 8G -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genome_Aligned.out.bam | $(SAMTOOLS_EXE) mpileup -t SP - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | perl -ne 'BEGIN{print "track type=wiggle_0 name=$(SAMPLE_ID) description=$(SAMPLE_ID)\n"};($$c, $$start, undef, $$depth) = split; if ($$c ne $$lastC) { print "variableStep chrom=$$c\n"; };$$lastC=$$c;next unless $$. % 10 ==0;print "$$start\t$$depth\n" unless $$depth<3;' > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genome_Aligned.wig 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo -e "$(ts) $(PIPELINE_NAME): $(SAMTOOLS_EXE) sort -@ $(N_THREADS) -m $(SAMTOOLS_SORT_MEM) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genome_Aligned.out.bam | $(SAMTOOLS_EXE) mpileup -t SP - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | perl -ne 'BEGIN{print "track type=wiggle_0 name=$(SAMPLE_ID) description=$(SAMPLE_ID)\n"};($$c, $$start, undef, $$depth) = split; if ($$c ne $$lastC) { print "variableStep chrom=$$c\n"; };$$lastC=$$c;next unless $$. % 10 ==0;print "$$start\t$$depth\n" unless $$depth<3;' > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genome_Aligned.wig 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 
+	$(SAMTOOLS_EXE) sort -@ $(N_THREADS) -m $(SAMTOOLS_SORT_MEM) -O bam -T $(OUTPUT_DIR)/$(SAMPLE_ID)/tmp $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genome_Aligned.out.bam | $(SAMTOOLS_EXE) mpileup -t SP - 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log | perl -ne 'BEGIN{print "track type=wiggle_0 name=$(SAMPLE_ID) description=$(SAMPLE_ID)\n"};($$c, $$start, undef, $$depth) = split; if ($$c ne $$lastC) { print "variableStep chrom=$$c\n"; };$$lastC=$$c;next unless $$. % 10 ==0;print "$$start\t$$depth\n" unless $$depth<3;' > $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genome_Aligned.wig 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(PIPELINE_NAME): Finished converting genomic alignments to .wig format\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
 
@@ -924,9 +915,7 @@ $(OUTDIR)/EXOGENOUS_rRNA/unaligned.fq.gz: $(OUTDIR)/EXOGENOUS_miRNA/exogenous_mi
 	#$(SAMTOOLS_EXE) view $(OUTDIR)/EXOGENOUS_rRNA/exogenous_rRNA_Aligned.out.bam | awk '{print $$1}' | sort | uniq | wc -l | awk '{print "exogenous_rRNA\t"$$0}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	## compress and tidy up
 	gzip -c $(OUTDIR)/EXOGENOUS_rRNA/exogenous_rRNA_Unmapped.out.mate1 > $(OUTDIR)/EXOGENOUS_rRNA/unaligned.fq.gz
-	#$(SAMTOOLS_EXE) view -@ $(N_THREADS) -b $(OUTDIR)/EXOGENOUS_rRNA/exogenous_rRNA_Aligned.out.sam > $(OUTDIR)/EXOGENOUS_rRNA/exogenous_rRNA_Aligned.bam
 	rm $(OUTDIR)/EXOGENOUS_rRNA/exogenous_rRNA_Unmapped.out.mate1
-	#rm $(OUTDIR)/EXOGENOUS_rRNA/exogenous_rRNA_Aligned.out.sam
 	rm $(OUTDIR)/EXOGENOUS_rRNA/exogenous_rRNA_Log.out
 	@echo -e "$(ts) $(PIPELINE_NAME): Finished mapping to rRNA sequences in RDP\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 
