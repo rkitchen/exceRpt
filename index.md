@@ -73,6 +73,15 @@ Finally, we can input this sample to the exceRpt pipeline, aligning to the hg38 
 
 Most of the Docker command is loading directories on your machine (the `-v` parameters) so that exceRpt can read from or write to them.  The directory to the left of each `:` can obviously be whatever you want, but it is important to make sure the right side of each `:` is written as above or exceRpt will not be able to find/write the data it needs.
 
+Again, if you're wanting to run the built-in 1,000 read human smRNA-seq example dataset, the command to run would be:
+
+    docker run -v ~/DirectoryInWhichToPutMyResults:/exceRptOutput \
+               -v ~/DirectoryContainingMyexceRptDatabase/hg38:/exceRpt_DB/hg38 \
+               -t rkitchen/excerpt \
+               INPUT_FILE_PATH=/exceRptInput/testData_human.fastq.gz
+
+### Passing arguments to exceRpt
+
 The last line of the `docker run` command (`INPUT_FILE_PATH=`) is a direct call to exceRpt itself.  As such, any customisable options should be specified this way.  For example we could re-order the priority of the transcriptome libraries (for example if we expected a sample to have more long-RNA fragments than miRNAs) using the following call to docker:
 
     docker run -v ~/DirectoryContainingMyInputSample:/exceRptInput \
