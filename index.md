@@ -28,9 +28,13 @@ There are two other optional exceRpt databases for completing the analysis of en
 
 Once you have downloaded the desired genome database and have successfully installed and started Docker on your machine/cluster/AWS-instance only a few commands are required to install and run exceRpt.  
 
+### Install exceRpt
+
 To download the exceRpt Docker image, type:
 
     docker pull rkitchen/excerpt
+
+### Download the database
 
 To download the exceRpt database for your genome/species of interest (currently one of hg19, hg39, or mm10) use the following commands.  Here we'll download the latest build of the human genome and transcriptome (hg38):
 
@@ -39,15 +43,25 @@ To download the exceRpt database for your genome/species of interest (currently 
     wget http://org.gersteinlab.excerpt.s3-website-us-east-1.amazonaws.com/exceRptDB_v4_hg38_lowmem.tgz
     tar -xvf exceRptDB_v4_hg38_lowmem.tgz
 
+### Grab some test smRNA-seq data
+
 To run a smallRNA-seq sample through the exceRpt pipeline we can grab a publicly-available dataset from the SRA:
 
     mkdir ~/DirectoryContainingMyInputSample
     cd ~/DirectoryContainingMyInputSample
     wget ftp://ftp.ddbj.nig.ac.jp/ddbj_database/dra/sralite/ByExp/litesra/SRX/SRX010/SRX010851/SRR026761/SRR026761.sra
 
+Alternatively, the exceRpt docker image comes pre-loaded with a tiny (1,000 read) human smRNA-seq dataset.  This can be run without the need to download any data, you'll just need to specify a database and output location and use the following input file:
+
+    INPUT_FILE_PATH=/exceRptInput/testData_human.fastq.gz
+
+### Specify an output directory
+
 Almost done, just need to make sure there is a directory in which to put the exceRpt pipeline output:
 
     mkdir ~/DirectoryInWhichToPutMyResults
+
+### Run exceRpt
 
 Finally, we can input this sample to the exceRpt pipeline, aligning to the hg38 genome+transcriptome we just downloaded:
 
@@ -269,12 +283,12 @@ File Name | Description
 # Manual Installation
 ## Dependencies
 ### Core dependencies
-* [Java v1.6+](https://java.com/en/download)
+* [Java v1.8+](https://java.com/en/download)
 * [fastx v0.0.14+](http://hannonlab.cshl.edu/fastx_toolkit)
 * [STAR v2.4.2a+](https://github.com/alexdobin/STAR/releases) - required for most exogenous alignments
 * [bowtie2 v2.2.4+](http://bowtie-bio.sourceforge.net/bowtie2/index.shtml)
 * [samtools v1.3+](http://sourceforge.net/projects/samtools/files/samtools)
-* [fastQC v0.11.2+](http://www.bioinformatics.babraham.ac.uk/projects/fastqc)
+* [fastQC v0.11.7+](http://www.bioinformatics.babraham.ac.uk/projects/fastqc)
 
 ### Optional dependencies
 * [sratoolkit v2.5.1+](https://github.com/ncbi/sra-tools) - required for processing .sra files from NCBI archival data
@@ -289,4 +303,4 @@ File Name | Description
 
 ***
 # Support
-Rob Kitchen; rob [dot] kitchen [at] yale [dot] edu
+Rob Kitchen; r [dot] r [dot] kitchen [at] gmail [dot] com
