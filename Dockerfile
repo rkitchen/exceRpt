@@ -22,3 +22,5 @@ ADD ExampleData/testData_human.fastq.gz /exceRptInput/testData_human.fastq.gz
 ## Entrypoint
 ##
 ENTRYPOINT ["make", "-f", "/exceRpt_bin/exceRpt_smallRNA", "EXE_DIR=/exceRpt_bin", "DATABASE_PATH=/exceRpt_DB", "JAVA_EXE=java", "OUTPUT_DIR=/exceRptOutput", "MAP_EXOGENOUS=off", "N_THREADS=4"]
+
+
