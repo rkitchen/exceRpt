@@ -3,6 +3,7 @@ description: The extra-cellular RNA processing toolkit.  Includes software to pr
 google_analytics: UA-69502165-1
 show_downloads: false
 theme: jekyll-theme-cayman
+site.github.zip_url: www.example.com
 
 gems:
   - jekyll-mentions
