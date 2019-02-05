@@ -5,7 +5,8 @@ show_downloads: true
 theme: jekyll-theme-cayman
 
 github:
-  zip_url: http://example.com/download.zip
+  zip_url: https://github.com/rkitchen/exceRpt/zipball/master
+  tar_url: https://github.com/rkitchen/exceRpt/tarball/master
 
 gems:
   - jekyll-mentions
