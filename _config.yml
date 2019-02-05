@@ -7,6 +7,7 @@ theme: jekyll-theme-cayman
 github:
   zip_url: https://github.com/rkitchen/exceRpt/zipball/master
   tar_url: https://github.com/rkitchen/exceRpt/tarball/master
-
+  another_url: http://genboree.org/site/exrna_toolset
+  
 gems:
   - jekyll-mentions
