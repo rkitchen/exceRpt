@@ -1,0 +1,96 @@
+
+##
+## Get Bacteria and viruses from NCBI
+##
+## VIRUS
+mkdir tmp  &&  cd tmp
+wget ftp://ftp.ncbi.nlm.nih.gov//genomes/Viruses/all.fna.tar.gz
+tar -xvf all.fna.tar.gz
+cat */*.fna | sed "s/>/>Virus:/" > ../Virus.fa
+cd ..
+rm -r tmp
+
+## BACTERIA (OLD)
+#wget ftp://ftp.ncbi.nlm.nih.gov//genomes/Bacteria/summary.txt
+#mv summary.txt summary_bacteria.txt
+#mkdir tmp  &&  cd tmp
+#wget ftp://ftp.ncbi.nlm.nih.gov//genomes/Bacteria/all.fna.tar.gz
+#tar -xvf all.fna.tar.gz
+#cat */*.fna | sed "s/>/>Bacteria:/" > ../Bacteria.fa
+#cd ..
+#rm -r tmp
+
+
+##
+### Get everything else from ENSEMBL
+##
+
+## BACTERIA (NEW)
+mkdir BacteriaGenomes_fasta
+cd BacteriaGenomes_fasta
+# >>> ftp all files and subdirectories from:  ftp.ensemblgenomes.org/pub/bacteria/release-25/fasta/ 
+chmod +x source_step0
+./source_step0
+perl split_size.pl
+cd ..
+
+## Fungi
+rm Fungi.fa
+curl ftp://ftp.ensemblgenomes.org/pub/fungi/release-24/fasta/ | awk '{print "wget -qO- ftp://ftp.ensemblgenomes.org/pub/fungi/release-24/fasta/"$9"/dna/*.dna_sm.toplevel.fa.gz | gunzip -c | sed \"s/>/>Fungi:"$9":/\" >> Fungi.fa"}' > downloadFungi.sh
+chmod +x downloadFungi.sh
+./downloadFungi.sh
+
+## Plants
+mkdir PlantGenomes_fasta
+rm Plants*.fa
+#curl ftp://ftp.ensemblgenomes.org/pub/plants/release-24/fasta/ | awk '{print "wget -qO- ftp://ftp.ensemblgenomes.org/pub/plants/release-24/fasta/"$9"/dna/*.dna_sm.toplevel.fa.gz | gunzip -c | sed \"s/>/>Plant:"$9":/\" >> Plants.fa"}' > downloadPlants.sh
+curl ftp://ftp.ensemblgenomes.org/pub/plants/release-24/fasta/ | awk '{print "wget ftp://ftp.ensemblgenomes.org/pub/plants/release-24/fasta/"$9"/dna/*.dna_sm.toplevel.fa.gz"}' > downloadPlants.sh
+chmod +x downloadPlants.sh
+cd PlantGenomes_fasta
+../downloadPlants.sh
+cd ..
+ls -lh PlantGenomes_fasta | sed '1d' | awk '{print $9}' | awk -F '.' '{print "gunzip -c "$0" | sed \"s/>/>Plant:"$1":/\" >> Plant.fa"}' > combinePlants.sh
+#chmod +x combinePlants.sh
+## -- MANUALLY modify plants combine script to split genomes into parts
+./combinePlants.sh
+
+## Protists
+rm Protist.fa
+curl ftp://ftp.ensemblgenomes.org/pub/protists/release-24/fasta/ | awk '{print "wget -qO- ftp://ftp.ensemblgenomes.org/pub/protists/release-24/fasta/"$9"/dna/*.dna_sm.toplevel.fa.gz | gunzip -c | sed \"s/>/>Protist:"$9":/\" >> Protists.fa"}' > downloadProtists.sh
+chmod +x downloadProtists.sh
+./downloadProtists.sh
+
+##
+## Vertebrate 'food' animals
+##
+rm Vertebrate*.fa
+./downloadVertebrates.sh
+
+
+
+##
+## Get genome statistics
+##
+
+## Species included
+cat Vertebrate.fa | grep ">" | awk -F ':' '{print $2}' | sort | uniq -c
+
+## Number of sequences ('chromosomes')
+cat Fungi.fa | grep -c ">"
+cat Protists.fa | grep -c ">"
+cat Virus.fa | grep -c ">"
+cat Bacteria.fa | grep -c ">"
+cat Plants*.fa | grep -c ">"
+cat Vertebrate*.fa | grep -c ">"
+
+## Number of nucleotides
+cat Fungi.fa | grep -v ">" | wc --chars
+cat Protists.fa | grep -v ">" | wc --chars
+cat Virus.fa | grep -v ">" | wc --chars
+cat Bacteria.fa | grep -v ">" | wc --chars
+cat Plants*.fa | grep -v ">" | wc --chars
+cat Vertebrate*.fa | grep -v ">" | wc --chars
+
+
+
+
