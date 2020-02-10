@@ -1,0 +1,15 @@
+runMode  alignReads
+outSAMattributes  All
+limitBAMsortRAM  62000000000
+outFilterMismatchNmax  1
+outFilterMismatchNoverLmax  0.1
+#outFilterMismatchNoverLmax  0.05
+#outFilterMismatchNoverReadLmax  0.1
+readFilesCommand  zcat
+outSAMunmapped  None
+outReadsUnmapped  None
+outFilterMultimapNmax  10000
+alignEndsType  EndToEnd
+# disable splicing
+alignIntronMax  1
+alignIntronMin  2
