@@ -114,9 +114,9 @@ RUN apt-get autoremove -y \
 ##
 ## Add baseDB and example raw data
 ##
-#RUN mv $PATH_BIN/exceRpt/BUILD/DATABASE /exceRpt_DB
-#RUN mkdir -p /exceRptInput \
-#    && mv $PATH_BIN/exceRpt/ExampleData/testData_human.fastq.gz /exceRptInput/testData_human.fastq.gz
+RUN mv $PATH_BIN/exceRpt/build/DATABASE /exceRpt_DB
+RUN mkdir -p /exceRptInput \
+    && mv $PATH_BIN/exceRpt/ExampleData/testData_human.fastq.gz /exceRptInput/testData_human.fastq.gz
 
 #ADD exceRpt_coreDB /exceRpt_DB/
 #ADD ExampleData/testData_human.fastq.gz /exceRptInput/testData_human.fastq.gz
