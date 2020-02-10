@@ -1,1 +1,0 @@
-rm ensembl_genome.bacteria.fa; for i in $(find ./ -name "*.fa.gz"); do NAME=$(echo $i | awk -F "[/]" '{print $(NF-2)}'); zcat $i | sed 's/[>]/>'$NAME'$/; /^[>]/ s/ /$/g' >> ensembl_genome.bacteria.fa; done
