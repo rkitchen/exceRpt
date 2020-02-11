@@ -118,15 +118,15 @@ ifeq ($(LOCAL_EXECUTION),true)
 	## 6) Check that the paths to the required 3rd party executables work!
 	##
 	JAVA_EXE              := /usr/bin/java
-	FASTX_CLIP_EXE        := $(EXE_DIR)/fastx_0.0.14/bin/fastx_clipper
-	FASTX_FILTER_EXE      := $(EXE_DIR)/fastx_0.0.14/bin/fastq_quality_filter
+	#FASTX_CLIP_EXE        := $(EXE_DIR)/fastx_0.0.14/bin/fastx_clipper
+	#FASTX_FILTER_EXE      := $(EXE_DIR)/fastx_0.0.14/bin/fastq_quality_filter
 	BOWTIE2_EXE           := $(EXE_DIR)/bowtie2/bowtie2
 	SAMTOOLS_EXE          := $(EXE_DIR)/samtools/samtools
 	FASTQC_EXE            := $(JAVA_EXE) -classpath $(EXE_DIR)/FastQC:$(EXE_DIR)/FastQC/sam-1.103.jar:$(EXE_DIR)/FastQC/jbzip2-0.9.jar
-	SRATOOLS_EXE          := $(EXE_DIR)/sratoolkit.2.9.0/bin/fastq-dump
+	SRATOOLS_EXE          := $(EXE_DIR)/sratoolkit.2.10.2-ubuntu64/bin/fastq-dump
 	EXCERPT_TOOLS_EXE     := $(EXE_DIR)/exceRpt_Tools.jar
 	DATABASE_PATH         := $(EXE_DIR)/DATABASE
-	STAR_EXE              := $(EXE_DIR)/STAR-2.5.4b/bin/Linux_x86_64/STAR
+	STAR_EXE              := $(EXE_DIR)/STAR/bin/Linux_x86_64/STAR
 	STAR_GENOMES_DIR      := $(DATABASE_PATH)/Genomes_BacteriaFungiMammalPlantProtistVirus
 	#STAR_PARAMS_FILE_PATH := $(STAR_GENOMES_DIR)/STAR_Parameters_Exogenous.in
 	STAR_PARAMS_FILE_PATH := $(EXE_DIR)/
@@ -305,7 +305,7 @@ endif
 
 #COMMAND_CLIP_ADAPTER ?= $(COMMAND_CONVERT_SRA) > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).preClipped.fastq.tmp; $(BBDUK_EXE) ref=$(BBDUK_RESOURCES)/adapters.fa in=$(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).preClipped.fastq.tmp out=$(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.tmp.gz ktrim=r k=21 mink=$(MIN_ADAPTER_BASES_3p) tbo tpe hdist=1 minlen=$(MIN_READ_LENGTH) threads=$(N_THREADS) qtrim=r trimq=10 maq=10 entropy=0.3 entropywindow=50 entropyk=5 >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err; rm $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).preClipped.fastq.tmp
 
-COMMAND_CLIP_ADAPTER ?= $(COMMAND_CONVERT_SRA) > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).preClipped.fastq.tmp; $(BBDUK_EXE) ref=$(BBDUK_RESOURCES)/adapters.fa in=$(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).preClipped.fastq.tmp out=$(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.tmp.gz ktrim=r k=10 mink=$(MIN_ADAPTER_BASES_3p) hdist=0 minlen=$(MIN_READ_LENGTH) trimpolya=7 threads=$(N_THREADS) >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err; rm $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).preClipped.fastq.tmp
+COMMAND_CLIP_ADAPTER ?= $(COMMAND_CONVERT_SRA) > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).preClipped.fastq.tmp; $(BBDUK_EXE) ref=$(DATABASE_PATH)/adapters.fa in=$(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).preClipped.fastq.tmp out=$(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.fastq.tmp.gz ktrim=r k=10 mink=$(MIN_ADAPTER_BASES_3p) hdist=0 minlen=$(MIN_READ_LENGTH) trimpolya=7 threads=$(N_THREADS) >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err; rm $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).preClipped.fastq.tmp
 
 
 
@@ -612,7 +612,7 @@ $(OUTDIR)/$(SAMPLE_ID).clipped.trimmed.filtered.fastq.gz: $(OUTDIR)/$(SAMPLE_ID)
 	@echo -e "$(ts) $(PIPELINE_NAME): Filtering homopolymer repeat reads:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(PIPELINE_NAME): $(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) RemoveHomopolymerRepeats -m 0.66 -i $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.tmp -o $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.fastq\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
 	$(JAVA_EXE) -Xmx$(JAVA_RAM) -jar $(EXCERPT_TOOLS_EXE) RemoveHomopolymerRepeats --verbose -m 0.66 -i $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.tmp -o $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.tmp2 >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.REMOVEDRepeatReads.fastq
-	gzip $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.REMOVEDRepeatReads.fastq
+	gzip --force $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.REMOVEDRepeatReads.fastq
 	#gzip $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.fastq
 	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.tmp
 	@echo -e "$(ts) $(PIPELINE_NAME): Finished filtering homopolymer repeat reads\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
@@ -623,7 +623,7 @@ $(OUTDIR)/$(SAMPLE_ID).clipped.trimmed.filtered.fastq.gz: $(OUTDIR)/$(SAMPLE_ID)
 	@echo -e "$(ts) $(PIPELINE_NAME): Filtering reads to remove PhiX contamination:\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
 	@echo -e "$(ts) $(PIPELINE_NAME): $(BBDUK_EXE) in=$(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.tmp2 out=$(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.fastq.gz minlen=$(MIN_READ_LENGTH) threads=$(N_THREADS) qtrim=r trimq=10 maq=10 \n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err
 	$(BBDUK_EXE) in=$(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.tmp2 out=$(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.fastq minlen=$(MIN_READ_LENGTH) threads=$(N_THREADS) ref=$(DATABASE_PATH)/phiX.fa k=31 hdist=1 2>>$(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.tmp.PhiX.log
-	gzip $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.fastq
+	gzip --force $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.fastq
 	## Count reads that PASS the PhiX filter
 	grep "Result: " $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.tmp.PhiX.log | awk '{print "passed_phiX_filter\t"$$2}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 
@@ -726,8 +726,8 @@ $(OUTDIR)/endogenousAlignments_genomeUnmapped_transcriptome_Unmapped.R1.fastq.gz
 	cat $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genome*apped_transcriptome_Log.final.out | grep "Number of input reads\|Uniquely mapped reads number\|Number of reads mapped to multiple loci" | sed '2,4d' | awk -F "\t" '{SUM+=$$2}END{print "genome\t"SUM}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	#
 	## Compress STAR logs
-	gzip $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_transcriptome_Log.out
-	gzip $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_transcriptome_Log.out
+	gzip --force $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeMapped_transcriptome_Log.out
+	gzip --force $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genomeUnmapped_transcriptome_Log.out
 	#
 	## Tidy up
 	rm $(OUTPUT_DIR)/$(SAMPLE_ID)/endogenousAlignments_genome_SJ.out.tab
