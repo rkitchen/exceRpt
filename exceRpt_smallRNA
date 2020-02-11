@@ -341,7 +341,7 @@ ifeq ($(CALIBRATOR_LIBRARY),NULL)
 	
 	LOGENTRY_MAP_CALIBRATOR_1 := No calibrator sequences\n 
 	LOGENTRY_MAP_CALIBRATOR_2 := Moving on to UniVec and rRNA sequences\n
-	COMMAND_COUNT_CALIBRATOR := echo -e "calibrator\tNA" >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	COMMAND_COUNT_CALIBRATOR := echo "" | awk '{print "calibrator\tNA"}' >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	COMMAND_MAP_CALIBRATOR := 
 	
 	FILE_TO_INPUT_TO_UNIVEC_ALIGNMENT := $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.fastq.gz
@@ -509,9 +509,9 @@ compressCoreResults:
 ####
 processSample: $(OUTDIR)/$(PROCESS_SAMPLE_REQFILE)
 	## Wrap up logging and stats files
-	@echo -e "$(ts) $(PIPELINE_NAME): END smallRNA-seq Pipeline for sample $(SAMPLE_ID)\n======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
-	@echo -e "$(ts) $(PIPELINE_NAME): END\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).err
-	@echo -e "#END OF STATS from the exceRpt smallRNA-seq pipeline. Run completed at $(ts)" >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
+	@echo "$(ts) $(PIPELINE_NAME): END smallRNA-seq Pipeline for sample $(SAMPLE_ID)\n======================\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).log
+	@echo "$(ts) $(PIPELINE_NAME): END\n" >> $(OUTPUT_DIR)/$(SAMPLE_ID).err
+	@echo "#END OF STATS from the exceRpt smallRNA-seq pipeline. Run completed at $(ts)" >> $(OUTPUT_DIR)/$(SAMPLE_ID).stats
 	#
 	## Adapter confidence
 	#echo -e "known: " >> $(OUTPUT_DIR)/$(SAMPLE_ID).qctmp
