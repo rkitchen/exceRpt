@@ -12,7 +12,7 @@ ENV PATH_BIN=$path_bin
 
 
 RUN apt-get update --fix-missing \
-    && apt-get install -y wget gcc unzip make libbz2-dev zlib1g zlib1g-dev git default-jre libncurses5-dev libncursesw5-dev liblzma-dev
+    && apt-get install -y wget gcc unzip make libbz2-dev zlib1g zlib1g-dev git default-jre libncurses5-dev libncursesw5-dev liblzma-dev libcurl
 
 
 RUN mkdir -p $PATH_BIN \
