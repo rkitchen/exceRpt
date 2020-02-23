@@ -19,20 +19,21 @@ git clone https://github.com/alexdobin/STAR.git
 EXE_STAR=$PATH_BIN/STAR/bin/MacOSX_x86_64/STAR
 
 ## Bowtie1
-#wget https://downloads.sourceforge.net/project/bowtie-bio/bowtie/1.2.3/bowtie-1.2.3-linux-x86_64.zip
-wget https://downloads.sourceforge.net/project/bowtie-bio/bowtie/1.2.3/bowtie-1.2.3-macos-x86_64.zip
-unzip $PATH_BIN/bowtie-1.2.3-macos-x86_64.zip
-rm $PATH_BIN/bowtie-1.2.3-macos-x86_64.zip
-mv $PATH_BIN/bowtie-1.2.3-macos-x86_64 $PATH_BIN/bowtie1
+#PLATFORM="macos"
+PLATFORM="linux"
+wget https://downloads.sourceforge.net/project/bowtie-bio/bowtie/1.2.3/bowtie-1.2.3-$PLATFORM-x86_64.zip
+unzip $PATH_BIN/bowtie-1.2.3-$PLATFORM-x86_64.zip
+rm $PATH_BIN/bowtie-1.2.3-$PLATFORM-x86_64.zip
+mv $PATH_BIN/bowtie-1.2.3-$PLATFORM-x86_64 $PATH_BIN/bowtie1
 EXE_BOWTIE1=$PATH_BIN/bowtie1/bowtie
 EXE_BOWTIE1_BUILD=$PATH_BIN/bowtie1/bowtie-build
 
 ## Bowtie2
 #wget https://downloads.sourceforge.net/project/bowtie-bio/bowtie2/2.3.5.1/bowtie2-2.3.5.1-linux-x86_64.zip
-wget https://downloads.sourceforge.net/project/bowtie-bio/bowtie2/2.3.5.1/bowtie2-2.3.5.1-macos-x86_64.zip
-unzip $PATH_BIN/bowtie2-2.3.5.1-macos-x86_64.zip
-rm $PATH_BIN/bowtie2-2.3.5.1-macos-x86_64.zip
-mv $PATH_BIN/bowtie2-2.3.5.1-macos-x86_64 $PATH_BIN/bowtie2
+wget https://downloads.sourceforge.net/project/bowtie-bio/bowtie2/2.3.5.1/bowtie2-2.3.5.1-$PLATFORM-x86_64.zip
+unzip $PATH_BIN/bowtie2-2.3.5.1-$PLATFORM-x86_64.zip
+rm $PATH_BIN/bowtie2-2.3.5.1-$PLATFORM-x86_64.zip
+mv $PATH_BIN/bowtie2-2.3.5.1-$PLATFORM-x86_64 $PATH_BIN/bowtie2
 EXE_BOWTIE2=$PATH_BIN/bowtie2/bowtie2
 EXE_BOWTIE2_BUILD=$PATH_BIN/bowtie2/bowtie2-build
 
@@ -64,5 +65,12 @@ wget https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/current/sratoolkit.current-ubunt
 tar -xvf $PATH_BIN/sratoolkit.current-ubuntu64.tar.gz
 rm $PATH_BIN/sratoolkit.current-ubuntu64.tar.gz
 EXE_SRA_TOOLKIT=$PATH_BIN/sratoolkit.2.9.6-1-ubuntu64/bin/fastq-dump
+
+## AWS CLI
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+
+## IMPORTANT - need to run 'aws configure' and add credentials
 
 
