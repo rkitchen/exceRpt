@@ -39,22 +39,30 @@ PATH_FA=$BASE/fastaFiles
 mkdir -p $PATH_FA
 
 
+
+##
 ## Sync fasta files from S3
-aws s3 sync s3://kitchen-mgh-data/Annotations/Human/exceRpt/fasta_static $PATH_FA
-aws s3 sync s3://kitchen-mgh-public/exceRpt/DATABASE/v2_0 $PATH_DB
+##  - these are hard/annoying to find/construct/reformat from online databases
+##
 aws s3 sync s3://kitchen-mgh-public/exceRpt/DATABASE/fasta_static $PATH_FA
+
+
+
+
 
 
 ##
 ## Make pseudo-random data for seeding
+##  - this is what was used to create the randomBits.dat seed file
 ##
-get_seeded_random()
-{
-  seed="$1"
-  openssl enc -aes-256-ctr -pass pass:"$seed" -nosalt \
-    </dev/zero 2>/dev/null
-}
-get_seeded_random 7 > $PATH_DB/randomBits.dat
+#get_seeded_random()
+#{
+#  seed="$1"
+#  openssl enc -aes-256-ctr -pass pass:"$seed" -nosalt \
+#    </dev/zero 2>/dev/null
+#}
+#get_seeded_random 7 > $PATH_DB/randomBits.dat
+
 
 
 cd $PATH_FA
@@ -386,6 +394,9 @@ $EXE_STAR --runMode genomeGenerate --runThreadN $CORES --genomeDir $PATH_DB/mm10
 rm $PATH_FA/mm10.RE.fixedHeaders.fa
 
 
+
+
+
 ##
 ## Build the STAR index of all miRBase miRNAs
 ##
@@ -418,7 +429,23 @@ rm $PATH_FA/ribosomeDB/current_ribosomeDB_unaligned.fa
 ##
 ## Compress the DB
 ##
-tar -cvf exceRptDB_v5_hg19.tgz hg19
+
+echo -e "$PATH_DB/STAR_Parameters_Endogenous_smallRNA.in"  > $PATH_TMP/filesToCompress_generic.txt
+echo -e "$PATH_DB/adapters.fa" 				  >> $PATH_TMP/filesToCompress_generic.txt
+echo -e "$PATH_DB/phiX.fa" 				  >> $PATH_TMP/filesToCompress_generic.txt
+echo -e "$PATH_DB/randomBits.dat" 			  >> $PATH_TMP/filesToCompress_generic.txt
+
+cp $PATH_TMP/filesToCompress_generic.txt $PATH_TMP/filesToCompress_hg19.txt
+echo -e "$PATH_DB/hg19" >> $PATH_TMP/filesToCompress_hg19.txt
+
+cp $PATH_TMP/filesToCompress_generic.txt $PATH_TMP/filesToCompress_hg38.txt
+echo -e "$PATH_DB/hg38" >> $PATH_TMP/filesToCompress_hg38.txt
+
+cp $PATH_TMP/filesToCompress_generic.txt $PATH_TMP/filesToCompress_mm10.txt
+echo -e "$PATH_DB/mm10" >> $PATH_TMP/filesToCompress_mm10.txt
+
+
+tar -cv -T $PATH_TMP/filesToCompress_hg19.txt -f $PATH_DB/exceRptDB_v5_hg19.tar
 tar -cvf exceRptDB_v5_hg38.tgz hg38
 tar -cvf exceRptDB_v5_mm10.tgz mm10
 #tar -cvz -T filesToCompress_EXO_miRNArRNA.txt -f exceRptDB_v4_EXOmiRNArRNA.tgz
