@@ -67,29 +67,38 @@ processSamplesInDir = function(data.dir, output.dir=data.dir, scriptDir="~/Dropb
 ##
 ## check dependencies
 ##
+lib="~/R/packages"
+
+if(!file.exists(lib)){ dir.create(lib) }
+.libPaths(c(lib, .libPaths()))
+
 #baseURL = "https://cran.us.r-project.org"
 baseURL = "https://cran.r-project.org"
-if(!"plyr" %in% rownames(installed.packages())) { install.packages("plyr",repos=baseURL) }
-if(!"gplots" %in% rownames(installed.packages())) { install.packages("gplots",repos=baseURL) }
-if(!"marray" %in% rownames(installed.packages())) { source("http://bioconductor.org/biocLite.R"); biocLite("marray",ask=F) }
-if(!"reshape2" %in% rownames(installed.packages())) { install.packages("reshape2",repos=baseURL) }
-if(!"ggplot2" %in% rownames(installed.packages())) { install.packages("ggplot2",repos=baseURL) }
-if(!"tools" %in% rownames(installed.packages())) { install.packages("tools",repos=baseURL) }
-if(!"Rgraphviz" %in% rownames(installed.packages())) { source("http://bioconductor.org/biocLite.R"); biocLite("Rgraphviz",ask=F) }
-if(!"scales" %in% rownames(installed.packages())) { install.packages("scales",repos=baseURL) }
+
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager",lib=lib,repos=baseURL)
+
+if(!"plyr" %in% rownames(installed.packages())) { install.packages("plyr",lib=lib,repos=baseURL) }
+if(!"gplots" %in% rownames(installed.packages())) { install.packages("gplots",lib=lib,repos=baseURL) }
+if(!"marray" %in% rownames(installed.packages())) { BiocManager::install("marray",lib=lib,ask=F) }
+if(!"reshape2" %in% rownames(installed.packages())) { install.packages("reshape2",lib=lib,repos=baseURL) }
+if(!"ggplot2" %in% rownames(installed.packages())) { install.packages("ggplot2",lib=lib,repos=baseURL) }
+if(!"tools" %in% rownames(installed.packages())) { install.packages("tools",lib=lib,repos=baseURL) }
+if(!"Rgraphviz" %in% rownames(installed.packages())) { BiocManager::install("Rgraphviz",lib=lib,ask=F) }
+if(!"scales" %in% rownames(installed.packages())) { install.packages("scales",lib=lib,repos=baseURL) }
 
 ## update
-update.packages(repos=baseURL,ask=F)
+update.packages(repos=baseURL,lib=lib,ask=F)
 
 ## load
-require(plyr)
-require(gplots)
-require(marray)
-require(reshape2)
-require(ggplot2)
-require(tools)
-require(Rgraphviz)
-require(scales)
+require(plyr, lib.loc=lib)
+require(gplots, lib.loc=lib)
+require(marray, lib.loc=lib)
+require(reshape2, lib.loc=lib)
+require(ggplot2, lib.loc=lib)
+require(tools, lib.loc=lib)
+require(Rgraphviz, lib.loc=lib)
+require(scales, lib.loc=lib)
 
 
 ##
@@ -104,14 +113,11 @@ SearchForSampleData = function(base.dir, directory=""){
     i.zip = grep("\\.zip$", subdirs, perl=T)
     i.tar = grep("\\.tgz$|\\.tar.gz$", subdirs, perl=T)
     
-    ## handle decompressed pipeline output
-    if(length(i.stats) > 0){
+    if(length(i.stats) > 0){   ## handle decompressed pipeline output
       tmp = gsub("\\.stats$","",subdirs[i.stats])
       to.return = c(to.return, paste(dir.use,tmp,sep="/"))
     }
-    
-    ## handle zipped pipeline output
-    if(length(i.zip) > 0){
+    else if(length(i.zip) > 0){  ## handle zipped pipeline output
       for(x in i.zip){
         tmp.contents = unzip(paste(dir.use,subdirs[x],sep="/"), list=T)[,1]
         if(length(grep("\\.stats$", tmp.contents, perl=T)) > 0){
@@ -120,9 +126,7 @@ SearchForSampleData = function(base.dir, directory=""){
         }
       }
     }
-    
-    ## handle [tar] gzipped pipeline output
-    if(length(i.tar) > 0){
+    else if(length(i.tar) > 0){  ## handle [tar] gzipped pipeline output
       for(x in i.tar){
         tmp.dir = paste(dir.use,subdirs[x],sep="/")
         tmp.contents = untar(tmp.dir, list=T, tar="tar")
@@ -132,21 +136,22 @@ SearchForSampleData = function(base.dir, directory=""){
         }
       }
     }
+    else{
+      ## handle unknown directories
+      i.known = c(i.stats,i.zip,i.tar)
+      if(length(i.known) == 0){		# there are no .stats, .zip, or .tgz/.tar.gz files in the directory!
+        i.unknown = 1:length(subdirs)
+      }else{
+        i.unknown = (1:length(subdirs))[-i.known]
+      }
     
-    ## handle unknown directories
-    i.known = c(i.stats,i.zip,i.tar)
-    if(length(i.known) == 0){		# there are no .stats, .zip, or .tgz/.tar.gz files in the directory!
-      i.unknown = 1:length(subdirs)
-    }else{
-      i.unknown = (1:length(subdirs))[-i.known]
-    }
-    
-    if(length(i.unknown) > 0){
-      for(x in subdirs[i.unknown]){
-        to.return = c(to.return, SearchForSampleData(dir.use, x))
+      if(length(i.unknown) > 0){
+        for(x in subdirs[i.unknown]){
+          to.return = c(to.return, SearchForSampleData(dir.use, x))
+        }
       }
     }
-    
+
     return(unique(to.return))
   }
 }
@@ -337,7 +342,7 @@ readData = function(samplePathList, output.dir){
   allIDs.exogenous_genomes = NULL
   taxonomyInfo.exogenous_rRNA = NULL
   taxonomyInfo.exogenous_genomes = NULL
-  mapping.stats = matrix(0,nrow=length(samplePathList),ncol=30, dimnames=list(1:length(samplePathList), c("input","successfully_clipped","failed_quality_filter","failed_homopolymer_filter","calibrator","UniVec_contaminants","rRNA","reads_used_for_alignment","genome","miRNA_sense","miRNA_antisense","miRNAprecursor_sense","miRNAprecursor_antisense","tRNA_sense","tRNA_antisense","piRNA_sense","piRNA_antisense","gencode_sense","gencode_antisense","circularRNA_sense","circularRNA_antisense","not_mapped_to_genome_or_libs","repetitiveElements","endogenous_gapped","input_to_exogenous_miRNA","exogenous_miRNA","input_to_exogenous_rRNA","exogenous_rRNA","input_to_exogenous_genomes","exogenous_genomes")))
+  mapping.stats = matrix(0,nrow=length(samplePathList),ncol=29, dimnames=list(1:length(samplePathList), c("input","successfully_clipped","passed_quality_filter","failed_homopolymer_filter","passed_phiX_filter","calibrator","reads_used_for_alignment","genome","miRNA_sense","miRNA_antisense","miRNAprecursor_sense","miRNAprecursor_antisense","tRNA_sense","tRNA_antisense","piRNA_sense","piRNA_antisense","gencode_sense","gencode_antisense","circularRNA_sense","circularRNA_antisense","not_mapped_to_genome_or_libs","repetitiveElements","endogenous_gapped","input_to_exogenous_miRNA","exogenous_miRNA","input_to_exogenous_rRNA","exogenous_rRNA","input_to_exogenous_genomes","exogenous_genomes")))
   qc.results = matrix(0,nrow=length(samplePathList),ncol=5, dimnames=list(1:length(samplePathList), c("InputReads","GenomeReads","TranscriptomeReads","TranscriptomeGenomeRatio","TranscriptomeComplexity")))
   maxReadLength = 10000
   read.lengths = matrix(0,nrow=length(samplePathList),ncol=maxReadLength+1,dimnames=list(1:length(samplePathList), 0:maxReadLength))
@@ -357,22 +362,24 @@ readData = function(samplePathList, output.dir){
     tmp.stats = read.table(paste(samplePathList[i],".stats",sep=""), stringsAsFactors=F, fill=T, header=F, sep="\t",skip=0,comment.char="")
     x.start = grep("#STATS",tmp.stats[,1])
     x.end = grep("#END OF STATS",tmp.stats[,1])
-    if(length(x.start) > 0  &&  length(x.end) > 0){
-      tmp.start = strptime(unlist(strsplit(tmp.stats[x.start[1],1],"Run started at "))[2],"%Y-%m-%d--%H:%M:%S")
-      tmp.end = strptime(unlist(strsplit(tmp.stats[x.end[1],1],"Run completed at "))[2],"%Y-%m-%d--%H:%M:%S")
-      runTiming = data.frame(start=tmp.start, completed=tmp.end, duration=difftime(tmp.end,tmp.start), duration_secs=as.numeric(difftime(tmp.end,tmp.start,units="secs")))
-      continue = T
-    }else{
-      continue = F
-      removeSamples = c(removeSamples, i)
-      printMessage(c("[",i,"/",length(samplePathList),"] WARNING: Incomplete run for sample \'",thisSampleID,"\', ignoring"))
-    }
+    runTiming = NA
+    #if(length(x.start) > 0  &&  length(x.end) > 0){
+    #  tmp.start = strptime(unlist(strsplit(tmp.stats[x.start[1],1],"Run started at "))[2],"%Y-%m-%d--%H:%M:%S")
+    #  tmp.end = strptime(unlist(strsplit(tmp.stats[x.end[1],1],"Run completed at "))[2],"%Y-%m-%d--%H:%M:%S")
+    #  runTiming = data.frame(start=tmp.start, completed=tmp.end, duration=difftime(tmp.end,tmp.start), duration_secs=as.numeric(difftime(tmp.end,tmp.start,units="secs")))
+    #  continue = T
+    #}else{
+    #  continue = F
+    #  removeSamples = c(removeSamples, i)
+    #  printMessage(c("[",i,"/",length(samplePathList),"] WARNING: Incomplete run for sample \'",thisSampleID,"\', ignoring"))
+    #}
     
-    if(continue == T){
+    #if(continue == T){
+    if(T){
       ##
       ## Read sample mapping stats
       ##
-      tmp.stats = read.table(paste(samplePathList[i],".stats",sep=""), stringsAsFactors=F, fill=T, header=T, sep="\t",skip=0)
+      tmp.stats = read.table(paste(samplePathList[i],".stats",sep=""), stringsAsFactors=F, fill=T, header=F, sep="\t",skip=0)
       tmp.stats[tmp.stats[,1] %in% "clipped", 1] = "successfully_clipped"
       #mapping.stats[i, match(tmp.stats[,1], colnames(mapping.stats))] = as.numeric(tmp.stats[,2])
       mapping.stats[i, match(tmp.stats[,1], colnames(mapping.stats))] = as.numeric(tmp.stats[,2])
@@ -400,6 +407,7 @@ readData = function(samplePathList, output.dir){
       ##
       ## Read the adapter sequence
       ##
+      adapterSeq = NA
       if(paste(thisSampleID,".adapterSeq",sep="") %in% dir(samplePathList[i])){
         tmp.seq = try(read.table(paste(samplePathList[i],"/",thisSampleID,".adapterSeq",sep="")), silent=T)
         if(class(tmp.seq) == "try-error"){
@@ -629,22 +637,26 @@ readData = function(samplePathList, output.dir){
   exprs.circRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$circRNA_sense), dimnames=list(allIDs$circRNA_sense, names(sample.data)))
   exprs.exogenous_miRNA = matrix(0,ncol=length(sample.data),nrow=length(allIDs$exogenous_miRNA), dimnames=list(allIDs$exogenous_miRNA, names(sample.data)))
   
-  if(is.null(taxonomyInfo.exogenous_rRNA))
+  if(is.null(taxonomyInfo.exogenous_rRNA)){
     tmp.nrow = 0
-  else
+  }else{
     tmp.nrow = nrow(taxonomyInfo.exogenous_rRNA)
+  }
   exprs.exogenousRibosomal_specific = matrix(0,ncol=length(sample.data),nrow=tmp.nrow, dimnames=list(taxonomyInfo.exogenous_rRNA$ID, names(sample.data)))
   exprs.exogenousRibosomal_cumulative = matrix(0,ncol=length(sample.data),nrow=tmp.nrow, dimnames=list(taxonomyInfo.exogenous_rRNA$ID, names(sample.data)))
   
-  if(is.null(taxonomyInfo.exogenous_genomes))
+
+  if(is.null(taxonomyInfo.exogenous_genomes)){
     tmp.nrow = 0
-  else
+  }else{
     tmp.nrow = nrow(taxonomyInfo.exogenous_genomes)
+  }
   exprs.exogenousGenomes_specific = matrix(0,ncol=length(sample.data),nrow=tmp.nrow, dimnames=list(taxonomyInfo.exogenous_genomes$ID, names(sample.data)))
   exprs.exogenousGenomes_cumulative = matrix(0,ncol=length(sample.data),nrow=tmp.nrow, dimnames=list(taxonomyInfo.exogenous_genomes$ID, names(sample.data)))
+  
 
   for(i in 1:length(sample.data)){
-    run.duration[i,] = sample.data[[i]]$runTiming[1,4,drop=F]
+    #run.duration[i,] = sample.data[[i]]$runTiming[1,4,drop=F]
     
     if(!is.null(nrow(sample.data[[i]]$calibratorCounts)))
       exprs.calibrator[match(sample.data[[i]]$calibratorCounts$calibratorID, rownames(exprs.calibrator)),i] = as.numeric(sample.data[[i]]$calibratorCounts$readCount)
@@ -679,8 +691,10 @@ readData = function(samplePathList, output.dir){
   libSizes$input = mapping.stats[,colnames(mapping.stats) %in% c("input")]
   libSizes$successfully_clipped = mapping.stats[,colnames(mapping.stats) %in% c("successfully_clipped")]
   libSizes$reads_used_for_alignment = mapping.stats[,colnames(mapping.stats) %in% c("reads_used_for_alignment")]
-  libSizes$all = rowSums(mapping.stats[,colnames(mapping.stats) %in% c("rRNA","genome","miRNA_exogenous_sense")])
-  libSizes$endogenous = rowSums(mapping.stats[,colnames(mapping.stats) %in% c("rRNA","genome")])
+  #libSizes$all = rowSums(mapping.stats[,colnames(mapping.stats) %in% c("rRNA","genome","miRNA_exogenous_sense")])
+  libSizes$all = rowSums(mapping.stats[,colnames(mapping.stats) %in% c("genome","miRNA_exogenous_sense"), drop=F])
+  #libSizes$endogenous = rowSums(mapping.stats[,colnames(mapping.stats) %in% c("rRNA","genome")])
+  libSizes$endogenous = rowSums(mapping.stats[,colnames(mapping.stats) %in% c("genome"), drop=F])
   libSizes$genome = mapping.stats[,colnames(mapping.stats) %in% "genome"]
   libSizes$smRNA = mapping.stats[,grep("sense",colnames(mapping.stats))]
   libSizes$miRNA = colSums(exprs.miRNA)
@@ -882,29 +896,39 @@ PlotData = function(sampleIDs, output.dir, sampleGroups=NA, minPercent_exogenous
   ##
   ## Plot run duration of each sample
   ##
-  printMessage("Plotting run-duration")
-  tmp=melt(as.matrix(run.duration))
-  colnames(tmp) = c("sampleID","stuff","runDuration_seconds")
-  tmp = cbind(tmp, category=.bincode(tmp[,3], breaks=c(0,as.numeric(quantile(tmp[,3],probs=c(0.10,0.90,1))))))
-  tmp = cbind(tmp, colour=tmp$category)
-  tmp = cbind(tmp, inputReadCount=mapping.stats$input)
-  tmp$category[tmp$category == 1] = "fast"
-  tmp$category[tmp$category == 2] = "normal"
-  tmp$category[tmp$category == 3] = "slow"
-  tmp$colour[tmp$colour == 1] = "red"
-  tmp$colour[tmp$colour == 2] = "green"
-  tmp$colour[tmp$colour == 3] = "blue"
-  tmp$runDuration_minutes = tmp$runDuration_seconds/60
-  tmp$runDuration_hours = tmp$runDuration_minutes/60
-  p = ggplot(tmp, aes(x=sampleID,y=runDuration_hours,fill=colour)) +geom_bar(stat="identity") +facet_grid(~category,scales="free_x",space="free_x") +guides(fill=FALSE) +theme(axis.text.x=element_text(angle=60, hjust=1.0, vjust=1)) +ggtitle("Duration of exceRpt run for each sample") +ylab("Run duration (hours)")
-  print(p)
+  if(F){
+    printMessage("Plotting run-duration")
+    tmp=melt(as.matrix(run.duration))
+    colnames(tmp) = c("sampleID","stuff","runDuration_seconds")
+    tmp = cbind(tmp, category=.bincode(tmp[,3], breaks=c(0,as.numeric(quantile(tmp[,3],probs=c(0.10,0.90,1))))))
+    tmp = cbind(tmp, colour=tmp$category)
+    tmp = cbind(tmp, inputReadCount=mapping.stats$input)
+    tmp$category[tmp$category == 1] = "fast"
+    tmp$category[tmp$category == 2] = "normal"
+    tmp$category[tmp$category == 3] = "slow"
+    tmp$colour[tmp$colour == 1] = "red"
+    tmp$colour[tmp$colour == 2] = "green"
+    tmp$colour[tmp$colour == 3] = "blue"
+    tmp$runDuration_minutes = tmp$runDuration_seconds/60
+    tmp$runDuration_hours = tmp$runDuration_minutes/60
+    p = ggplot(tmp, aes(x=sampleID,y=runDuration_hours,fill=colour)) +
+	geom_bar(stat="identity") +facet_grid(~category,scales="free_x",space="free_x") +
+	guides(fill=FALSE) +theme(axis.text.x=element_text(angle=60, hjust=1.0, vjust=1)) +
+	ggtitle("Duration of exceRpt run for each sample") +ylab("Run duration (hours)")
+    print(p)
   
-  if(is.data.frame(sampleGroups)){ tmp$sampleGroup = sampleGroups[match(tmp$sampleID, sampleGroups$sampleID), 2] }
-  p = ggplot(tmp, aes(x=inputReadCount,y=runDuration_hours,colour=colour)) +geom_point(size=5) +guides(colour=FALSE) +scale_y_log10(limits=c(0.1,10^ceiling(log10(max(tmp$runDuration_hours)))), breaks=c(0.1,1,10^seq(0:ceiling(log10(max(tmp$runDuration_hours)))))) +scale_x_log10(limits=c(min(c(100000,10^floor(log10(min(tmp$inputReadCount+1))))),10^ceiling(log10(max(tmp$inputReadCount)))), breaks=10^seq(min(c(100000,floor(log10(min(tmp$inputReadCount+1))))),ceiling(log10(max(tmp$inputReadCount))))) +ggtitle("Duration of exceRpt run per sequencing yield") +ylab("Run duration (hours)") +xlab("Total number of reads input")
-  #if(is.data.frame(sampleGroups)){ p = p +facet_wrap(~sampleGroup,ncol=1)}
-  print(p)
+    if(is.data.frame(sampleGroups)){ tmp$sampleGroup = sampleGroups[match(tmp$sampleID, sampleGroups$sampleID), 2] }
+      p = ggplot(tmp, aes(x=inputReadCount,y=runDuration_hours,colour=colour)) +geom_point(size=5) +
+	  guides(colour=FALSE) +
+	  scale_y_log10(limits=c(0.1,10^ceiling(log10(max(tmp$runDuration_hours)))), breaks=c(0.1,1,10^seq(0:ceiling(log10(max(tmp$runDuration_hours)))))) +
+	  scale_x_log10(limits=c(min(c(100000,10^floor(log10(min(tmp$inputReadCount+1))))),10^ceiling(log10(max(tmp$inputReadCount)))), breaks=10^seq(min(c(100000,floor(log10(min(tmp$inputReadCount+1))))),ceiling(log10(max(tmp$inputReadCount))))) +
+	  ggtitle("Duration of exceRpt run per sequencing yield") +
+	  ylab("Run duration (hours)") +xlab("Total number of reads input")
+    #if(is.data.frame(sampleGroups)){ p = p +facet_wrap(~sampleGroup,ncol=1)}
+    print(p)
+  }
   
-  
+
   ##
   ## plot distribution of # mapped reads per sample
   ##
@@ -926,8 +950,8 @@ PlotData = function(sampleIDs, output.dir, sampleGroups=NA, minPercent_exogenous
   mapping.stats = mapping.stats[,-grep("input_to_",colnames(mapping.stats))]
   
   ## remove the exogenous stuff from the stats if this wasn't used in the run
-  if(sum(mapping.stats[,23:27]) == 0)
-    mapping.stats = mapping.stats[, -c(23:27)]
+  if(sum(mapping.stats[,22:26]) == 0)
+    mapping.stats = mapping.stats[, -c(22:26)]
   
   
   ##
@@ -987,8 +1011,8 @@ PlotData = function(sampleIDs, output.dir, sampleGroups=NA, minPercent_exogenous
     toplot$sampleGroup = sampleGroups[match(toplot$Sample, sampleGroups$sampleID), 2] 
     p = ggplot(toplot, aes(x=TranscriptomeReads, y=TranscriptomeGenomeRatio, colour=sampleGroup))
   }
-  minX = floor(log10(min(toplot$TranscriptomeReads)+0.001))
-  maxX = ceiling(log10(max(toplot$TranscriptomeReads)+0.001))
+  minX = floor(log10(min(na.omit(toplot$TranscriptomeReads))+0.001))
+  maxX = ceiling(log10(max(na.omit(toplot$TranscriptomeReads))+0.001))
   p = p +scale_x_log10(breaks=10^c(minX:maxX)) +coord_cartesian(xlim=c(10^(minX),10^(maxX)),ylim=c(0,1)) +geom_vline(xintercept=100000,col="red",alpha=0.5) +geom_hline(yintercept=0.5,col="red",alpha=0.5) +annotate("rect",xmin=0,xmax=Inf,ymin=-1,ymax=0.5,alpha=0.2,fill="red") +annotate("rect",xmin=0,xmax=100000,ymin=-1,ymax=1.1,alpha=0.2,fill="red") +ylab("# transcriptome reads / # genome reads") +xlab("# transcriptome reads (log10)") +ggtitle("QC result: overall")
   
   print(p +geom_point(size=4) )
