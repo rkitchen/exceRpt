@@ -12,7 +12,7 @@ ENV PATH_BIN=$path_bin
 
 
 RUN apt-get update --fix-missing \
-    && apt-get install -y wget gcc unzip make libbz2-dev zlib1g zlib1g-dev git default-jre libncurses5-dev libncursesw5-dev liblzma-dev libcurl
+    && apt-get install -y wget gcc unzip make libbz2-dev zlib1g zlib1g-dev git default-jre libncurses5-dev libncursesw5-dev liblzma-dev libcurl4-openssl-dev
 
 
 RUN mkdir -p $PATH_BIN \
@@ -40,6 +40,11 @@ RUN cd $PATH_BIN \
     && git clone https://github.com/alexdobin/STAR.git
 ENV EXE_STAR=$path_bin/STAR/bin/Linux_x86_64/STAR
 
+## Salmon
+RUN cd $PATH_BIN \
+    && wget https://github.com/COMBINE-lab/salmon/releases/download/v1.1.0/salmon-1.1.0_linux_x86_64.tar.gz \
+    && tar xzvf salmon-1.1.0_linux_x86_64.tar.gz
+ENV EXE_SALMON=$path_bin/salmon-latest_linux_x86_64/bin/salmon
 
 ## Bowtie1
 RUN cd $PATH_BIN \
