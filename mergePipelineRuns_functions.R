@@ -68,7 +68,7 @@ processSamplesInDir = function(data.dir, output.dir=data.dir, scriptDir="~/Dropb
 ## check dependencies
 ##
 lib="~/R/packages"
-#lib="/efs/bin/R/R_Packages/"
+lib="/efs/bin/R/R_Packages/"
 
 if(!file.exists(lib)){ dir.create(lib) }
 .libPaths(c(lib, .libPaths()))
@@ -83,7 +83,7 @@ if(!"plyr" %in% rownames(installed.packages())) { install.packages("plyr",lib=li
 if(!"gplots" %in% rownames(installed.packages())) { install.packages("gplots",lib=lib,repos=baseURL) }
 if(!"marray" %in% rownames(installed.packages())) { BiocManager::install("marray",lib=lib,ask=F) }
 if(!"reshape2" %in% rownames(installed.packages())) { install.packages("reshape2",lib=lib,repos=baseURL) }
-if(!"ggplot2" %in% rownames(installed.packages())) { install.packages("ggplot2",lib=lib,repos=baseURL) }
+if(!"tidyverse" %in% rownames(installed.packages())) { install.packages("tidyverse",lib=lib,repos=baseURL) }
 if(!"tools" %in% rownames(installed.packages())) { install.packages("tools",lib=lib,repos=baseURL) }
 if(!"Rgraphviz" %in% rownames(installed.packages())) { BiocManager::install("Rgraphviz",lib=lib,ask=F) }
 if(!"scales" %in% rownames(installed.packages())) { install.packages("scales",lib=lib,repos=baseURL) }
@@ -96,7 +96,7 @@ require(plyr, lib.loc=lib)
 require(gplots, lib.loc=lib)
 require(marray, lib.loc=lib)
 require(reshape2, lib.loc=lib)
-require(ggplot2, lib.loc=lib)
+require(tidyverse, lib.loc=lib)
 require(tools, lib.loc=lib)
 require(Rgraphviz, lib.loc=lib)
 require(scales, lib.loc=lib)
