@@ -9,6 +9,9 @@ PATH_TMP=$BASE/tmp
 ## INSTALL DEPENDENCIES
 ##
 PATH_BIN=$BASE/bin
+mkdir -p $PATH_BIN
+cd $PATH_BIN
+
 
 ## run the script to install the dependencies:
 ./INSTALL_DEPENDENCIES.sh
@@ -40,8 +43,7 @@ mkdir -p $PATH_FA
 
 
 ## Sync fasta files from S3
-aws s3 sync s3://kitchen-mgh-data/Annotations/Human/exceRpt/fasta_static $PATH_FA
-aws s3 sync s3://kitchen-mgh-public/exceRpt/DATABASE/v2_0 $PATH_DB
+#aws s3 sync s3://kitchen-mgh-public/exceRpt/DATABASE/v2_0 $PATH_DB
 aws s3 sync s3://kitchen-mgh-public/exceRpt/DATABASE/fasta_static $PATH_FA
 
 
@@ -296,13 +298,13 @@ cd $PATH_FA/piRNA/RNAcentral
 RMDUP="java -Xmx10G -jar $EXE_EXCERPT_TOOLS RemoveFastaDuplicates"
 
 gunzip -c $PATH_FA/piRNA/RNAcentral/piRNA_AND_TAXONOMY9606_AND_expert_dbENA_AND_rna_typepiRNA_AND_has_genomic_coordinatesTrue.fasta.gz > $PATH_FA/piRNA/RNAcentral/tmp.fa
-$RMDUP -o $PATH_FA/piRNA/RNAcentral/piRNA_RNAcentral_human.fa -s $PATH_FA/piRNA/RNAcentral/tmp.fa
-gzip $PATH_FA/piRNA/RNAcentral/piRNA_RNAcentral_human.fa
+$RMDUP -o $PATH_FA/piRNA/piRNA_RNAcentral_human.fa -s $PATH_FA/piRNA/RNAcentral/tmp.fa
+gzip $PATH_FA/piRNA/piRNA_RNAcentral_human.fa
 rm $PATH_FA/piRNA/RNAcentral/tmp.fa
 
 gunzip -c $PATH_FA/piRNA/RNAcentral/piRNA_AND_rna_typepiRNA_AND_has_genomic_coordinatesTrue_AND_TAXONOMY10090_AND_expert_dbENA_AND_length17_TO_50.fasta.gz > $PATH_FA/piRNA/RNAcentral/tmp.fa
-$RMDUP -o $PATH_FA/piRNA/RNAcentral/piRNA_RNAcentral_mouse.fa -s $PATH_FA/piRNA/RNAcentral/tmp.fa
-gzip $PATH_FA/piRNA/RNAcentral/piRNA_RNAcentral_mouse.fa
+$RMDUP -o $PATH_FA/piRNA/piRNA_RNAcentral_mouse.fa -s $PATH_FA/piRNA/RNAcentral/tmp.fa
+gzip $PATH_FA/piRNA/piRNA_RNAcentral_mouse.fa
 rm $PATH_FA/piRNA/RNAcentral/tmp.fa
 
 
@@ -338,7 +340,7 @@ $EXE_STAR --runMode genomeGenerate --runThreadN $CORES --genomeDir $PATH_DB/hg38
 ## hg19
 mkdir -p $PATH_DB/hg19/STAR_INDEX_transcriptome
 ## concatenate the individual libraries into a single fasta
-cat $PATH_FA/miRBase_v$VER_MIRBASE\_hairpin_hsa.fa | sed 's/^>/>miRNA:/' > $PATH_FA/tmp.allLibs.fa
+cat $PATH_FA/miRNA/miRBase_v$VER_MIRBASE\_hairpin_hsa.fa | sed 's/^>/>miRNA:/' > $PATH_FA/tmp.allLibs.fa
 gunzip -c $PATH_FA/hg19-tRNAs_modifiedHeaders.fa.gz | sed 's/^>/>tRNA:/' >> $PATH_FA/tmp.allLibs.fa
 gunzip -c $PATH_FA/piRNA/RNAcentral/piRNA_RNAcentral_human.fa.gz | sed 's/^>/>piRNA:/' >> $PATH_FA/tmp.allLibs.fa
 gunzip -c $PATH_FA/hg19_gencode.v19.fa.gz | sed 's/^>/>gencode:/' >> $PATH_FA/tmp.allLibs.fa
@@ -350,7 +352,7 @@ $EXE_STAR --runMode genomeGenerate --runThreadN $CORES --genomeDir $PATH_DB/hg19
 ## mm10
 mkdir -p $PATH_DB/mm10/STAR_INDEX_transcriptome
 ## concatenate the individual libraries into a single fasta
-cat $PATH_FA/miRBase_v$VER_MIRBASE\_hairpin_mmu.fa | sed 's/^>/>miRNA:/' > $PATH_FA/tmp.allLibs.fa
+cat $PATH_FA/miRNA/miRBase_v$VER_MIRBASE\_hairpin_mmu.fa | sed 's/^>/>miRNA:/' > $PATH_FA/tmp.allLibs.fa
 gunzip -c $PATH_FA/mm10-tRNAs_modifiedHeaders.fa.gz | sed 's/^>/>tRNA:/' >> $PATH_FA/tmp.allLibs.fa
 gunzip -c $PATH_FA/piRNA/RNAcentral/piRNA_RNAcentral_mouse.fa.gz | sed 's/^>/>piRNA:/' >> $PATH_FA/tmp.allLibs.fa
 gunzip -c $PATH_FA/mm10_gencode.v$VER_GENCODE_MMU.fa.gz | sed 's/^>/>gencode:/' >> $PATH_FA/tmp.allLibs.fa
@@ -429,8 +431,7 @@ tar -cvf exceRptDB_v5_mm10.tgz mm10
 ## Sync with S3
 ##
 ## Sync fasta files from S3
-aws s3 sync $PATH_DB s3://kitchen-mgh-public/exceRpt/DATABASE/v5.0
-
+#aws s3 sync $PATH_DB s3://kitchen-mgh-public/exceRpt/DATABASE/v5.0
 
 
 

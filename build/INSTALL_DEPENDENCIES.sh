@@ -4,7 +4,7 @@
 ## INSTALL DEPENDENCIES
 ##
 
-PATH_BIN=~/WORK/exceRpt/build/bin
+#PATH_BIN=~/WORK/exceRpt/build/bin
 mkdir -p $PATH_BIN  && cd $PATH_BIN
 
 ## exceRpt
