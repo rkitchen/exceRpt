@@ -16,6 +16,7 @@ PATH_BIN=$BASE/bin
 
 EXE_EXCERPT_TOOLS=$PATH_BIN/exceRpt/exceRpt_Tools.jar
 EXE_THUNDER=$PATH_BIN/Thunder/Thunder.jar
+#EXE_STAR=$PATH_BIN/STAR/bin/MacOSX_x86_64/STAR
 EXE_STAR=$PATH_BIN/STAR/bin/Linux_x86_64/STAR
 EXE_BOWTIE1=$PATH_BIN/bowtie1/bowtie
 EXE_BOWTIE1_BUILD=$PATH_BIN/bowtie1/bowtie-build
@@ -362,7 +363,7 @@ $EXE_STAR --runMode genomeGenerate --runThreadN $CORES --genomeDir $PATH_DB/hg38
 ## hg19
 mkdir -p $PATH_DB/hg19/STAR_INDEX_transcriptome
 ## concatenate the individual libraries into a single fasta
-cat $PATH_FA/miRBase_v$VER_MIRBASE\_hairpin_hsa.fa | sed 's/^>/>miRNA:/' > $PATH_FA/tmp.allLibs.fa
+cat $PATH_FA/miRNA/miRBase_v$VER_MIRBASE\_hairpin_hsa.fa | sed 's/^>/>miRNA:/' > $PATH_FA/tmp.allLibs.fa
 gunzip -c $PATH_FA/hg19-tRNAs_modifiedHeaders.fa.gz | sed 's/^>/>tRNA:/' >> $PATH_FA/tmp.allLibs.fa
 gunzip -c $PATH_FA/piRNA/piRNA_RNAcentral_human.fa.gz | sed 's/^>/>piRNA:/' >> $PATH_FA/tmp.allLibs.fa
 gunzip -c $PATH_FA/hg19_gencode.v19.fa.gz | sed 's/^>/>gencode:/' >> $PATH_FA/tmp.allLibs.fa
@@ -374,14 +375,16 @@ $EXE_STAR --runMode genomeGenerate --runThreadN $CORES --genomeDir $PATH_DB/hg19
 ## mm10
 mkdir -p $PATH_DB/mm10/STAR_INDEX_transcriptome
 ## concatenate the individual libraries into a single fasta
-cat $PATH_FA/miRBase_v$VER_MIRBASE\_hairpin_mmu.fa | sed 's/^>/>miRNA:/' > $PATH_FA/tmp.allLibs.fa
+cat $PATH_FA/miRNA/miRBase_v$VER_MIRBASE\_hairpin_mmu.fa | sed 's/^>/>miRNA:/' > $PATH_FA/tmp.allLibs.fa
 gunzip -c $PATH_FA/mm10-tRNAs_modifiedHeaders.fa.gz | sed 's/^>/>tRNA:/' >> $PATH_FA/tmp.allLibs.fa
 gunzip -c $PATH_FA/piRNA/piRNA_RNAcentral_mouse.fa.gz | sed 's/^>/>piRNA:/' >> $PATH_FA/tmp.allLibs.fa
 gunzip -c $PATH_FA/mm10_gencode.v$VER_GENCODE_MMU.fa.gz | sed 's/^>/>gencode:/' >> $PATH_FA/tmp.allLibs.fa
 gunzip -c $PATH_FA/circRNA/circBase/mouse_mm9_circRNAs_putative_spliced_sequence.fa.gz | sed 's/^>/>circRNA:/' >> $PATH_FA/tmp.allLibs.fa
+cat $PATH_FA/tmp.allLibs.fa | grep "^>" | awk -F ":" '{print $1}' | sort | uniq -c
 ## Count the number of references and the number of nucleotides
 #cat $PATH_FA/tmp.allLibs.fa | grep -c "^>" ; cat $PATH_FA/tmp.allLibs.fa | grep -v "^>" | wc -c
-$EXE_STAR --runMode genomeGenerate --runThreadN $CORES --genomeDir $PATH_DB/mm10/STAR_INDEX_transcriptome --genomeFastaFiles $PATH_FA/tmp.allLibs.fa --genomeSAindexNbases 14 --genomeChrBinNbits 11
+$EXE_STAR --runMode genomeGenerate --runThreadN $CORES --genomeDir $PATH_DB/mm10/STAR_INDEX_transcriptome --genomeFastaFiles $PATH_FA/tmp.allLibs.fa --genomeSAindexNbases 13 --genomeChrBinNbits 11
+cat $PATH_DB/mm10/STAR_INDEX_transcriptome/chrName.txt | awk -F ":" '{print $1}' | sort | uniq -c
 
 rm $PATH_FA/tmp.allLibs.fa
 
