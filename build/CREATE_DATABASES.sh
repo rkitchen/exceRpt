@@ -9,6 +9,9 @@ PATH_TMP=$BASE/tmp
 ## INSTALL DEPENDENCIES
 ##
 PATH_BIN=$BASE/bin
+mkdir -p $PATH_BIN
+cd $PATH_BIN
+
 
 ## run the script to install the dependencies:
 ./INSTALL_DEPENDENCIES.sh
@@ -56,8 +59,6 @@ cp $PATH_BIN/exceRpt/build/DATABASE/randomBits.dat $PATH_DB
 
 ##
 ## Sync fasta files from S3
-##
-#aws s3 sync s3://kitchen-mgh-data/Annotations/Human/exceRpt/fasta_static $PATH_FA
 #aws s3 sync s3://kitchen-mgh-public/exceRpt/DATABASE/v2_0 $PATH_DB
 aws s3 sync s3://kitchen-mgh-public/exceRpt/DATABASE/fasta_static $PATH_FA
 
@@ -477,12 +478,12 @@ tar -cv -T $PATH_TMP/filesToCompress_mm10.txt -f $PATH_DB/exceRptDB_v5_mm10.tar.
 ##
 ## Sync with S3
 ##
-## Sync DB to S3
+## Sync fasta files from S3
 #aws s3 sync $PATH_DB s3://kitchen-mgh-public/exceRpt/DATABASE/v5.0
+## Sync DB to S3
 aws s3 cp $PATH_DB/exceRptDB_v5_hg19.tar.gz s3://kitchen-mgh-public/exceRpt/DATABASE/v5.0/
 aws s3 cp $PATH_DB/exceRptDB_v5_hg38.tar.gz s3://kitchen-mgh-public/exceRpt/DATABASE/v5.0/
 aws s3 cp $PATH_DB/exceRptDB_v5_mm10.tar.gz s3://kitchen-mgh-public/exceRpt/DATABASE/v5.0/
-
 
 
 
