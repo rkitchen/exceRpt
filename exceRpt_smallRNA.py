@@ -5,6 +5,8 @@ import shutil
 import time
 import pandas as pd
 
+version_exceRpt = "5.1"
+
 # RNA-seq pipeline usage:
 help = '''
 
@@ -77,12 +79,27 @@ if "additional_args_salmon" in config:
 
 exe_samtools = path_bin + "/samtools-1.9/samtools"
 exe_bedtools = path_bin + "/bedtools2/bin/bedtools"
-exe_star = path_bin + "/STAR/bin/STAR"
+#exe_star = path_bin + "/STAR/STAR-2.7.7a/bin/Linux_x86_64/STAR"
+exe_star = path_bin + "/STAR/STAR-2.7.1a/bin/Linux_x86_64/STAR"
+
 
 # Get a list of the samples and read numbers we need to process
 samples = pd.read_csv(config["sample_table"], comment='#')
 unique_sampleIDs = samples['sampleID'].unique()
 unique_readNumbers = "R1"
+
+
+params_star_endogenous = ' --alignEndsType ' + config["star_alignEndsType"] + ' \
+        --outFilterMatchNmin ' + config["star_outFilterMatchNmin"] + ' \
+        --outFilterMatchNminOverLread ' + config["star_outFilterMatchNminOverLread"] + ' \
+        --outFilterMismatchNmax ' + config["star_outFilterMismatchNmax"] + ' \
+        --outFilterMismatchNoverLmax ' + config["star_outFilterMismatchNoverLmax"] + ' '
+
+params_star_exogenous = '--outSAMtype BAM Unsorted --outSAMattributes Standard --alignEndsType EndToEnd \
+        --outFilterMatchNmin ' + config["star_outFilterMatchNmin"] + ' \
+        --outFilterMatchNminOverLread ' + config["star_outFilterMatchNminOverLread"] + ' \
+        --outFilterMismatchNmax ' + config["star_outFilterMismatchNmax"] + ' \
+        --outFilterMismatchNoverLmax ' + config["star_outFilterMismatchNoverLmax"] + ' '
 
 
 # Get the system user
@@ -141,15 +158,21 @@ rule cleanup_and_sync:
     #     && cp -r {params.sampleID} {path_EFS_out}/
     #     '''
     run:
-        shell("$(COMPRESS_COMMAND)")
-        shell("tar -cvz -C $(OUTPUT_DIR) -T $(OUTPUT_DIR)/$(SAMPLE_ID)_filesToCompress.txt -f $(OUTPUT_DIR)/$(SAMPLE_ID)_CORE_RESULTS_v$(EXCERPT_VERSION).tgz 2> /dev/null")
+        shell('''ls -lh {params.sampleID} | awk '{{print $9}}' \
+                | grep "readCounts_\|.readLengths.txt\|_fastqc.zip\|.counts\|.CIGARstats.txt\|.coverage.txt" \
+                | awk '{{print "{params.sampleID}/"$1}}' \
+                > {params.sampleID}/{params.sampleID}_filesToCompress.txt;''')
+        shell("tar -cvz -C . -T {params.sampleID}/{params.sampleID}_filesToCompress.txt \
+                -f {params.sampleID}_CORE_RESULTS_v{version_exceRpt}.tgz 2> /dev/null")
+        shell('touch {output}')
+
 
 
 rule calculate_stats:
     input:
         a = "{sampleID}/checkpoints/process_alignments.chk",
-        b = "{sampleID}/checkpoints/calculate_sequence_lengths_R1.chk",
-        c = "{sampleID}/trimmed/{sampleID}.R1_fastqc.html"
+        b = "{sampleID}/checkpoints/calculate_sequence_lengths.chk",
+        c = "{sampleID}/{sampleID}_trimmed_fastqc.html"
     output:
         chk = "{sampleID}/checkpoints/calculate_stats.chk",
         stats = "{sampleID}/sampleStats.csv"
@@ -162,17 +185,11 @@ rule calculate_stats:
         name = "{sampleID}"+job_name_sep+"calculate_stats"
     log:
         "{sampleID}/logs/calculate_stats.log"
-    shell:
-        '''
-        echo "What,ReadCount" > {output.stats} \
-        && cat {params.sampleID}/logs/trim_adapters.log | grep -w "^Input:" \
-            | awk -F " " '{{print "Input,"$2}}' >> {output.stats} \
-        && cat {params.sampleID}/logs/trim_adapters.log | grep -w "^Result:" \
-            | awk -F " " '{{print "TrimmedFiltered,"$2}}' >> {output.stats} \
-        && cat {params.sampleID}/salmon/aux_info/meta_info.json | grep -w "num_mapped" \
-            | sed 's/,//g' | awk -F " " '{{print "TranscriptomeMapped,"$2}}' >> {output.stats} \
-        && touch {output.chk}
-        '''
+    run:
+        shell('''
+        ''')
+        shell('touch {output}')
+
 
 
 rule process_alignments:
@@ -190,25 +207,11 @@ rule process_alignments:
         name = "{sampleID}"+job_name_sep+"process_alignments"
     log:
         "{sampleID}/logs/process_alignments.log"
-    shell:
-        '''
-        mkdir -p {path_tmp}/{params.sampleID} \
-        && gunzip -c {path_ann}/annotation.gtf.gz > {path_tmp}/{params.sampleID}/annotation.gtf \
-        && docker run -u `id -u {sys_username}` \
-            -v $PWD/{params.sampleID}:/base -v {path_ann}:/ann -v {path_tmp}/{params.sampleID}:/scratch \
-            rkitchen/salmon quant -i /ann/salmonIndex_31nt -g /scratch/annotation.gtf \
-            --threads={params.usethreads} --seqBias --gcBias -l A --numBootstraps=20 \
-            {additional_args_salmon} \
-            --validateMappings --allowDovetail --writeMappings=/scratch/{params.sampleID}.sam \
-            -o /base/salmon -r /base/trimmed/{params.sampleID}.R1.fastq.gz \
-            >> {log} 2>&1 \
-        && touch {params.sampleID}/checkpoints/process_alignments.chk \
-        && {exe_samtools} view -bS --threads {params.threads} \
-            {path_tmp}/{params.sampleID}/{params.sampleID}.sam \
-            > {params.sampleID}/salmon/{params.sampleID}.bam \
-        && rm -r {path_tmp}/{params.sampleID} \
-        && touch {params.sampleID}/checkpoints/quantify_transcripts.chk \
-        '''
+    run:
+        shell('''
+        ''')
+        shell('touch {output}')
+
 
 rule map_RNA_genomeUnmapped:
     input:
@@ -219,16 +222,16 @@ rule map_RNA_genomeUnmapped:
         threads = 4,
         usethreads = 4,
         sampleID = "{sampleID}",
-        #read = "{read}",
         runtime = "01:00:00",
         priority = 1,
         name = "{sampleID}_"+job_name_sep + \
             "map_RNA_genomeUnmapped"
     log:
         "{sampleID}/logs/map_RNA_genomeUnmapped.log"
-    shell:
-        '''
-        '''
+    run:
+        shell('''
+        ''')
+        shell('touch {output}')
 
 
 rule map_RNA_genomeMapped:
@@ -240,16 +243,16 @@ rule map_RNA_genomeMapped:
         threads = 4,
         usethreads = 4,
         sampleID = "{sampleID}",
-        #read = "{read}",
         runtime = "01:00:00",
         priority = 1,
         name = "{sampleID}_"+job_name_sep + \
             "map_RNA_genomeMapped"
     log:
         "{sampleID}/logs/map_RNA_genomeMapped.log"
-    shell:
-        '''
-        '''
+    run:
+        shell('''
+        ''')
+        shell('touch {output}')
 
 
 rule map_genome:
@@ -261,80 +264,85 @@ rule map_genome:
         threads = 4,
         usethreads = 4,
         sampleID = "{sampleID}",
-        #read = "{read}",
         runtime = "01:00:00",
         priority = 1,
         name = "{sampleID}_"+job_name_sep+"map_genome"
     log:
         "{sampleID}/logs/map_genome.log"
-    shell:
-        '''
-        '''
+    run:
+        shell('''
+        ''')
+        shell('touch {output}')
+
+
 
 rule map_rRNA_and_UniVec:
     input:
-        "{sampleID}/checkpoints/trim_adapters_R1.chk"
+        #"{sampleID}/checkpoints/trim_adapters.chk"
+        "{sampleID}/{sampleID}_trimmed.fastq.gz"
     output:
         "{sampleID}/checkpoints/map_univec_and_rRNA.chk"
     params:
         threads = 4,
         usethreads = 4,
         sampleID = "{sampleID}",
-        #read = "{read}",
         runtime = "01:00:00",
         priority = 1,
         name = "{sampleID}_"+job_name_sep+"map_rRNA_and_UniVec"
     log:
         "{sampleID}/logs/map_rRNA_and_UniVec.log"
-    shell:
-        '''
-        {exe_star} --runThreadN $(N_THREADS) \
-          --outFileNamePrefix $(OUTPUT_DIR)/$(SAMPLE_ID)/filteringAlignments_UniVec_and_rRNA_ \
-          --genomeDir $(DATABASE_PATH)/$(MAIN_ORGANISM_GENOME_ID)/STAR_INDEX_Univec_rRNA \
-          --readFilesIn $(FILE_TO_INPUT_TO_UNIVEC_ALIGNMENT) --readFilesCommand "gunzip -c" \
-          --outReadsUnmapped Fastx --parametersFiles $(DATABASE_PATH)/STAR_Parameters_Endogenous_smallRNA.in \
-          $(STAR_ENDOGENOUS_DYNAMIC_PARAMS) >{log} 2>&1; \
-        && {exe_samtools} view $(OUTPUT_DIR)/$(SAMPLE_ID)/filteringAlignments_UniVec_and_rRNA_Aligned.out.bam \
-          | awk "{{print $3}}" | sort -k 2,2 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err \
-          | uniq -c > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.UniVec_and_rRNA.counts \
-          2>>{log}; \
-        && {exe_samtools} view $(OUTPUT_DIR)/$(SAMPLE_ID)/filteringAlignments_UniVec_and_rRNA_Aligned.out.bam \
-          | awk "{{print $1}}" | sort 2>> $(OUTPUT_DIR)/$(SAMPLE_ID).err | uniq -c | wc -l \
-          > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.UniVec_and_rRNA.readCount \
-          2>>{log}; \
-        && gzip -c $(OUTPUT_DIR)/$(SAMPLE_ID)/filteringAlignments_UniVec_and_rRNA_Unmapped.out.mate1 \
-          > $(OUTPUT_DIR)/$(SAMPLE_ID)/$(SAMPLE_ID).clipped.trimmed.filtered.noUniVecOrRiboRNA.fastq.gz; \
-        && rm $(OUTPUT_DIR)/$(SAMPLE_ID)/filteringAlignments_UniVec_and_rRNA_Unmapped.out.mate1
-        '''
+    run:
+        shell('''
+        {exe_star} --runThreadN {params.usethreads} \
+          --outFileNamePrefix {params.sampleID}/filteringAlignments_UniVec_and_rRNA_ \
+          --genomeDir {path_ann}/STAR_INDEX_Univec_rRNA \
+          --readFilesIn {input} --readFilesCommand "gunzip -c" \
+          --outReadsUnmapped Fastx --parametersFiles {path_ann}/../STAR_Parameters_Endogenous_smallRNA.in \
+          {params_star_endogenous} >{log} 2>&1
+        ''')
+        shell('''gzip -c {params.sampleID}/filteringAlignments_UniVec_and_rRNA_Unmapped.out.mate1 \
+          > {params.sampleID}/{params.sampleID}.clipped.trimmed.filtered.noUniVecOrRiboRNA.fastq.gz''')
+        shell('rm {params.sampleID}/filteringAlignments_UniVec_and_rRNA_Unmapped.out.mate1') 
+        shell('touch {output}')
+        #&& {exe_samtools} view {params.sampleID}/filteringAlignments_UniVec_and_rRNA_Aligned.out.bam \
+        #  | awk "{{print $3}}" | sort -k 2,2 2>>{log} \
+        #  | uniq -c > {params.sampleID}/{params.sampleID}.clipped.trimmed.filtered.UniVec_and_rRNA.counts \
+        #  2>>{log}; \
+        #&& {exe_samtools} view {params.sampleID}/filteringAlignments_UniVec_and_rRNA_Aligned.out.bam \
+        #  | awk "{{print $1}}" | sort 2>>{log} | uniq -c | wc -l \
+        #  > {params.sampleID}/{params.sampleID}.clipped.trimmed.filtered.UniVec_and_rRNA.readCount \
+        #  2>>{log}; \
+        #'''
 
 rule fastQC_trimmed:
     input:
-        "{sampleID}/checkpoints/trim_adapters_{read}.chk"
+        #"{sampleID}/checkpoints/trim_adapters.chk"
+        "{sampleID}/{sampleID}_trimmed.fastq.gz"
     output:
-        "{sampleID}/trimmed/{sampleID}.{read}_fastqc.html"
+        "{sampleID}/trimmed/{sampleID}_fastqc.html"
     params:
         threads = 4,
         usethreads = 4,
         sampleID = "{sampleID}",
-        read = "{read}",
         runtime = "01:00:00",
         priority = 1,
-        name = "{sampleID}_{read}"+job_name_sep+"fastQC_trimmed"
+        name = "{sampleID}"+job_name_sep+"fastQC_trimmed"
     log:
-        "{sampleID}/logs/fastQC_trimmed_{read}.log"
+        "{sampleID}/logs/fastQC_trimmed.log"
     shell:
         '''
         docker run -u `id -u {sys_username}` -v $PWD/{params.sampleID}:/base rkitchen/fastqc \
-            -o /base/trimmed/ -t {params.usethreads} /base/trimmed/{params.sampleID}.{params.read}.fastq.gz \
+            -o /base -t {params.usethreads} /base/{params.sampleID}_trimmed.fastq.gz \
             >> {log} 2>&1
         '''
 
 
 rule calculate_sequence_lengths:
     input:
-        "{sampleID}/checkpoints/trim_adapters_R1.chk"
+        #"{sampleID}/checkpoints/trim_adapters.chk"
+        "{sampleID}/{sampleID}_trimmed.fastq.gz"
     output:
-        "{sampleID}/checkpoints/calculate_sequence_lengths_R1.chk"
+        "{sampleID}/checkpoints/calculate_sequence_lengths.chk"
     params:
         threads = 8,
         usethreads = 8,
@@ -344,18 +352,19 @@ rule calculate_sequence_lengths:
         name = "{sampleID}"+job_name_sep+"calculate_sequence_lengths"
     log:
         "{sampleID}/logs/calculate_sequence_lengths.log"
-    shell:
-        '''
+    run:
+        shell('''
         java -Xmx10G -jar {path_exceRpt}/exceRpt_Tools.jar GetSequenceLengths \
-        $PWD/{params.sampleID}/trimmed/{params.sampleID}.fastq.gz \
-        > $PWD/{params.sampleID}/trimmed/{params.sampleID}_insertSizes.txt
-        '''
+          {input} > {input}_insertSizes.txt
+        ''')
+        shell('touch {output}')
 
 rule trim_adapters:
     input:
-        R1 = "{sampleID}/checkpoints/combine_fastqs_R1.chk"
+        R1 = "{sampleID}/checkpoints/combine_fastqs.chk"
     output:
-        R1 = "{sampleID}/checkpoints/trim_adapters_R1.chk"
+        fastq = "{sampleID}/{sampleID}_trimmed.fastq.gz",
+        chk = "{sampleID}/checkpoints/trim_adapters.chk"
     params:
         threads = 8,
         usethreads = 8,
@@ -369,43 +378,43 @@ rule trim_adapters:
         '''
         docker run --entrypoint bbduk.sh -u `id -u {sys_username}` -v $PWD/{params.sampleID}:/base rkitchen/bbtools \
             ref=/usr/local/bin/bbmap/resources/adapters.fa \
-            in=/base/{params.sampleID}.R1.fastq.gz \
-            out=/base/trimmed/{params.sampleID}.R1.fastq.gz \
+            in=/base/{params.sampleID}.fastq.gz \
+            out=/base/{params.sampleID}_trimmed.fastq.gz \
             ktrim=r k=21 mink=11 tbo tpe hdist=2 minlen=31 threads={params.usethreads} \
             qtrim=r trimq=10 maq=10 \
             entropy=0.3 entropywindow=50 entropyk=5 \
             >> {log} 2>&1 \
-        && touch {output.R1}
+        && touch {output.chk}
         '''
 
 
 rule combine_fastqs:
     output:
-        "{sampleID}/checkpoints/combine_fastqs_{read}.chk"
+        "{sampleID}/checkpoints/combine_fastqs.chk"
     params:
         sampleID = "{sampleID}",
-        read = "{read}",
+        #read = "{read}",
         files = get_fastq,
         threads = 1,
         usethreads = 1,
         runtime = "01:00:00",
         priority = 10,
-        name = "{sampleID}_{read}"+job_name_sep+"combine_fastqs"
+        name = "{sampleID}"+job_name_sep+"combine_fastqs"
     # log:
     #    "{sampleID}/logs/combine_fastqs_{read}.log"
     run:
         shell("mkdir -p {params.sampleID}/logs")
         shell("mkdir -p {params.sampleID}/checkpoints")
         shell(
-            "rm -f -r {params.sampleID}/{params.sampleID}.{params.read}.fastq.gz")
+            "rm -f -r {params.sampleID}/{params.sampleID}.fastq.gz")
         for f in params.files:
-            if data_origin == "S3":
+            if data_source == "S3":
                 shell('aws s3 cp "{path_in}/' + f +
-                      '" - >> {params.sampleID}/{params.sampleID}.{params.read}.fastq.gz')
-            elif data_origin == "sra":
+                      '" - >> {params.sampleID}/{params.sampleID}.fastq.gz')
+            elif data_source == "sra":
                 shell('{exe_sra} --stdout "' + f +
-                      '" >> {params.sampleID}/{params.sampleID}.{params.read}.fastq.gz')
+                      '" >> {params.sampleID}/{params.sampleID}.fastq.gz')
             else:
                 shell('cat "{path_in}/' + f +
-                      '" >> {params.sampleID}/{params.sampleID}.{params.read}.fastq.gz')
+                      '" >> {params.sampleID}/{params.sampleID}.fastq.gz')
         shell("touch {output}")
