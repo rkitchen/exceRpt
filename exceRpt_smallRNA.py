@@ -18,8 +18,8 @@ An example command to run the pipeline is:
     snakemake -s $BASE/snakemake_pipeline.py \
               --cores 2 \
               --directory=$PATH_OUT \
-              --configfile="$BASE/TESTING/config_mac.yaml" 
-              
+              --configfile="$BASE/TESTING/config_mac.yaml"
+
 Add the '-n -p' flags to do a dry run (and print the shell commands)
 
 The two required input files are:
@@ -49,16 +49,16 @@ In the sample table it is imperative that:
 
 
 # hard-coded parameters
-#exe_samtools = "/efs/bin/samtools-1.9/samtools"
-#exe_bedtools = "/efs/bin/bedtools2/bin/bedtools"
-#path_pipelineScripts = "/efs/Pipelines/RNAseq_pipeline/scripts"
+# exe_samtools = "/efs/bin/samtools-1.9/samtools"
+# exe_bedtools = "/efs/bin/bedtools2/bin/bedtools"
+# path_pipelineScripts = "/efs/Pipelines/RNAseq_pipeline/scripts"
 job_name_sep = "-"
 
 
 # Read parameters from the config file
 path_in = config['path_in']
 path_out = config['path_out']
-#path_EFS_out = config['path_EFS_out']
+# path_EFS_out = config['path_EFS_out']
 path_ann = config["path_annotation"]
 data_source = config["data_source"]
 path_bin = config["path_bin"]
@@ -87,7 +87,7 @@ trim_bases_3p = 0
 
 exe_samtools = path_bin + "/samtools-1.9/samtools"
 exe_bedtools = path_bin + "/bedtools2/bin/bedtools"
-#exe_star = path_bin + "/STAR/STAR-2.7.7a/bin/Linux_x86_64/STAR"
+# exe_star = path_bin + "/STAR/STAR-2.7.7a/bin/Linux_x86_64/STAR"
 exe_star = path_bin + "/STAR/STAR-2.7.1a/bin/Linux_x86_64/STAR"
 
 
@@ -130,7 +130,7 @@ if not run_rapid == "True":
                    sampleID=unique_sampleIDs, read=unique_readNumbers),
             expand("{sampleID}/trimmed/{sampleID}.{read}_fastqc.html",
                    sampleID=unique_sampleIDs, read=unique_readNumbers),
-            #expand("{sampleID}/salmon/{sampleID}.coverage.csv.gz", sampleID=unique_sampleIDs),
+            # expand("{sampleID}/salmon/{sampleID}.coverage.csv.gz", sampleID=unique_sampleIDs),
             expand("{sampleID}/checkpoints/cleanup_and_sync.chk",
                    sampleID=unique_sampleIDs)
 else:
@@ -177,7 +177,7 @@ rule cleanup_and_sync:
 
 rule calculate_stats:
     input:
-        a = "{sampleID}/checkpoints/process_alignments.chk",
+        a = "{params.sampleID}/endogenousAlignments_Accepted.txt.gz",
         b = "{sampleID}/checkpoints/calculate_sequence_lengths.chk",
         c = "{sampleID}/{sampleID}_trimmed_filtered_fastqc.html"
     output:
@@ -194,8 +194,39 @@ rule calculate_stats:
         "{sampleID}/logs/calculate_stats.log"
     run:
         shell('''
+              {exe_samtools} view {params.sampleID}/filteringAlignments_UniVec_and_rRNA_Aligned.out.bam \
+              | awk '{{print $3}}' | sort -k 2,2 2>>{log} \
+              | uniq -c | sort -nrk 1,1 \
+              > {params.sampleID}/{params.sampleID}.clipped.trimmed.filtered.UniVec_and_rRNA.counts \
+              2>{log}
         ''')
-        shell('touch {output}')
+        shell('''
+              {exe_samtools} view {params.sampleID}/filteringAlignments_UniVec_and_rRNA_Aligned.out.bam \
+              | awk '{{print $1}}'| sort -nrk 1,1 2>>{log} | uniq -c | wc -l \
+              > {params.sampleID}/{params.sampleID}.clipped.trimmed.filtered.UniVec_and_rRNA.readCount \
+              2>>{log}
+        ''')
+        shell('''
+              cat {params.sampleID}/readCounts_miRNAmature_sense.txt | awk '{{SUM+=$4}}END{{printf "miRNA_sense\t%.0f\n",SUM}}' >> {output.stats} \
+              cat {params.sampleID}/readCounts_miRNAmature_antisense.txt | awk '{{SUM+=$4}}END{{printf "miRNA_antisense\t%.0f\n",SUM}}' >> {output.stats}
+        ''')
+        # Count reads not mapping to the genome or to the libraries
+        shell('''
+              gunzip -c {params.sampleID}/endogenousAlignments_genomeUnmapped_transcriptome_Unmapped.fastq.gz \
+              | wc - l | awk '{{print "not_mapped_to_genome_or_libs\t"($1/4)}}' >> {output.stats}
+              ''')
+        shell('touch {output.chk}')
+
+        # cat $(OUTPUT_DIR) /$(SAMPLE_ID)/readCounts_miRNAprecursor_sense.txt | awk '{SUM+=$$4}END{printf "miRNAprecursor_sense\t%.0f\n",SUM}' >> $(OUTPUT_DIR) /$(SAMPLE_ID).stats
+        # cat $(OUTPUT_DIR) /$(SAMPLE_ID)/readCounts_miRNAprecursor_antisense.txt | awk '{SUM+=$$4}END{printf "miRNAprecursor_antisense\t%.0f\n",SUM}' >> $(OUTPUT_DIR) /$(SAMPLE_ID).stats
+        # cat $(OUTPUT_DIR) /$(SAMPLE_ID)/readCounts_tRNA_sense.txt | awk '{SUM+=$$4}END{printf "tRNA_sense\t%.0f\n",SUM}' >> $(OUTPUT_DIR) /$(SAMPLE_ID).stats
+        # cat $(OUTPUT_DIR) /$(SAMPLE_ID)/readCounts_tRNA_antisense.txt | awk '{SUM+=$$4}END{printf "tRNA_antisense\t%.0f\n",SUM}' >> $(OUTPUT_DIR) /$(SAMPLE_ID).stats
+        # cat $(OUTPUT_DIR) /$(SAMPLE_ID)/readCounts_piRNA_sense.txt | awk '{SUM+=$$4}END{printf "piRNA_sense\t%.0f\n",SUM}' >> $(OUTPUT_DIR) /$(SAMPLE_ID).stats
+        # cat $(OUTPUT_DIR) /$(SAMPLE_ID)/readCounts_piRNA_antisense.txt | awk '{SUM+=$$4}END{printf "piRNA_antisense\t%.0f\n",SUM}' >> $(OUTPUT_DIR) /$(SAMPLE_ID).stats
+        # cat $(OUTPUT_DIR) /$(SAMPLE_ID)/readCounts_gencode_sense.txt | awk '{SUM+=$$4}END{printf "gencode_sense\t%.0f\n",SUM}' >> $(OUTPUT_DIR) /$(SAMPLE_ID).stats
+        # cat $(OUTPUT_DIR) /$(SAMPLE_ID)/readCounts_gencode_antisense.txt | awk '{SUM+=$$4}END{printf "gencode_antisense\t%.0f\n",SUM}' >> $(OUTPUT_DIR) /$(SAMPLE_ID).stats
+        # cat $(OUTPUT_DIR) /$(SAMPLE_ID)/readCounts_circRNA_sense.txt | awk '{SUM+=$$4}END{printf "circularRNA_sense\t%.0f\n",SUM}' >> $(OUTPUT_DIR) /$(SAMPLE_ID).stats
+        # cat $(OUTPUT_DIR) /$(SAMPLE_ID)/readCounts_circRNA_antisense.txt | awk '{SUM+=$$4}END{printf "circularRNA_antisense\t%.0f\n",SUM}' >> $(OUTPUT_DIR) /$(SAMPLE_ID).stats
 
 
 rule process_alignments:
@@ -203,7 +234,8 @@ rule process_alignments:
         a = "{sampleID}/checkpoints/map_RNA_genomeMapped.chk",
         b = "{sampleID}/checkpoints/map_RNA_genomeUnmapped.chk"
     output:
-        "{sampleID}/checkpoints/process_alignments.chk"
+        chk = "{sampleID}/checkpoints/process_alignments.chk",
+        alignments = "{sampleID}/endogenousAlignments_Accepted.txt.gz"
     params:
         threads = 1,
         usethreads = 1,
@@ -232,12 +264,12 @@ rule process_alignments:
               --acceptedAlignments {params.sampleID}/endogenousAlignments_Accepted.txt \
               --outputPath {params.sampleID} 2>{log}
             ''')
+        shell('gzip {params.sampleID}/endogenousAlignments_Accepted.txt')
         shell('touch {output}')
 
 
 rule map_RNA_genomeUnmapped:
     input:
-        # "{sampleID}/checkpoints/map_genome.chk"
         "{sampleID}/endogenousAlignments_genome_Unmapped.fastq.gz"
     output:
         reads = "{sampleID}/endogenousAlignments_genomeUnmapped_transcriptome_Unmapped.fastq.gz",
@@ -270,7 +302,6 @@ rule map_RNA_genomeUnmapped:
 
 rule map_RNA_genomeMapped:
     input:
-        # "{sampleID}/checkpoints/map_genome.chk"
         "{sampleID}/endogenousAlignments_genome_Aligned.out.bam"
     output:
         reads = "{sampleID}/endogenousAlignments_genomeMapped_transcriptome_Unmapped.fastq.gz",
@@ -281,8 +312,8 @@ rule map_RNA_genomeMapped:
         sampleID = "{sampleID}",
         runtime = "01:00:00",
         priority = 1,
-        name = "{sampleID}_"+job_name_sep + \
-            "map_RNA_genomeMapped"
+        name = "{sampleID}_"+job_name_sep +
+        "map_RNA_genomeMapped"
     log:
         "{sampleID}/logs/map_RNA_genomeMapped.log"
     run:
@@ -310,7 +341,6 @@ rule map_genome:
     input:
         "{sampleID}/checkpoints/map_univec_and_rRNA.chk"
     output:
-        # "{sampleID}/checkpoints/map_genome.chk"
         bam = "{sampleID}/endogenousAlignments_genome_Aligned.out.bam",
         fastq_unmapped = "{sampleID}/endogenousAlignments_genome_Unmapped.fastq.gz"
     params:
@@ -338,9 +368,9 @@ rule map_genome:
             'gzip {params.sampleID}/endogenousAlignments_genome_Unmapped.fastq')
         shell('touch {output}')
 
+
 rule map_rRNA_and_UniVec:
     input:
-        # "{sampleID}/checkpoints/trim_adapters.chk"
         "{sampleID}/{sampleID}_trimmed_filtered.fastq.gz"
     output:
         "{sampleID}/checkpoints/map_univec_and_rRNA.chk"
@@ -367,15 +397,7 @@ rule map_rRNA_and_UniVec:
         shell(
             'rm {params.sampleID}/filteringAlignments_UniVec_and_rRNA_Unmapped.out.mate1')
         shell('touch {output}')
-        # && {exe_samtools} view {params.sampleID}/filteringAlignments_UniVec_and_rRNA_Aligned.out.bam \
-        #  | awk "{{print $3}}" | sort -k 2,2 2>>{log} \
-        #  | uniq -c > {params.sampleID}/{params.sampleID}.clipped.trimmed.filtered.UniVec_and_rRNA.counts \
-        #  2>>{log}; \
-        # && {exe_samtools} view {params.sampleID}/filteringAlignments_UniVec_and_rRNA_Aligned.out.bam \
-        #  | awk "{{print $1}}" | sort 2>>{log} | uniq -c | wc -l \
-        #  > {params.sampleID}/{params.sampleID}.clipped.trimmed.filtered.UniVec_and_rRNA.readCount \
-        #  2>>{log}; \
-        # '''
+
 
 rule fastQC_trimmed:
     input:
@@ -470,15 +492,12 @@ rule combine_fastqs:
         "{sampleID}/checkpoints/combine_fastqs.chk"
     params:
         sampleID = "{sampleID}",
-        #read = "{read}",
         files = get_fastq,
         threads = 1,
         usethreads = 1,
         runtime = "01:00:00",
         priority = 10,
         name = "{sampleID}"+job_name_sep+"combine_fastqs"
-    # log:
-    #    "{sampleID}/logs/combine_fastqs_{read}.log"
     run:
         shell("mkdir -p {params.sampleID}/logs")
         shell("mkdir -p {params.sampleID}/checkpoints")
