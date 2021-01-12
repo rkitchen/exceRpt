@@ -89,7 +89,8 @@ exe_samtools = path_bin + "/samtools-1.9/samtools"
 exe_bedtools = path_bin + "/bedtools2/bin/bedtools"
 # exe_star = path_bin + "/STAR/STAR-2.7.7a/bin/Linux_x86_64/STAR"
 exe_star = path_bin + "/STAR/STAR-2.7.1a/bin/Linux_x86_64/STAR"
-
+path_bbtools = path_bin + "/bbtools/bbmap"
+exe_bbduk = path_bbtools + "/bbduk.sh"
 
 # Get a list of the samples and read numbers we need to process
 samples = pd.read_csv(config["sample_table"], comment='#')
@@ -177,7 +178,7 @@ rule cleanup_and_sync:
 
 rule calculate_stats:
     input:
-        a = "{params.sampleID}/endogenousAlignments_Accepted.txt.gz",
+        a = "{sampleID}/endogenousAlignments_Accepted.txt.gz",
         b = "{sampleID}/checkpoints/calculate_sequence_lengths.chk",
         c = "{sampleID}/{sampleID}_trimmed_filtered_fastqc.html"
     output:
@@ -216,17 +217,6 @@ rule calculate_stats:
               | wc - l | awk '{{print "not_mapped_to_genome_or_libs\t"($1/4)}}' >> {output.stats}
               ''')
         shell('touch {output.chk}')
-
-        # cat $(OUTPUT_DIR) /$(SAMPLE_ID)/readCounts_miRNAprecursor_sense.txt | awk '{SUM+=$$4}END{printf "miRNAprecursor_sense\t%.0f\n",SUM}' >> $(OUTPUT_DIR) /$(SAMPLE_ID).stats
-        # cat $(OUTPUT_DIR) /$(SAMPLE_ID)/readCounts_miRNAprecursor_antisense.txt | awk '{SUM+=$$4}END{printf "miRNAprecursor_antisense\t%.0f\n",SUM}' >> $(OUTPUT_DIR) /$(SAMPLE_ID).stats
-        # cat $(OUTPUT_DIR) /$(SAMPLE_ID)/readCounts_tRNA_sense.txt | awk '{SUM+=$$4}END{printf "tRNA_sense\t%.0f\n",SUM}' >> $(OUTPUT_DIR) /$(SAMPLE_ID).stats
-        # cat $(OUTPUT_DIR) /$(SAMPLE_ID)/readCounts_tRNA_antisense.txt | awk '{SUM+=$$4}END{printf "tRNA_antisense\t%.0f\n",SUM}' >> $(OUTPUT_DIR) /$(SAMPLE_ID).stats
-        # cat $(OUTPUT_DIR) /$(SAMPLE_ID)/readCounts_piRNA_sense.txt | awk '{SUM+=$$4}END{printf "piRNA_sense\t%.0f\n",SUM}' >> $(OUTPUT_DIR) /$(SAMPLE_ID).stats
-        # cat $(OUTPUT_DIR) /$(SAMPLE_ID)/readCounts_piRNA_antisense.txt | awk '{SUM+=$$4}END{printf "piRNA_antisense\t%.0f\n",SUM}' >> $(OUTPUT_DIR) /$(SAMPLE_ID).stats
-        # cat $(OUTPUT_DIR) /$(SAMPLE_ID)/readCounts_gencode_sense.txt | awk '{SUM+=$$4}END{printf "gencode_sense\t%.0f\n",SUM}' >> $(OUTPUT_DIR) /$(SAMPLE_ID).stats
-        # cat $(OUTPUT_DIR) /$(SAMPLE_ID)/readCounts_gencode_antisense.txt | awk '{SUM+=$$4}END{printf "gencode_antisense\t%.0f\n",SUM}' >> $(OUTPUT_DIR) /$(SAMPLE_ID).stats
-        # cat $(OUTPUT_DIR) /$(SAMPLE_ID)/readCounts_circRNA_sense.txt | awk '{SUM+=$$4}END{printf "circularRNA_sense\t%.0f\n",SUM}' >> $(OUTPUT_DIR) /$(SAMPLE_ID).stats
-        # cat $(OUTPUT_DIR) /$(SAMPLE_ID)/readCounts_circRNA_antisense.txt | awk '{SUM+=$$4}END{printf "circularRNA_antisense\t%.0f\n",SUM}' >> $(OUTPUT_DIR) /$(SAMPLE_ID).stats
 
 
 rule process_alignments:
@@ -447,7 +437,7 @@ rule calculate_sequence_lengths:
 
 rule trim_adapters:
     input:
-        R1 = "{sampleID}/checkpoints/combine_fastqs.chk"
+        "{sampleID}/checkpoints/combine_fastqs.chk"
     output:
         fastq = "{sampleID}/{sampleID}_trimmed_filtered.fastq.gz",
         chk = "{sampleID}/checkpoints/trim_adapters.chk"
@@ -459,32 +449,29 @@ rule trim_adapters:
         priority = 10,
         name = "{sampleID}"+job_name_sep+"trim_adapters"
     log:
-        "{sampleID}/logs/trim_adapters.log"
+        adapter = "{sampleID}/logs/bbduk_trimAdapters.log",
+        qual = "{sampleID}/logs/bbduk_qualityFilter.log"
     run:
         shell('''
-              docker run --entrypoint bbduk.sh -u `id -u {sys_username}` \
-              -v $PWD/{params.sampleID}:/base rkitchen/bbtools \
-              ref=/usr/local/bin/bbmap/resources/adapters.fa \
-              in=/base/{params.sampleID}.fastq.gz \
-              out=/base/{params.sampleID}_trimmed.fastq.gz \
+              {exe_bbduk} ref={path_bbtools}/resources/adapters.fa \
+              in={params.sampleID}/{params.sampleID}.fastq.gz \
+              out={params.sampleID}/{params.sampleID}_trimmed.fastq.gz \
               ktrim=r k=10 mink={min_adapter_bases_3p} trimpolya=7 hdist=0 minlen={minInsertSize} threads={params.usethreads} \
               forcetrimleft={trim_bases_5p} forcetrimright2={trim_bases_3p} \
-              stats=/base/{params.sampleID}_filterStats_adapter.txt \
-              >{log} 2>{log}
+              stats={params.sampleID}/{params.sampleID}_filterStats_adapter.txt \
+              >{log.adapter} 2>&1
               ''')
         shell('''
-              docker run --entrypoint bbduk.sh -u `id -u {sys_username}` \
-              -v $PWD/{params.sampleID}:/base -v {path_ann}/..:/ann rkitchen/bbtools \
-              ref=/ann/phiX.fa \
-              in=/base/{params.sampleID}_trimmed.fastq.gz \
-              out=/base/{params.sampleID}_trimmed_filtered.fastq.gz \
+              {exe_bbduk} ref={path_ann}/../phiX.fa \
+              in={params.sampleID}/{params.sampleID}_trimmed.fastq.gz \
+              out={params.sampleID}/{params.sampleID}_trimmed_filtered.fastq.gz \
               qtrim=r trimq=10 maq=10 \
               entropy=0.3 entropywindow=50 entropyk=5 \
               k=20 hdist=1 minlen={minInsertSize} threads={params.usethreads} \
-              stats=/base/{params.sampleID}_filterStats_phiXandQuality.txt \
-              >>{log} 2>>{log}
+              stats={params.sampleID}/{params.sampleID}_filterStats_phiXandQuality.txt \
+              >{log.qual} 2>&1
               ''')
-        shell('touch {output.chk}')
+        shell('touch {output.chk}') 
 
 
 rule combine_fastqs:
