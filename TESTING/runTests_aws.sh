@@ -4,6 +4,7 @@ conda activate snakemake
 ## Run on AWS
 ##
 PATH_ANN=/scratch/Annotations/exceRpt
+mkdir -p $PATH_ANN
 #aws s3 sync s3://kitchen-mgh-public/exceRpt/DATABASE/v5.0/exceRptDB_mm10 $PATH_ANN/
 aws s3 sync s3://kitchen-mgh-public/exceRpt/DATABASE/v5.0/exceRptDB_hg38 $PATH_ANN/
 
