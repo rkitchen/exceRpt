@@ -168,7 +168,7 @@ rule cleanup_and_sync:
     #     '''
     run:
         shell('''ls -lh {params.sampleID} | awk '{{print $9}}' \
-                | grep "readCounts_\|.insertSizes.txt\|_fastqc.zip\|.counts\|.CIGARstats.txt\|.coverage.txt" \
+                | grep "readCounts_\|.insertSizes.txt\|_fastqc.zip\|.counts\|.CIGARstats.txt\|.coverage.txt\|sampleStats.yaml" \
                 | awk '{{print "{params.sampleID}/"$1}}' \
                 > {params.sampleID}/{params.sampleID}_filesToCompress.txt;''')
         shell("tar -cvz -C . -T {params.sampleID}/{params.sampleID}_filesToCompress.txt \
@@ -183,7 +183,7 @@ rule calculate_stats:
         c = "{sampleID}/{sampleID}_trimmed_filtered_fastqc.html"
     output:
         chk = "{sampleID}/checkpoints/calculate_stats.chk",
-        stats = "{sampleID}/sampleStats.csv"
+        stats = "{sampleID}/sampleStats.yaml"
     params:
         threads = 1,
         usethreads = 1,
@@ -194,28 +194,56 @@ rule calculate_stats:
     log:
         "{sampleID}/logs/calculate_stats.log"
     run:
-        shell('''
-              {exe_samtools} view {params.sampleID}/filteringAlignments_UniVec_and_rRNA_Aligned.out.bam \
-              | awk '{{print $3}}' | sort -k 2,2 2>>{log} \
-              | uniq -c | sort -nrk 1,1 \
-              > {params.sampleID}/{params.sampleID}.clipped.trimmed.filtered.UniVec_and_rRNA.counts \
-              2>{log}
-        ''')
-        shell('''
-              {exe_samtools} view {params.sampleID}/filteringAlignments_UniVec_and_rRNA_Aligned.out.bam \
-              | awk '{{print $1}}'| sort -nrk 1,1 2>>{log} | uniq -c | wc -l \
-              > {params.sampleID}/{params.sampleID}.clipped.trimmed.filtered.UniVec_and_rRNA.readCount \
-              2>>{log}
-        ''')
-        shell('''
-              cat {params.sampleID}/readCounts_miRNAmature_sense.txt | awk '{{SUM+=$4}}END{{printf "miRNA_sense\t%.0f\n",SUM}}' >> {output.stats} \
-              cat {params.sampleID}/readCounts_miRNAmature_antisense.txt | awk '{{SUM+=$4}}END{{printf "miRNA_antisense\t%.0f\n",SUM}}' >> {output.stats}
-        ''')
+        shell('''echo -e "---" > {output.stats} ''')
+        shell('''cat {params.sampleID}/sampleA_filterStats_adapter.txt | grep "#Total" \
+                | awk '{{printf "input: %.0f\\n",$2}}' >> {output.stats}''')
+        shell('''cat {params.sampleID}/sampleA_filterStats_phiXandQuality.txt | grep "#Total" \
+                | awk '{{printf "successfully_clipped_adapter: %.0f\\n",$2}}' >> {output.stats}''')
+        shell('''cat {params.sampleID}/filteringAlignments_UniVec_and_rRNA_Log.final.out | grep -w "Number of input reads |" \
+                | awk -F '|' '{{printf "passed_phiX_and_quality: %.0f\\n",$2}}' >> {output.stats}''')
+        shell('''cat {params.sampleID}/endogenousAlignments_genome_Log.final.out | grep -w "Number of input reads |" \
+                | awk -F '|' '{{printf "passed_UniVec_and_rRNA: %.0f\\n",$2}}' >> {output.stats}''')
+        shell('''cat {params.sampleID}/endogenousAlignments_genomeMapped_transcriptome_Log.final.out \
+                | grep -w "Number of input reads |" \
+                | awk -F '|' '{{printf "mapped_to_endogenous_genome: %.0f\\n",$2}}' >> {output.stats}''')
+        # miRNA
+        shell('''touch {params.sampleID}/readCounts_miRNAmature_sense.txt; \
+                cat {params.sampleID}/readCounts_miRNAmature_sense.txt \
+                | awk '{{SUM+=$4}}END{{printf "transcriptome:\\n  miRNA_sense: %.0f\\n",SUM}}' >> {output.stats}''')
+        shell('''touch {params.sampleID}/readCounts_miRNAmature_antisense.txt; \
+                cat {params.sampleID}/readCounts_miRNAmature_antisense.txt \
+                | awk '{{SUM+=$4}}END{{printf "  miRNA_antisense: %.0f\\n",SUM}}' >> {output.stats}''')
+        # tRNA
+        shell('''touch {params.sampleID}/readCounts_tRNA_sense.txt; \
+                cat {params.sampleID}/readCounts_tRNA_sense.txt \
+                | awk '{{SUM+=$4}}END{{printf "  tRNA_sense: %.0f\\n",SUM}}' >> {output.stats}''')
+        shell('''touch {params.sampleID}/readCounts_tRNA_antisense.txt; \
+                cat {params.sampleID}/readCounts_tRNA_antisense.txt \
+                | awk '{{SUM+=$4}}END{{printf "  tRNA_antisense: %.0f\\n",SUM}}' >> {output.stats}''')
+        # piRNA
+        shell('''touch {params.sampleID}/readCounts_piRNA_sense.txt; \
+                cat {params.sampleID}/readCounts_piRNA_sense.txt \
+                | awk '{{SUM+=$4}}END{{printf "  piRNA_sense: %.0f\\n",SUM}}' >> {output.stats}''')
+        shell('''touch {params.sampleID}/readCounts_piRNA_antisense.txt; \
+                cat {params.sampleID}/readCounts_piRNA_antisense.txt \
+                | awk '{{SUM+=$4}}END{{printf "  piRNA_antisense: %.0f\\n",SUM}}' >> {output.stats}''')
+        # gencode
+        shell('''touch {params.sampleID}/readCounts_gencode_sense.txt; \
+                cat {params.sampleID}/readCounts_gencode_sense.txt \
+                | awk '{{SUM+=$4}}END{{printf "  gencode_sense: %.0f\\n",SUM}}' >> {output.stats}''')
+        shell('''touch {params.sampleID}/readCounts_gencode_antisense.txt; \
+                cat {params.sampleID}/readCounts_gencode_antisense.txt \
+                | awk '{{SUM+=$4}}END{{printf "  gencode_antisense: %.0f\\n",SUM}}' >> {output.stats}''')
+        # circRNA
+        shell('''touch {params.sampleID}/readCounts_circRNA_sense.txt; \
+                cat {params.sampleID}/readCounts_circRNA_sense.txt \
+                | awk '{{SUM+=$4}}END{{printf "  circRNA_sense: %.0f\\n",SUM}}' >> {output.stats}''')
+        shell('''touch {params.sampleID}/readCounts_circRNA_antisense.txt; \
+                cat {params.sampleID}/readCounts_circRNA_antisense.txt \
+                | awk '{{SUM+=$4}}END{{printf "  circRNA_antisense: %.0f\\n",SUM}}' >> {output.stats}''')
         # Count reads not mapping to the genome or to the libraries
-        shell('''
-              gunzip -c {params.sampleID}/endogenousAlignments_genomeUnmapped_transcriptome_Unmapped.fastq.gz \
-              | wc - l | awk '{{print "not_mapped_to_genome_or_libs\t"($1/4)}}' >> {output.stats}
-              ''')
+        shell('''gunzip -c {params.sampleID}/endogenousAlignments_genomeUnmapped_transcriptome_Unmapped.fastq.gz \
+                | wc -l | awk '{{printf "not_mapped_to_genome_or_libs: %.0f\\n",($1/4)}}' >> {output.stats}''')
         shell('touch {output.chk}')
 
 
@@ -237,6 +265,12 @@ rule process_alignments:
     log:
         "{sampleID}/logs/process_alignments.log"
     run:
+        # First summarise contaminant counts
+        shell('''{exe_samtools} view {params.sampleID}/filteringAlignments_UniVec_and_rRNA_Aligned.out.bam \
+                | awk '{{print $3}}' | sort -k 2,2 2>>{log} \
+                | uniq -c | sort -nrk 1,1 \
+                > {params.sampleID}/readCounts_UniVec_and_rRNA.txt \
+                2>{log}''')
         shell('''
              java -Xmx{params.javaMem} -jar {path_exceRpt}/exceRpt_Tools.jar ProcessEndogenousAlignments \
              --libPriority {endogenous_lib_priority} \
@@ -276,12 +310,12 @@ rule map_RNA_genomeUnmapped:
         "{sampleID}/logs/map_RNA_genomeUnmapped.log"
     run:
         shell('''
-        {exe_star} --runThreadN {params.usethreads} \
-        --outFileNamePrefix {params.sampleID}/endogenousAlignments_genomeUnmapped_transcriptome_ \
-        --readFilesIn {input} \
-        --outReadsUnmapped Fastx --genomeDir {path_ann}/STAR_INDEX_transcriptome \
-        --parametersFiles {path_ann}/../STAR_Parameters_Endogenous_smallRNA.in \
-        {params_star_endogenous} --readFilesCommand "gunzip -c" >{log} 2>&1
+            {exe_star} --runThreadN {params.usethreads} \
+            --outFileNamePrefix {params.sampleID}/endogenousAlignments_genomeUnmapped_transcriptome_ \
+            --readFilesIn {input} \
+            --outReadsUnmapped Fastx --genomeDir {path_ann}/STAR_INDEX_transcriptome \
+            --parametersFiles {path_ann}/../STAR_Parameters_Endogenous_smallRNA.in \
+            {params_star_endogenous} --readFilesCommand "gunzip -c" >{log} 2>&1
         ''')
         shell('mv {params.sampleID}/endogenousAlignments_genomeUnmapped_transcriptome_Unmapped.out.mate1 \
               {params.sampleID}/endogenousAlignments_genomeUnmapped_transcriptome_Unmapped.fastq')
@@ -312,12 +346,12 @@ rule map_RNA_genomeMapped:
             > {params.sampleID}/endogenousAlignments_genome_Mapped.out.mate1 2>{log}
         ''')
         shell('''
-        {exe_star} --runThreadN {params.usethreads} \
-        --outFileNamePrefix {params.sampleID}/endogenousAlignments_genomeMapped_transcriptome_ \
-        --readFilesIn {params.sampleID}/endogenousAlignments_genome_Mapped.out.mate1 \
-        --genomeDir {path_ann}/STAR_INDEX_transcriptome \
-        --parametersFiles {path_ann}/../STAR_Parameters_Endogenous_smallRNA.in \
-        {params_star_endogenous} --readFilesCommand - >>{log} 2>>{log}
+            {exe_star} --runThreadN {params.usethreads} \
+            --outFileNamePrefix {params.sampleID}/endogenousAlignments_genomeMapped_transcriptome_ \
+            --readFilesIn {params.sampleID}/endogenousAlignments_genome_Mapped.out.mate1 \
+            --genomeDir {path_ann}/STAR_INDEX_transcriptome \
+            --parametersFiles {path_ann}/../STAR_Parameters_Endogenous_smallRNA.in \
+            {params_star_endogenous} --readFilesCommand - >>{log} 2>>{log}
         ''')
         shell('rm {params.sampleID}/endogenousAlignments_genome_Mapped.out.mate1')
         shell('mv {params.sampleID}/endogenousAlignments_genomeMapped_transcriptome_Unmapped.out.mate1 \
