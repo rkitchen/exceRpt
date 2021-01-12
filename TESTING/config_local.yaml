@@ -9,3 +9,11 @@
 "path_tmp": "/tmp/RNAseq"
 "rapid_run": "True"
 "data_source": "file"
+#
+## Alignment Params:
+"minInsertSize": "18"
+"star_outFilterMatchNminOverLread": "0.9"
+"star_outFilterMismatchNmax": "1"
+"star_outFilterMismatchNoverLmax": "0.3"
+"star_outFilterScoreMinOverLread": "0.5"
+"star_alignEndsType": "Local"

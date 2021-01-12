@@ -76,6 +76,7 @@ additional_args_salmon = ""
 if "additional_args_salmon" in config:
     additional_args_salmon = config["additional_args_salmon"]
 
+minInsertSize = config["minInsertSize"]
 
 exe_samtools = path_bin + "/samtools-1.9/samtools"
 exe_bedtools = path_bin + "/bedtools2/bin/bedtools"
@@ -90,13 +91,13 @@ unique_readNumbers = "R1"
 
 
 params_star_endogenous = ' --alignEndsType ' + config["star_alignEndsType"] + ' \
-        --outFilterMatchNmin ' + config["star_outFilterMatchNmin"] + ' \
+        --outFilterMatchNmin ' + config["minInsertSize"] + ' \
         --outFilterMatchNminOverLread ' + config["star_outFilterMatchNminOverLread"] + ' \
         --outFilterMismatchNmax ' + config["star_outFilterMismatchNmax"] + ' \
         --outFilterMismatchNoverLmax ' + config["star_outFilterMismatchNoverLmax"] + ' '
 
 params_star_exogenous = '--outSAMtype BAM Unsorted --outSAMattributes Standard --alignEndsType EndToEnd \
-        --outFilterMatchNmin ' + config["star_outFilterMatchNmin"] + ' \
+        --outFilterMatchNmin ' + config["minInsertSize"] + ' \
         --outFilterMatchNminOverLread ' + config["star_outFilterMatchNminOverLread"] + ' \
         --outFilterMismatchNmax ' + config["star_outFilterMismatchNmax"] + ' \
         --outFilterMismatchNoverLmax ' + config["star_outFilterMismatchNoverLmax"] + ' '
@@ -167,7 +168,6 @@ rule cleanup_and_sync:
         shell('touch {output}')
 
 
-
 rule calculate_stats:
     input:
         a = "{sampleID}/checkpoints/process_alignments.chk",
@@ -189,7 +189,6 @@ rule calculate_stats:
         shell('''
         ''')
         shell('touch {output}')
-
 
 
 rule process_alignments:
@@ -215,9 +214,11 @@ rule process_alignments:
 
 rule map_RNA_genomeUnmapped:
     input:
-        "{sampleID}/checkpoints/map_genome.chk"
+        # "{sampleID}/checkpoints/map_genome.chk"
+        "{sampleID}/endogenousAlignments_genome_Unmapped.out.fastq.gz"
     output:
-        "{sampleID}/checkpoints/map_RNA_genomeUnmapped.chk"
+        reads = "{sampleID}/endogenousAlignments_genomeUnmapped_transcriptome_Unmapped.R1.fastq.gz",
+        chk = "{sampleID}/checkpoints/map_RNA_genomeUnmapped.chk"
     params:
         threads = 4,
         usethreads = 4,
@@ -230,15 +231,27 @@ rule map_RNA_genomeUnmapped:
         "{sampleID}/logs/map_RNA_genomeUnmapped.log"
     run:
         shell('''
+        {exe_star} --runThreadN {params.usethreads} \
+        --outFileNamePrefix {params.sampleID}/endogenousAlignments_genomeUnmapped_transcriptome_ \
+        --readFilesIn {params.sampleID}/endogenousAlignments_genome_Unmapped.out.mate1 \
+        --outReadsUnmapped Fastx --genomeDir {path_ann}/STAR_INDEX_transcriptome \
+        --parametersFiles {path_ann}/../STAR_Parameters_Endogenous_smallRNA.in \
+        {params_star_endogenous} --readFilesCommand - >{log} 2>&1
         ''')
-        shell('touch {output}')
+        shell('mv {params.sampleID}/endogenousAlignments_genomeUnmapped_transcriptome_Unmapped.out.mate1 \
+              {params.sampleID}/endogenousAlignments_genomeUnmapped_transcriptome_Unmapped.R1.fastq')
+        shell(
+            'gzip {params.sampleID}/endogenousAlignments_genomeUnmapped_transcriptome_Unmapped.R1.fastq')
+        shell('touch {output.chk}')
 
 
 rule map_RNA_genomeMapped:
     input:
-        "{sampleID}/checkpoints/map_genome.chk"
+        # "{sampleID}/checkpoints/map_genome.chk"
+        "{sampleID}/endogenousAlignments_genome_Aligned.out.bam"
     output:
-        "{sampleID}/checkpoints/map_RNA_genomeMapped.chk"
+        reads = "{sampleID}/endogenousAlignments_genomeMapped_transcriptome_Unmapped.R1.fastq.gz",
+        chk = "{sampleID}/checkpoints/map_RNA_genomeMapped.chk"
     params:
         threads = 4,
         usethreads = 4,
@@ -251,15 +264,32 @@ rule map_RNA_genomeMapped:
         "{sampleID}/logs/map_RNA_genomeMapped.log"
     run:
         shell('''
+            {exe_samtools} fastq {params.sampleID}/endogenousAlignments_genome_Aligned.out.bam \
+            > {params.sampleID}/endogenousAlignments_genome_Mapped.out.mate1
         ''')
-        shell('touch {output}')
+        shell('''
+        {exe_star} --runThreadN {params.usethreads} \
+        --outFileNamePrefix {params.sampleID}/endogenousAlignments_genomeMapped_transcriptome_ \
+        --readFilesIn {params.sampleID}/endogenousAlignments_genome_Mapped.out.mate1 \
+        --genomeDir {path_ann}/STAR_INDEX_transcriptome \
+        --parametersFiles {path_ann}/../STAR_Parameters_Endogenous_smallRNA.in \
+        {params_star_endogenous} --readFilesCommand - >{log} 2>&1
+        ''')
+        shell('rm {params.sampleID}/endogenousAlignments_genome_Mapped.out.mate1')
+        shell('mv {params.sampleID}/endogenousAlignments_genomeMapped_transcriptome_Unmapped.out.mate1 \
+              {params.sampleID}/endogenousAlignments_genomeMapped_transcriptome_Unmapped.R1.fastq')
+        shell(
+            'gzip {params.sampleID}/endogenousAlignments_genomeMapped_transcriptome_Unmapped.R1.fastq')
+        shell('touch {output.chk}')
 
 
 rule map_genome:
     input:
         "{sampleID}/checkpoints/map_univec_and_rRNA.chk"
     output:
-        "{sampleID}/checkpoints/map_genome.chk"
+        # "{sampleID}/checkpoints/map_genome.chk"
+        bam = "{sampleID}/endogenousAlignments_genome_Aligned.out.bam",
+        fastq_unmapped = "{sampleID}/endogenousAlignments_genome_Unmapped.out.fastq.gz"
     params:
         threads = 4,
         usethreads = 4,
@@ -271,14 +301,23 @@ rule map_genome:
         "{sampleID}/logs/map_genome.log"
     run:
         shell('''
+            {exe_star} --runThreadN {params.usethreads} \
+            --outFileNamePrefix {params.sampleID}/endogenousAlignments_genome_ \
+            --genomeDir {path_ann}/STAR_INDEX_genome \
+            --readFilesIn {params.sampleID}/{params.sampleID}.clipped.trimmed.filtered.noUniVecOrRiboRNA.fastq.gz \
+            --readFilesCommand "gunzip -c" --outReadsUnmapped Fastx \
+            --parametersFiles {path_ann}/../STAR_Parameters_Endogenous_smallRNA.in \
+            {params_star_endogenous} >{log} 2>&1
         ''')
+        shell('mv {params.sampleID}/endogenousAlignments_genome_Unmapped.out.mate1 \
+              {params.sampleID}/endogenousAlignments_genome_Unmapped.out.fastq')
+        shell(
+            'gzip {params.sampleID}/endogenousAlignments_genome_Unmapped.out.fastq')
         shell('touch {output}')
-
-
 
 rule map_rRNA_and_UniVec:
     input:
-        #"{sampleID}/checkpoints/trim_adapters.chk"
+        # "{sampleID}/checkpoints/trim_adapters.chk"
         "{sampleID}/{sampleID}_trimmed.fastq.gz"
     output:
         "{sampleID}/checkpoints/map_univec_and_rRNA.chk"
@@ -302,24 +341,25 @@ rule map_rRNA_and_UniVec:
         ''')
         shell('''gzip -c {params.sampleID}/filteringAlignments_UniVec_and_rRNA_Unmapped.out.mate1 \
           > {params.sampleID}/{params.sampleID}.clipped.trimmed.filtered.noUniVecOrRiboRNA.fastq.gz''')
-        shell('rm {params.sampleID}/filteringAlignments_UniVec_and_rRNA_Unmapped.out.mate1') 
+        shell(
+            'rm {params.sampleID}/filteringAlignments_UniVec_and_rRNA_Unmapped.out.mate1')
         shell('touch {output}')
-        #&& {exe_samtools} view {params.sampleID}/filteringAlignments_UniVec_and_rRNA_Aligned.out.bam \
+        # && {exe_samtools} view {params.sampleID}/filteringAlignments_UniVec_and_rRNA_Aligned.out.bam \
         #  | awk "{{print $3}}" | sort -k 2,2 2>>{log} \
         #  | uniq -c > {params.sampleID}/{params.sampleID}.clipped.trimmed.filtered.UniVec_and_rRNA.counts \
         #  2>>{log}; \
-        #&& {exe_samtools} view {params.sampleID}/filteringAlignments_UniVec_and_rRNA_Aligned.out.bam \
+        # && {exe_samtools} view {params.sampleID}/filteringAlignments_UniVec_and_rRNA_Aligned.out.bam \
         #  | awk "{{print $1}}" | sort 2>>{log} | uniq -c | wc -l \
         #  > {params.sampleID}/{params.sampleID}.clipped.trimmed.filtered.UniVec_and_rRNA.readCount \
         #  2>>{log}; \
-        #'''
+        # '''
 
 rule fastQC_trimmed:
     input:
-        #"{sampleID}/checkpoints/trim_adapters.chk"
+        # "{sampleID}/checkpoints/trim_adapters.chk"
         "{sampleID}/{sampleID}_trimmed.fastq.gz"
     output:
-        "{sampleID}/trimmed/{sampleID}_fastqc.html"
+        "{sampleID}/{sampleID}_trimmed_fastqc.html"
     params:
         threads = 4,
         usethreads = 4,
@@ -339,7 +379,7 @@ rule fastQC_trimmed:
 
 rule calculate_sequence_lengths:
     input:
-        #"{sampleID}/checkpoints/trim_adapters.chk"
+        # "{sampleID}/checkpoints/trim_adapters.chk"
         "{sampleID}/{sampleID}_trimmed.fastq.gz"
     output:
         "{sampleID}/checkpoints/calculate_sequence_lengths.chk"
@@ -380,7 +420,7 @@ rule trim_adapters:
             ref=/usr/local/bin/bbmap/resources/adapters.fa \
             in=/base/{params.sampleID}.fastq.gz \
             out=/base/{params.sampleID}_trimmed.fastq.gz \
-            ktrim=r k=21 mink=11 tbo tpe hdist=2 minlen=31 threads={params.usethreads} \
+            ktrim=r k=21 mink=11 tbo tpe hdist=2 minlen={minInsertSize} threads={params.usethreads} \
             qtrim=r trimq=10 maq=10 \
             entropy=0.3 entropywindow=50 entropyk=5 \
             >> {log} 2>&1 \

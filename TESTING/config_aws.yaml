@@ -11,7 +11,7 @@
 "data_source": "file"
 #
 ## Alignment Params:
-"star_outFilterMatchNmin": "18"
+"minInsertSize": "18"
 "star_outFilterMatchNminOverLread": "0.9"
 "star_outFilterMismatchNmax": "1"
 "star_outFilterMismatchNoverLmax": "0.3"
