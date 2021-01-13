@@ -48,14 +48,15 @@ In the sample table it is imperative that:
 '''
 
 
-# hard-coded parameters
-# exe_samtools = "/efs/bin/samtools-1.9/samtools"
-# exe_bedtools = "/efs/bin/bedtools2/bin/bedtools"
-# path_pipelineScripts = "/efs/Pipelines/RNAseq_pipeline/scripts"
+##
+## hard-coded parameters
+##
 job_name_sep = "-"
 
 
-# Read parameters from the config file
+##
+##Read parameters from the config file
+##
 path_in = config['path_in']
 path_out = config['path_out']
 # path_EFS_out = config['path_EFS_out']
@@ -91,6 +92,7 @@ exe_bedtools = path_bin + "/bedtools2/bin/bedtools"
 exe_star = path_bin + "/STAR/STAR-2.7.1a/bin/Linux_x86_64/STAR"
 path_bbtools = path_bin + "/bbtools/bbmap"
 exe_bbduk = path_bbtools + "/bbduk.sh"
+exe_fastqc = path_bin + "/FastQC/fastqc"
 
 # Get a list of the samples and read numbers we need to process
 samples = pd.read_csv(config["sample_table"], comment='#')
@@ -422,7 +424,6 @@ rule map_rRNA_and_UniVec:
 
 rule fastQC_trimmed:
     input:
-        # "{sampleID}/checkpoints/trim_adapters.chk"
         "{sampleID}/{sampleID}_trimmed_filtered.fastq.gz"
     output:
         "{sampleID}/{sampleID}_trimmed_filtered_fastqc.html"
@@ -435,17 +436,15 @@ rule fastQC_trimmed:
         name = "{sampleID}"+job_name_sep+"fastQC_trimmed"
     log:
         "{sampleID}/logs/fastQC_trimmed.log"
-    shell:
-        '''
-        docker run -u `id -u {sys_username}` -v $PWD/{params.sampleID}:/base rkitchen/fastqc \
-            -o /base -t {params.usethreads} /base/{params.sampleID}_trimmed_filtered.fastq.gz \
-            >> {log} 2>&1
-        '''
+    run:
+        shell('''{exe_fastqc} -t {params.usethreads} -o {params.sampleID} \
+                {params.sampleID}/{params.sampleID}_trimmed_filtered.fastq.gz \
+                >> {log} 2>&1
+                ''')
 
 
 rule calculate_sequence_lengths:
     input:
-        # "{sampleID}/checkpoints/trim_adapters.chk"
         "{sampleID}/{sampleID}_trimmed_filtered.fastq.gz"
     output:
         "{sampleID}/checkpoints/calculate_sequence_lengths.chk"

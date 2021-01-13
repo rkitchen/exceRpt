@@ -1,0 +1,9 @@
+{
+  "__default__": {
+    "time": "01:00:00",
+    "n": 1,
+    "partition": "spot",
+    "priority": 100,
+    "output": "logs/%x.out"
+  }
+}
