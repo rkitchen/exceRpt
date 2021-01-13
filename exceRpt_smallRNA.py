@@ -192,9 +192,9 @@ rule calculate_stats:
         "{sampleID}/logs/calculate_stats.log"
     run:
         shell('''echo -e "---" > {output.stats} ''')
-        shell('''cat {params.sampleID}/sampleA_filterStats_adapter.txt | grep "#Total" \
+        shell('''cat {params.sampleID}/{params.sampleID}_filterStats_adapter.txt | grep "#Total" \
                 | awk '{{printf "input: %.0f\\n",$2}}' >> {output.stats}''')
-        shell('''cat {params.sampleID}/sampleA_filterStats_phiXandQuality.txt | grep "#Total" \
+        shell('''cat {params.sampleID}/{params.sampleID}_filterStats_phiXandQuality.txt | grep "#Total" \
                 | awk '{{printf "successfully_clipped_adapter: %.0f\\n",$2}}' >> {output.stats}''')
         shell('''cat {params.sampleID}/filteringAlignments_UniVec_and_rRNA_Log.final.out | grep -w "Number of input reads |" \
                 | awk -F '|' '{{printf "passed_phiX_and_quality: %.0f\\n",$2}}' >> {output.stats}''')
@@ -396,8 +396,8 @@ rule map_rRNA_and_UniVec:
     output:
         "{sampleID}/checkpoints/map_univec_and_rRNA.chk"
     params:
-        threads = 4,
-        usethreads = 4,
+        threads = 8,
+        usethreads = 8,
         sampleID = "{sampleID}",
         runtime = "01:00:00",
         priority = 10,
