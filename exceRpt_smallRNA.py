@@ -15,7 +15,7 @@ exceRpt smallRNA-seq pipeline
 An example command to run the pipeline is:
     BASE=/Users/rk504/Pipelines/exceRpt_smallRNA.py
     PATH_OUT=/Users/rk504/tmp
-    snakemake -s $BASE/snakemake_pipeline.py \
+    snakemake -s $BASE/exceRpt_smallRNA.py \
               --cores 2 \
               --directory=$PATH_OUT \
               --configfile="$BASE/TESTING/config_mac.yaml"
@@ -127,11 +127,6 @@ def get_fastq(wildcards):
 if not run_rapid == "True":
     rule all:
         input:
-            expand("{sampleID}/{sampleID}.{read}_fastqc.html",
-                   sampleID=unique_sampleIDs, read=unique_readNumbers),
-            expand("{sampleID}/trimmed/{sampleID}.{read}_fastqc.html",
-                   sampleID=unique_sampleIDs, read=unique_readNumbers),
-            # expand("{sampleID}/salmon/{sampleID}.coverage.csv.gz", sampleID=unique_sampleIDs),
             expand("{sampleID}/checkpoints/cleanup_and_sync.chk",
                    sampleID=unique_sampleIDs)
 else:
@@ -141,10 +136,12 @@ else:
                    sampleID=unique_sampleIDs)
 
 
+# rule run_endogenous:
+#    input:
+#        "{sampleID}/checkpoints/cleanup_and_sync.chk"
+
 rule cleanup_and_sync:
     input:
-        # "{sampleID}/checkpoints/sortBAM_pos.chk",
-        # "{sampleID}/checkpoints/sortBAM_name.chk",
         "{sampleID}/checkpoints/calculate_stats.chk"
     output:
         "{sampleID}/checkpoints/cleanup_and_sync.chk"
@@ -299,11 +296,11 @@ rule map_RNA_genomeUnmapped:
         reads = "{sampleID}/endogenousAlignments_genomeUnmapped_transcriptome_Unmapped.fastq.gz",
         chk = "{sampleID}/checkpoints/map_RNA_genomeUnmapped.chk"
     params:
-        threads = 4,
-        usethreads = 4,
+        threads = 8,
+        usethreads = 8,
         sampleID = "{sampleID}",
         runtime = "01:00:00",
-        priority = 1,
+        priority = 10,
         name = "{sampleID}_"+job_name_sep + \
             "map_RNA_genomeUnmapped"
     log:
@@ -331,11 +328,11 @@ rule map_RNA_genomeMapped:
         reads = "{sampleID}/endogenousAlignments_genomeMapped_transcriptome_Unmapped.fastq.gz",
         chk = "{sampleID}/checkpoints/map_RNA_genomeMapped.chk"
     params:
-        threads = 4,
-        usethreads = 4,
+        threads = 8,
+        usethreads = 8,
         sampleID = "{sampleID}",
         runtime = "01:00:00",
-        priority = 1,
+        priority = 10,
         name = "{sampleID}_"+job_name_sep +
         "map_RNA_genomeMapped"
     log:
@@ -368,11 +365,11 @@ rule map_genome:
         bam = "{sampleID}/endogenousAlignments_genome_Aligned.out.bam",
         fastq_unmapped = "{sampleID}/endogenousAlignments_genome_Unmapped.fastq.gz"
     params:
-        threads = 4,
-        usethreads = 4,
+        threads = 8,
+        usethreads = 8,
         sampleID = "{sampleID}",
         runtime = "01:00:00",
-        priority = 1,
+        priority = 10,
         name = "{sampleID}_"+job_name_sep+"map_genome"
     log:
         "{sampleID}/logs/map_genome.log"
@@ -403,7 +400,7 @@ rule map_rRNA_and_UniVec:
         usethreads = 4,
         sampleID = "{sampleID}",
         runtime = "01:00:00",
-        priority = 1,
+        priority = 10,
         name = "{sampleID}_"+job_name_sep+"map_rRNA_and_UniVec"
     log:
         "{sampleID}/logs/map_rRNA_and_UniVec.log"
@@ -453,11 +450,11 @@ rule calculate_sequence_lengths:
     output:
         "{sampleID}/checkpoints/calculate_sequence_lengths.chk"
     params:
-        threads = 8,
-        usethreads = 8,
+        threads = 1,
+        usethreads = 1,
         sampleID = "{sampleID}",
         runtime = "02:00:00",
-        priority = 10,
+        priority = 1,
         name = "{sampleID}"+job_name_sep+"calculate_sequence_lengths"
     log:
         "{sampleID}/logs/calculate_sequence_lengths.log"
@@ -505,7 +502,7 @@ rule trim_adapters:
               stats={params.sampleID}/{params.sampleID}_filterStats_phiXandQuality.txt \
               >{log.qual} 2>&1
               ''')
-        shell('touch {output.chk}') 
+        shell('touch {output.chk}')
 
 
 rule combine_fastqs:
