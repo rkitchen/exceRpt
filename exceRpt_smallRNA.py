@@ -49,13 +49,13 @@ In the sample table it is imperative that:
 
 
 ##
-## hard-coded parameters
+# hard-coded parameters
 ##
 job_name_sep = "-"
 
 
 ##
-##Read parameters from the config file
+# Read parameters from the config file
 ##
 path_in = config['path_in']
 path_out = config['path_out']
@@ -254,9 +254,9 @@ rule process_alignments:
         chk = "{sampleID}/checkpoints/process_alignments.chk",
         alignments = "{sampleID}/endogenousAlignments_Accepted.txt.gz"
     params:
-        threads = 1,
-        usethreads = 1,
-        javaMem = "10G",
+        threads = 4,
+        usethreads = 4,
+        javaMem = "8G",
         sampleID = "{sampleID}",
         runtime = "02:00:00",
         priority = 10,
